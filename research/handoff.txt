@@ -1,0 +1,1754 @@
+
+
+
+
+LINKS  ·  STUDENT PORTAL
+
+
+
+Claude Design Handoff Brief
+
+
+
+Designing the Student Portal experience for the K-12 platform built on competency-based education.
+
+
+
+A structured brief for generating the Student Portal across ten L1 surfaces and their nested experiences. Consolidates the brand system, user framing, information architecture, pedagogical principles, and per-surface requirements — produced from the ChatGPT exploratory mock pass and reconciled against Marie Alcock-Hubley&apos;s Master Component Grid.
+
+
+
+Authored by
+
+
+
+Jaylon Ballard
+
+
+
+Product Manager Lead
+
+
+
+Status
+
+
+
+Ready for Claude Design
+
+
+
+Reference Epic
+
+
+
+LINKS Student Portal
+
+
+
+(beta build)
+
+
+
+
+
+
+
+
+01  PURPOSE
+
+
+
+
+
+What this brief is for
+
+
+
+This document is the handoff from the brand and exploratory UI phase (ChatGPT-rendered mocks + brand essence sheet) to the product UI design phase (Claude Design). It consolidates everything Claude Design needs to produce the Student Portal as a coherent product surface — not a collection of screens.
+
+
+
+The ChatGPT exploration established the brand palette, portal-specific color system, typography pairing, and overall feel. It also produced ~40 student-facing screens covering most of the L1 navigation. This brief carries forward what worked, corrects what was wrong or premature, and fills the gaps.
+
+
+
+This is a Student Portal-only brief. The other six portals (Instructor, Parent/Family, Admin, Community/Board of Education, Student Services, Public) are out of scope here and will receive their own handoffs.
+
+
+
+
+
+02  PRODUCT
+
+
+
+
+
+What LINKS is
+
+
+
+LINKS is the product expression of the CES (Comprehensive Educational System) framework — a competency-based educational model authored by Dr. Marie Alcock-Hubley. CES treats learning as the demonstration of mastery against learning targets, not the accumulation of seat-time. LINKS is the K-12 platform that operationalizes that model across seven user-facing portals (Student, Instructor, Parent/Family, Admin, Community/Board of Education, Student Services, Public) plus a County/State/Federal reporting surface.
+
+
+
+LINKS is engineered as a single, cross-portal data and intelligence layer with seven role-specific UIs on top. The cross-portal aspect is the strategic moat: the same data that shows a student their progress also gives an instructor the early-warning signal, an administrator the cohort pattern, and a parent the contextualized check-in — without compromising student privacy or introducing surveillance.
+
+
+
+Beta target is September 2026, code-complete July 31, 2026, against the Gulliver Prep pilot cohort first. The Student Portal is the highest-stakes of the seven — it&apos;s the surface where the actual learning experience happens.
+
+
+
+
+
+What the Student Portal is
+
+
+
+The Student Portal is the student&apos;s daily home for school. Schedule, classes, work, progress, materials, tools, people, portfolio, and conversation — all in one surface, anchored by an AI Coach that knows the student&apos;s context. The portal is not a content delivery vehicle and not a grade book. It is the workspace and the record of growth.
+
+
+
+It is used during class and outside it. On desktop and on mobile. By 9-12th graders in initial pilot. It must hold up to daily use by a teenager who has alternatives.
+
+
+
+
+
+03  USERS
+
+
+
+
+
+Who uses the Student Portal
+
+
+
+This is the framing the ChatGPT pass got mostly right but worth restating explicitly.
+
+
+
+PRIMARY  ·  K-12 Students
+
+
+
+9th–12th grade in initial pilot, with capacity to extend down to elementary in subsequent versions. They span the full range of ability, learning differences, languages, and life circumstances. Some are competitive athletes, some are caregiving for siblings, some are managing IEPs or 504 plans, some are first-generation college-bound, some are just trying to get through the week. The portal must respect all of them as the primary operator of their own learning.
+
+
+
+SECONDARY  ·  People in the student&apos;s life
+
+
+
+Teachers, advisors, coaches, counselors, support staff, and family members appear contextually inside the Student Portal — but they don&apos;t operate it. They show up as named humans the student can message, schedule with, see updates from, and ask for help. Their own portals (Instructor, Parent, etc.) are where they do their work.
+
+
+
+OUT OF FRAME  ·  Administrators and observers
+
+
+
+County, district, and federal reporting bodies will eventually consume aggregated, privacy-preserving data from this portal. They never appear in the UI. The student should never feel watched.
+
+
+
+CRITICAL FRAMING
+
+
+
+The student is the center.  Their data, their work, their growth, their choices about who sees what. The Student Portal is built around their dignity, their autonomy as learners, and their voice. Surveillance language, infantilizing copy, and patronizing animation patterns are out of bounds.
+
+
+
+
+
+04  BRAND SYSTEM
+
+
+
+
+
+Color, typography, and structure
+
+
+
+The brand system is the one ChatGPT produced in the brand essence sheet (in the reference folder). It is locked for this handoff as the working canon. It is also acknowledged as provisional — the rebrand and final tokenization are owned by the Product Design Lead and UX Researcher and may revise this system later. Claude Design should treat the system below as the source of truth for now and surface deviations explicitly.
+
+
+
+Brand essence
+
+
+
+LINKS is the central nervous system of education. It links people, data, and tools together so every student can learn, every educator can teach, and every community can thrive. The Student Portal is the surface where that promise meets the student in their own voice.
+
+
+
+Brand attributes
+
+
+
+Trusted  ·  We protect what matters most.
+
+
+
+Connected  ·  We break down silos and bring people together.
+
+
+
+Empowering  ·  We turn data into clarity and action.
+
+
+
+Inclusive  ·  We design for every learner, every role, every community.
+
+
+
+Color system
+
+
+
+Each portal has its own anchor color. The Student Portal is purple. Other portal colors appear in the Student Portal only as semantic reference — for example, when a parent sends a message, their identity card may carry a faint Parent-green accent. The neutral palette runs warm-cool slate, never pure-black or hard greys.
+
+
+
+PORTAL COLORS
+
+
+
+Student
+
+#6B2C91
+
+Primary Student Portal accent. Use for nav, primary actions, brand moments.
+
+
+
+Student (deep)
+
+#8E3E8E
+
+Secondary purple — hover, selected states, high-contrast headlines.
+
+
+
+Instructor
+
+#153A5B
+
+Reference only. Cross-portal context (e.g. teacher attribution).
+
+
+
+Admin / Cross-school
+
+#1E6F8C
+
+Reference only.
+
+
+
+Parent / Success
+
+#2E9B62
+
+Doubles as semantic success. Cross-portal context for family members.
+
+
+
+Student Services / Warning
+
+#E07A2D
+
+Doubles as semantic warning. Used for support staff cards in My Team.
+
+
+
+Public / Error
+
+#C0392B
+
+Doubles as semantic error. Sparingly used.
+
+
+
+NEUTRALS
+
+
+
+Ink
+
+#0F172A
+
+Primary text. Headlines.
+
+
+
+Slate
+
+#334155
+
+Body text. Secondary headlines.
+
+
+
+Stone
+
+#64748B
+
+Tertiary text, captions, labels.
+
+
+
+Silver
+
+#94A3B8
+
+Disabled, placeholder, secondary borders.
+
+
+
+Mist
+
+#E2E8F0
+
+Borders, dividers, hairlines.
+
+
+
+Bone
+
+#F1F5F9
+
+Surface fills, hover states, callout backgrounds.
+
+
+
+Paper
+
+#FFFFFF
+
+Card and content surfaces.
+
+
+
+Typography
+
+
+
+Poppins  ·  Display, headlines, key brand moments. Use for H1 and hero copy. Friendly, geometric, distinct.
+
+
+
+Inter  ·  UI, body, data, captions, code. Carries the entire interface. Tabular numerals for any tabular data.
+
+
+
+No third typeface. Weight contrast does the work of hierarchy.
+
+
+
+Voice and tone
+
+
+
+Clear. Supportive. Confident. Human.  We communicate like a trusted partner — knowledgeable, empathetic, action-oriented. Copy in the Student Portal speaks to the student directly, in second person, in language that respects their intelligence. Not formal, not slangy. No condescension, no babying, no fake hype.
+
+
+
+Structural tokens
+
+Token
+
+Value
+
+Usage
+
+--radius
+
+12px
+
+Default radius. Cards, buttons, inputs.
+
+--radius-sm
+
+8px
+
+Tags, pills, small inputs.
+
+--radius-lg
+
+20px
+
+Hero surfaces, modals, prominent containers.
+
+Grid
+
+8px base
+
+All spacing on 8px increments. Generous whitespace preferred over density.
+
+Borders
+
+1px Mist
+
+Prefer hairline borders to drop shadows. Shadows only for elevated overlays.
+
+
+
+
+
+05  CORRECTIONS
+
+
+
+
+
+What the ChatGPT pass got wrong
+
+
+
+Three corrections to the exploratory mocks. These are not stylistic preferences — they are product calls that change what Claude Design should render.
+
+
+
+CORRECTION 01  ·  No Materio, no MUI
+
+
+
+The previous LINKS design system was Materio (a Material UI / MUI template). It is deprecated. Engineering — Ricardo and Scott — uncovered substantial bloat and structural friction that became unworkable as the platform scaled. The ChatGPT mocks may carry residual Materio-shaped patterns (specific card chrome, MUI-style toolbar structures, etc.). Ignore those references. Claude Design should build from Tailwind primitives and the brand system above. No component library dependency.
+
+
+
+CORRECTION 02  ·  Engagement framing is provisional
+
+
+
+The ChatGPT mocks heavily feature gamification chrome: XP counters ("1,250 / 2,000 XP"), levels ("Level 8 Explorer"), streaks ("12 days in a row!"), and achievement badges. CES pedagogy is competency-based and mastery-oriented — not score-based. Whether this gamification language aligns with Dr. Alcock-Hubley&apos;s framework is an open pedagogical question that has not yet been resolved.
+
+
+
+Render gamification chrome where it appears in the source mocks, but treat all of it as PROVISIONAL. Component-name it neutrally (e.g. ProgressIndicator rather than XPBar) so it can be revised without structural rework. Flag it explicitly in your component notes.
+
+
+
+CORRECTION 03  ·  AI must never complete student work
+
+
+
+Several mock surfaces — "Check My Work," "Writing Assistant," "AI Tutor," "Draft with AI" — imply the AI may produce student work that the student then submits. This is not what LINKS AI does, and rendering it that way creates a product the school cannot adopt under academic integrity policy.
+
+
+
+The LINKS AI Coach is a scaffold, never a substitute. Per CES principles and the platform&apos;s compliance posture:
+
+
+
+
+
+It asks Socratic questions to help the student discover their own understanding.
+
+
+
+
+
+It cites specific lessons, modules, and learning targets the student has already engaged with.
+
+
+
+
+
+It surfaces comprehension gaps and offers targeted practice.
+
+
+
+
+
+It generates derivative practice from the student&apos;s own work — quizzes, flashcards, concept maps — rather than producing the work itself.
+
+
+
+
+
+It logs comprehension events and progress against learning targets.
+
+
+
+It does not write essays. It does not solve problems. It does not produce work that submits as the student&apos;s own output. AI surfaces in the Student Portal must be designed against this constraint.
+
+
+
+DESIGN IMPLICATION
+
+
+
+Where the source mocks show the AI producing finished work — a complete essay draft, a solved math problem, a written message — re-render those surfaces with the AI in a coaching role instead. The student does the work; the AI helps them think about it.
+
+
+
+
+
+
+
+
+06  INFORMATION ARCHITECTURE
+
+
+
+
+
+L1 sections and their children
+
+
+
+The Student Portal navigation is a single left sidebar with ten L1 sections plus an Account footer. Some L1s are leaves (single-page surfaces). Others are parents that contain L2 children, which Claude Design should treat as a sub-navigation pattern within the L1&apos;s space.
+
+L1 Section
+
+L2 Children
+
+Home
+
+—  (single dashboard surface)
+
+My Time
+
+My Schedule  ·  My Calendar  ·  My Activities  ·  To Do  ·  Study Planner
+
+My Desk
+
+My Materials  ·  My Work  ·  My Menu
+
+My Progress
+
+—  (overview + Skills, Practice Mode, Assessment Data sub-views)
+
+My Classes
+
+Class List, with per-class detail, lesson, quiz, and live class views
+
+My Tools
+
+—  (workspace surface)
+
+My Team
+
+Team overview, with per-person detail; includes Support Staff
+
+My Portfolio
+
+Portfolio overview, edit, public/share view
+
+Messages
+
+Inbox, DMs, group threads, class channels, assignment threads, Email
+
+AI Coach
+
+Hub landing, conversation surfaces (drawer + full)
+
+[footer]  Account
+
+My Profile  ·  Settings  ·  Notification Preferences  ·  Privacy & Security
+
+
+
+Open IA questions
+
+
+
+Two MCG-canonical concepts do not have an obvious home in the L1 list above. Claude Design should render against the recommended placements below; if a different structure feels stronger during render, surface the recommendation in component notes.
+
+
+
+My Resources & Support
+
+
+
+The MCG L1 "My Resources and Support" covers: medical alerts, IEPs / IHP / 504, GATE, speech / physical / occupational therapy, day classes, resource specialist, one-on-one support, BOCES, ED/BD services, counseling, nurse, mental health, trauma support, family support, home health education, social workers, field study partnerships, and the School Attendance Review Board.
+
+
+
+Recommendation:  Split. People-based services (counselor, nurse, social worker, resource specialist, etc.) live under My Team → Support Staff. Plan- and document-based items (IEP, 504, GATE eligibility, medical alerts) live under My Profile → Health & Plans. The Student Portal is not the system of record for IEP authoring — it surfaces what&apos;s relevant to the student in plain language and provides routes to ask for help.
+
+
+
+Assessment Data
+
+
+
+The MCG L1 "Assessment Data" covers: SBAC / Smarter Balanced / PARC, district assessment data, portfolio data, 9-point goal attainment scale, progress reports, report cards, and official transcripts.
+
+
+
+Recommendation:  Surface under My Progress as a sub-view ("Assessment & Records"). The 9-point goal attainment scale is the canonical mastery view in CES — it should be visible at the top of My Progress, not buried.
+
+
+
+
+
+
+
+
+07  SURFACES
+
+
+
+
+
+The screens to design
+
+
+
+Each L1 section has one or more surfaces below. For each surface, Claude Design produces:
+
+
+
+
+
+A primary composition at desktop viewport (1440px baseline).
+
+
+
+
+
+One meaningful secondary state — empty, loading, error, or a specific sub-interaction relevant to the surface.
+
+
+
+
+
+Component-level notes flagging any patterns worth lifting into shared components.
+
+
+
+Where a row&apos;s "Mock" cell shows a filename, the existing ChatGPT render in the reference folder is the starting point. Where it shows "new," no mock exists yet — Claude Design renders fresh.
+
+
+
+HOME
+
+Surface
+
+Mock
+
+What it shows
+
+State to render
+
+
+
+Home Dashboard
+
+
+
+v1 + new
+
+
+
+Today&apos;s schedule, GPA snapshot, announcements, classrooms grid, quick actions, AI Coach entry. The first screen the student sees on login.
+
+
+
+Populated state for a 10th-grade student mid-semester.
+
+
+
+MY TIME
+
+Surface
+
+Mock
+
+What it shows
+
+State to render
+
+
+
+My Schedule
+
+
+
+exists
+
+
+
+School day view: period blocks, day rotation, Flex Block, AI Daily Brief.
+
+
+
+Mid-day state with one period in progress.
+
+
+
+My Calendar
+
+
+
+exists ×3
+
+
+
+Week view as primary; day and month views as secondary. Event detail drawer for class events, school events, and personal study blocks.
+
+
+
+Week view + event detail drawer open on a Flex Study Session.
+
+
+
+My Activities — Overview
+
+
+
+exists
+
+
+
+Discover, my activities, AI recommendations, featured/upcoming events.
+
+
+
+Populated for a student in 1–2 active activities.
+
+
+
+My Activities — Events
+
+
+
+exists
+
+
+
+SAT/ACT, AP, school events, registration deadlines.
+
+
+
+Registration-open state for an upcoming exam.
+
+
+
+My Activities — Athletics deep cut
+
+
+
+exists ×4
+
+
+
+Team page, Team Hub (eligibility/conditioning), signup flow, recruiting profile.
+
+
+
+Render the four existing screens consistently against the new brand. Athletics is over-covered relative to other activity types — produce one parallel render for a non-Athletics activity (Clubs, Performing Arts, or Service) so the family of activity templates is visible.
+
+
+
+To Do
+
+
+
+exists ×2
+
+
+
+Today&apos;s Focus list, AI suggested tasks, focus mode entry.
+
+
+
+Populated weekday with 5 active tasks; one variant should show the empty/end-of-day state.
+
+
+
+Study Planner
+
+
+
+exists
+
+
+
+AI plan generator with breakdown, schedule integration, regenerate/adjust.
+
+
+
+Plan in progress with two days completed.
+
+
+
+MY DESK
+
+Surface
+
+Mock
+
+What it shows
+
+State to render
+
+
+
+My Materials
+
+
+
+exists
+
+
+
+Files table with class/source/type filters, recent activity, storage, share controls.
+
+
+
+Populated for a student mid-semester with mixed file types.
+
+
+
+My Work
+
+
+
+new
+
+
+
+The student&apos;s active and submitted work across classes — drafts, in-progress, submitted, returned. Differentiated from My Materials (which is files) by being assignment- and process-oriented.
+
+
+
+Populated state with work in three statuses: in-progress, submitted, returned-with-feedback.
+
+
+
+My Menu
+
+
+
+exists
+
+
+
+Cafeteria menu with dietary filters, today&apos;s options, live student poll for next week.
+
+
+
+Lunch period state with current-day options.
+
+
+
+MY PROGRESS
+
+Surface
+
+Mock
+
+What it shows
+
+State to render
+
+
+
+Progress Overview
+
+
+
+exists ×2
+
+
+
+Class-level progress, skill levels, growth over time, AI Coach suggestions.
+
+
+
+Render the v2 variant (more developed) against the new brand. v1 can be discarded.
+
+
+
+Skills Detail
+
+
+
+new
+
+
+
+Single-skill view — current level, evidence (linked work), growth trajectory, recommended next steps.
+
+
+
+Populated for one in-progress skill (e.g., Writing & Composition: Developing → Proficient).
+
+
+
+Practice Mode
+
+
+
+exists (subset)
+
+
+
+Quick practice games, adaptive question selection, XP/progression chrome (provisional, see Correction 02).
+
+
+
+Mid-session state on a Quick Quiz.
+
+
+
+Assessment & Records (NEW from MCG)
+
+
+
+new
+
+
+
+9-point goal attainment scale, progress reports, report cards, official transcripts, SBAC/PARC scores. Records-of-learning, not letter grades.
+
+
+
+Populated state showing one in-progress trimester.
+
+
+
+MY CLASSES
+
+Surface
+
+Mock
+
+What it shows
+
+State to render
+
+
+
+Class List Overview
+
+
+
+exists
+
+
+
+All classes with progress, live/upcoming, recent activity feed, AI Coach panel.
+
+
+
+Mid-day state with one class live.
+
+
+
+Class Detail
+
+
+
+exists (Algebra II)
+
+
+
+Single-class page: modules, assignments, grades, discussions, people.
+
+
+
+Populated mid-semester. Render one additional class detail (English or Biology) so the template is visible across subject types.
+
+
+
+Lesson Detail
+
+
+
+exists
+
+
+
+Lesson page with progress, activities checklist, content body, resources, AI Assistant.
+
+
+
+In-progress state, 60% complete.
+
+
+
+Quiz — Taking
+
+
+
+exists
+
+
+
+Active quiz UI with timer, scratchpad, AI Study Buddy hint panel.
+
+
+
+Mid-quiz state with one question answered.
+
+
+
+Quiz — Results
+
+
+
+exists
+
+
+
+Score, breakdown, teacher feedback, performance insights, recommended practice.
+
+
+
+Graded state at 90%.
+
+
+
+Live Class — Student View
+
+
+
+exists ×2
+
+
+
+Whiteboard + video tiles, live polls, agenda, AI Tutor (collapsed and expanded).
+
+
+
+Render both states. AI Tutor expanded must reflect Correction 03 — coaching, not answering.
+
+
+
+MY TOOLS
+
+Surface
+
+Mock
+
+What it shows
+
+State to render
+
+
+
+Tools Workspace
+
+
+
+exists
+
+
+
+Continue working cards, tool grid (Create / Think / Produce / Organize), AI suggestions, recent activity.
+
+
+
+Populated for a student with 3 in-progress tool sessions.
+
+
+
+MY TEAM
+
+Surface
+
+Mock
+
+What it shows
+
+State to render
+
+
+
+Team Overview
+
+
+
+exists
+
+
+
+Teachers, advisors, coaches, support staff. Connections at a glance, upcoming meetings, AI suggestions, quick actions.
+
+
+
+Populated. Surface the Support Staff sub-section (counselor, nurse, social worker) per the IA recommendation.
+
+
+
+Member Detail
+
+
+
+exists
+
+
+
+Single team-member page (e.g., Ms. Carter): about, classes together, recent interactions, shared resources, private notes.
+
+
+
+Populated for a teacher and one for a non-teacher (counselor or coach) — render both to validate the template.
+
+
+
+MY PORTFOLIO
+
+Surface
+
+Mock
+
+What it shows
+
+State to render
+
+
+
+Portfolio Overview
+
+
+
+exists
+
+
+
+Bio, growth snapshot, AI suggestions, featured proofs of growth, achievements, share work versions.
+
+
+
+Populated for a 10th-grader mid-year.
+
+
+
+Portfolio Edit
+
+
+
+new
+
+
+
+Edit mode for portfolio composition — add work, write reflections, organize into versions (College Application, Internship, Scholarship, etc.).
+
+
+
+Edit-in-progress state with one section being modified.
+
+
+
+Portfolio Public View
+
+
+
+exists
+
+
+
+How others see the portfolio. Share controls, public link, version selector.
+
+
+
+Populated College Application version.
+
+
+
+MESSAGES
+
+Surface
+
+Mock
+
+What it shows
+
+State to render
+
+
+
+Inbox / Overview
+
+
+
+new
+
+
+
+Top-level Messages landing — DMs, groups, classes, email folded in.
+
+
+
+Populated state with mixed unread.
+
+
+
+DM — Classmate
+
+
+
+exists
+
+
+
+Direct message thread with shared class/assignment context, AI tools panel.
+
+
+
+Mid-conversation, AI tools panel visible.
+
+
+
+DM — Teacher
+
+
+
+exists (older)
+
+
+
+Direct message thread with a teacher, with class/assignment context.
+
+
+
+Re-render with new brand. Older variant can be discarded.
+
+
+
+Class Channel
+
+
+
+exists
+
+
+
+Class-channel view: announcements, upcoming events, shared files, members.
+
+
+
+Populated.
+
+
+
+Assignment Thread
+
+
+
+exists
+
+
+
+Thread tied to a specific assignment — message + attached resources + my submission status + rubric snapshot + AI assistant.
+
+
+
+Populated post-feedback.
+
+
+
+Email — Inbox + Detail
+
+
+
+exists
+
+
+
+Email inbox with detail open, AI quick actions (summarize, explain grade, suggest next step).
+
+
+
+Populated state with one email read.
+
+
+
+Email — Conversation Starter
+
+
+
+exists
+
+
+
+AI-suggested replies based on email context, conversation tips, related resources.
+
+
+
+Populated state with three AI-suggested starters.
+
+
+
+AI COACH
+
+Surface
+
+Mock
+
+What it shows
+
+State to render
+
+
+
+AI Coach Hub Landing
+
+
+
+exists
+
+
+
+Quick-start prompts, tool grid, AI suggestions, recent conversations, AI insights.
+
+
+
+Populated for a returning student.
+
+
+
+AI Coach Drawer (contextual)
+
+
+
+new
+
+
+
+Persistent contextual drawer that opens from any product surface. Knows what the student is on, surfaces relevant help.
+
+
+
+Open state on top of My Classes → Lesson Detail.
+
+
+
+AI Coach System Overview (composite)
+
+
+
+exists (marketing-style)
+
+
+
+Cross-cutting explainer of the LINKS AI System. Useful as an internal artifact and onboarding moment for the student.
+
+
+
+Re-render the existing composite cleanly against the new brand.
+
+
+
+ACCOUNT
+
+Surface
+
+Mock
+
+What it shows
+
+State to render
+
+
+
+My Profile
+
+
+
+exists
+
+
+
+Identity & Enrollment, Contact, Family & Guardians, Authorized Pickup, Transportation, Facilities. Add Health & Plans section per IA recommendation.
+
+
+
+Populated state with the new Health & Plans section visible.
+
+
+
+Settings
+
+
+
+new
+
+
+
+App-level settings — language, accessibility (text size, contrast, reduced motion), notifications routing, integrations.
+
+
+
+Default state.
+
+
+
+Notification Preferences
+
+
+
+new
+
+
+
+Granular per-channel, per-event-type notification controls. Email, push, in-app.
+
+
+
+Populated state.
+
+
+
+Privacy & Security
+
+
+
+new
+
+
+
+Data-sharing controls, login & sessions, two-factor, data export, parental visibility (read-only for the student).
+
+
+
+Populated state.
+
+
+
+
+
+
+
+
+08  REFERENCE MATERIALS
+
+
+
+
+
+What to read before you render
+
+
+
+Source mocks (primary visual reference)
+
+
+
+Google Drive folder: Product & UX → ChatGPT To Claude Design Test → Student Portal. Approximately 40 ChatGPT-rendered PNGs covering most L1 surfaces. Files are named by L1/L2 path (Student_My-Time_My-Schedule.png, etc.). One file is a Teacher Portal mock (renamed Teacher_*) and one is the brand essence sheet (LINKS_Brand-Essence_Style-Guide.png) — both should still be read for context.
+
+
+
+Rename Mapping spreadsheet
+
+
+
+Companion to the source mocks. Lists every file by L1, content summary, and notes about anomalies, duplicates, and gaps. Use this to navigate the folder and to understand where existing renders fall short.
+
+
+
+Brand essence sheet
+
+
+
+In the source mocks folder. The canonical brand reference. Locked for this handoff (see Section 04).
+
+
+
+Master Component Grid (MCG)
+
+
+
+Marie Alcock-Hubley&apos;s source-of-truth document for the seven-portal scope. Provides the pedagogical context and full L1 expectations across portals. Read for context, especially the items reconciled into the IA section above.
+
+
+
+Reconciled Nav Document
+
+
+
+Cross-references the MCG against the active build. Useful to understand which IA decisions are settled and which remain open across all seven portals.
+
+
+
+Curriculum Builder repo  ·  ceslinks-design
+
+
+
+Active prototype repo where the Claude Code → Claude Design pipeline is already in motion. Same tech stack expected for this handoff. Use as a stylistic reference for component patterns and code structure.
+
+
+
+Discovery Synthesis & AI Strategic Blueprint
+
+
+
+Background reading on the product strategy and AI architecture. Not required for rendering individual surfaces, but useful for understanding the cross-portal AI moat (see Working Principles).
+
+
+
+
+
+09  WORKING PRINCIPLES
+
+
+
+
+
+How to think about this product as you render
+
+
+
+Competency over completion
+
+
+
+CES is a competency-based framework. Mastery is the unit of progress, not seat-time and not letter grades. The Student Portal should foreground demonstrated growth (skills, learning targets, the 9-point goal attainment scale) over completion percentages and grade averages. Where the source mocks show "GPA 3.72" or "75% complete," treat those as legacy framings that may need to evolve. Render them, but compose surfaces so the competency view is at least equally prominent.
+
+
+
+AI as scaffold, never substitute
+
+
+
+Restated from Correction 03: the AI in the Student Portal supports learning by asking questions, citing materials the student has already engaged with, and surfacing comprehension gaps. It does not produce work. AI surfaces should make the student&apos;s role visible and primary; the AI is a side panel, a drawer, a coach — not the protagonist.
+
+
+
+Cross-portal intelligence is the moat
+
+
+
+LINKS is not a single-portal product. The same data that informs a student&apos;s progress view feeds the instructor&apos;s early-warning, the parent&apos;s contextualized check-in, and the administrator&apos;s cohort pattern — without compromising student privacy. The Student Portal is the source of truth for the student&apos;s lived experience. Other portals subscribe to it.
+
+
+
+Practical implication for design: surfaces in the Student Portal that show student-generated data (work, reflections, goals, comprehension events) should be designed knowing this data may inform other portals. The student should always see what&apos;s visible to whom.
+
+
+
+FERPA + COPPA compliance is non-optional
+
+
+
+LINKS is a K-12 product. Most of its users are minors. Student data is protected by federal law (FERPA, COPPA) and emerging state regulation. Compliance is not a UX layer added at the end — it is structural. Practical surface implications:
+
+
+
+
+
+Sharing affordances must show what is shared, with whom, and why.
+
+
+
+
+
+Privacy controls must be readable by a 14-year-old, not a lawyer.
+
+
+
+
+
+Parental visibility is dual-purpose: required by law for younger students, harmful if absolute for older students. Surfaces involving family must surface what&apos;s visible to whom.
+
+
+
+Mock-backed frontend is acceptable
+
+
+
+During the build, frontend surfaces may be wired to mocked data while backend endpoints are still in flight. This is intentional. Claude Design should not over-rotate on backend completeness; it should produce production-quality UI against well-defined data shapes that engineering can wire later.
+
+
+
+
+
+10  TECH STACK
+
+
+
+
+
+What the rendered output should be built on
+
+
+
+The deliverable should follow the same stack as the existing Curriculum Builder repo (ceslinks-design):
+
+
+
+
+
+Next.js 16 (App Router) — for pages and routing.
+
+
+
+
+
+React 19 — for components.
+
+
+
+
+
+TypeScript — for type safety. No untyped JS files.
+
+
+
+
+
+Tailwind CSS — for styling. Core utility classes only; no @apply abuse, no inline style props.
+
+
+
+
+
+Lucide React — for icons. No alternative icon library.
+
+
+
+No MUI. No Materio. No third-party component libraries beyond what is already in the Curriculum Builder repo. If a complex component is needed (a date picker, a rich text editor), build it from primitives or surface the dependency request in component notes — don&apos;t pull in a library independently.
+
+
+
+
+
+11  DELIVERABLE
+
+
+
+
+
+What Claude Design returns
+
+
+
+Per surface
+
+
+
+
+
+Primary composition at desktop viewport (1440px baseline). Populated, in-use state.
+
+
+
+
+
+One meaningful secondary state — empty, loading, error, or a specific sub-interaction.
+
+
+
+
+
+Component-level notes flagging any patterns worth lifting into shared components.
+
+
+
+System-level
+
+
+
+
+
+A component inventory — buttons, inputs, cards, tags, nav, modals, drawers, toasts — rendered once so Lily can work against a shared vocabulary.
+
+
+
+
+
+A brief narrative on how surfaces relate as a family — what makes them feel like one product.
+
+
+
+
+
+A surfaces-to-routes map — proposed Next.js route structure for the rendered surfaces.
+
+
+
+
+
+Any deviations from this brief called out explicitly with rationale.
+
+
+
+Cadence
+
+
+
+Section-by-section, not monolithic. Render one L1 section at a time, surface review at the end of each, then proceed. Order recommended: Home → My Time (largest L1) → My Classes → My Progress → My Desk → My Team → My Portfolio → Messages → AI Coach → My Tools → Account. Brand-system component inventory can be produced in parallel with the first L1.
+
+
+
+
+
+12  WHAT NOT TO PRODUCE
+
+
+
+
+
+Out of scope, intentionally
+
+
+
+
+
+Other portals (Instructor, Parent/Family, Admin, Community/Board, Student Services, Public). Each will receive its own brief.
+
+
+
+
+
+Mobile-first compositions. The portal is desktop-primary for beta, with responsive behavior expected. Mobile-only screens are out of scope.
+
+
+
+
+
+Marketing pages, pricing tables, public-facing site chrome. Those belong to the Public Portal.
+
+
+
+
+
+Alternate brand explorations. The brand system in Section 04 is the working canon. Surface deviations only with rationale, do not propose replacements.
+
+
+
+
+
+AI surfaces depicting the AI completing student work. See Correction 03.
+
+
+
+
+
+Surveillance UI — engagement-tracking dashboards visible to the student, attention scores, behavioral nudges. The student is the operator, not the subject.
+
+
+
+
+
+Materio components, MUI components, or any third-party UI library beyond what&apos;s already in ceslinks-design.
+
+
+
+
+
+
+
+
+
+LINKS
+
+
+
+ONE SYSTEM. EVERY LEARNER. EVERY DAY.
+
+
+
+
+

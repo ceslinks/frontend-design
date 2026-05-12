@@ -1,0 +1,3248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1280" />
+  <title>LINKS Design System</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css?v=4" />
+  <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+
+  <style>
+    /* ────────────────────────────────────────────────
+       Design system page — layout, navigation chrome.
+       All component visuals come from styles.css tokens.
+       ──────────────────────────────────────────────── */
+    body { background: var(--surface); color: var(--slate); }
+
+    .ds-layout {
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+    .ds-sidebar {
+      background: var(--paper);
+      padding: 28px 20px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      border-right: 1px solid var(--mist);
+    }
+    .ds-brand {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 28px;
+    }
+    .ds-brand-mark {
+      width: 32px; height: 32px; border-radius: var(--r-sm);
+      background: var(--student);
+      display: inline-flex; align-items: center; justify-content: center;
+      color: #fff; font-family: var(--font-display); font-weight: 700; font-size: 16px;
+      box-shadow: 0 4px 14px -4px rgba(91,33,182,0.45);
+    }
+    .ds-brand-name {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      line-height: 1;
+    }
+    .ds-brand-sub {
+      font-size: 9.5px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--silver);
+      font-weight: 600;
+      margin-top: 4px;
+    }
+    .ds-nav-title {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--silver);
+      margin: 18px 8px 6px;
+    }
+    .ds-nav-link {
+      display: block;
+      padding: 7px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--slate);
+      text-decoration: none;
+      transition: background 120ms;
+    }
+    .ds-nav-link:hover { background: var(--bone); color: var(--ink); }
+    .ds-nav-link.active { background: var(--student-soft); color: var(--student-deep); font-weight: 600; }
+
+    .ds-content {
+      padding: 56px 64px 120px;
+      max-width: 1180px;
+    }
+    .ds-hero {
+      margin-bottom: 56px;
+    }
+    .ds-hero h1 {
+      font-family: var(--font-display);
+      font-size: 44px;
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin: 0 0 14px;
+    }
+    .ds-hero h1 .accent { color: var(--student); }
+    .ds-hero .lede {
+      font-size: 16px;
+      line-height: 1.55;
+      color: var(--stone);
+      max-width: 640px;
+      margin: 0;
+    }
+    .ds-hero .meta {
+      display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap;
+    }
+
+    .ds-section {
+      padding: 44px 0;
+      border-top: 1px solid var(--mist);
+    }
+    .ds-section:first-of-type { border-top: none; padding-top: 0; }
+    .ds-section h2 {
+      font-family: var(--font-display);
+      font-size: 26px; font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin: 0 0 8px;
+    }
+    .ds-section .section-lede {
+      font-size: 14px;
+      color: var(--stone);
+      max-width: 720px;
+      margin: 0 0 28px;
+      line-height: 1.6;
+    }
+
+    .ds-subsection {
+      margin-top: 36px;
+    }
+    .ds-subsection > h3 {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--stone);
+      margin: 0 0 14px;
+    }
+
+    /* Demo cards */
+    .demo {
+      background: var(--paper);
+      border-radius: var(--r);
+      padding: 24px;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 14px;
+    }
+    .demo-row {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 14px;
+    }
+    .demo-grid {
+      display: grid; gap: 14px;
+    }
+    .demo-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .demo-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .demo-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+    .demo-grid.cols-6 { grid-template-columns: repeat(6, 1fr); }
+
+    .demo-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--silver);
+      margin-bottom: 10px;
+    }
+
+    /* Color swatches */
+    .swatch {
+      background: var(--paper);
+      border-radius: var(--r);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+    .swatch-chip {
+      height: 96px;
+      display: flex; align-items: flex-end; justify-content: flex-end;
+      padding: 12px;
+    }
+    .swatch-chip .role {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.85);
+      background: rgba(0,0,0,0.18);
+      padding: 3px 7px; border-radius: 4px;
+    }
+    .swatch-meta {
+      padding: 12px 14px 14px;
+    }
+    .swatch-meta .name {
+      font-size: 13px; font-weight: 600; color: var(--ink); margin: 0 0 2px;
+    }
+    .swatch-meta .var {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 10.5px; color: var(--stone);
+    }
+    .swatch-meta .hex {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 11px; color: var(--silver);
+      margin-top: 4px;
+    }
+
+    /* Type specimens */
+    .type-row {
+      display: grid;
+      grid-template-columns: 180px 1fr 220px;
+      align-items: baseline;
+      padding: 20px 0;
+      border-bottom: 1px dashed var(--mist);
+    }
+    .type-row:last-child { border-bottom: none; }
+    .type-row .type-key {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--stone);
+    }
+    .type-row .type-spec {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 11px; color: var(--silver);
+      text-align: right;
+    }
+
+    /* Spacing / Radius / Shadow visual rails */
+    .rail {
+      display: flex; align-items: flex-end; gap: 18px;
+      padding: 12px 0;
+    }
+    .rail-item { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .rail-item .label {
+      font-size: 11px; font-weight: 600; color: var(--stone);
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    }
+    .rail-block {
+      background: var(--student-soft);
+      border: 1px solid var(--student-200);
+    }
+
+    .radius-tile {
+      width: 80px; height: 80px;
+      background: var(--student);
+    }
+
+    .shadow-tile {
+      width: 140px; height: 90px; border-radius: var(--r);
+      background: var(--paper);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600; color: var(--stone);
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    }
+
+    /* Component demos */
+    .field {
+      display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px;
+    }
+    .field label {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.04em; text-transform: uppercase;
+      color: var(--stone);
+    }
+    .input {
+      height: 38px; padding: 0 14px;
+      border: 1px solid var(--mist); border-radius: var(--r-sm);
+      background: var(--paper); color: var(--ink);
+      font-family: var(--font-ui); font-size: 13.5px;
+      transition: border-color 120ms, box-shadow 120ms;
+      outline: none;
+    }
+    .input:focus { border-color: var(--student); box-shadow: 0 0 0 3px rgba(109,40,217,0.15); }
+    .textarea {
+      min-height: 88px; padding: 10px 14px;
+      border: 1px solid var(--mist); border-radius: var(--r-sm);
+      background: var(--paper); color: var(--ink);
+      font-family: var(--font-ui); font-size: 13.5px; resize: vertical;
+      outline: none;
+    }
+    .textarea:focus { border-color: var(--student); box-shadow: 0 0 0 3px rgba(109,40,217,0.15); }
+    .input-search {
+      display: flex; align-items: center; gap: 8px;
+      height: 42px; padding: 0 16px;
+      background: var(--paper); border-radius: 999px;
+      box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 4px 12px -4px rgba(15,23,42,0.06);
+      font-size: 13.5px; color: var(--ink);
+    }
+    .input-search input { border: none; outline: none; flex: 1; background: transparent; font-size: 13.5px; color: var(--ink); }
+    .input-search .kbd {
+      font-size: 10.5px; color: var(--silver);
+      padding: 2px 6px; border: 1px solid var(--mist); border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .toggle {
+      width: 36px; height: 20px; border-radius: 999px;
+      background: var(--mist);
+      position: relative; cursor: pointer;
+      transition: background 160ms;
+    }
+    .toggle::after {
+      content: ""; position: absolute; top: 2px; left: 2px;
+      width: 16px; height: 16px; border-radius: 999px;
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(15,23,42,0.18);
+      transition: transform 160ms;
+    }
+    .toggle.on { background: var(--student); }
+    .toggle.on::after { transform: translateX(16px); }
+
+    .check {
+      width: 18px; height: 18px; border-radius: 5px;
+      border: 1.5px solid var(--silver);
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #fff;
+    }
+    .check.on { background: var(--student); border-color: var(--student); }
+
+    /* Alerts */
+    .alert {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 14px 16px; border-radius: var(--r-sm);
+      font-size: 13px;
+    }
+    .alert .alert-icon {
+      width: 28px; height: 28px; border-radius: 8px;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .alert.success { background: var(--success-soft); color: #1F6B3E; }
+    .alert.success .alert-icon { background: rgba(46,155,98,0.18); color: var(--success); }
+    .alert.warning { background: var(--warning-soft); color: #8B4A12; }
+    .alert.warning .alert-icon { background: rgba(224,122,45,0.18); color: var(--warning); }
+    .alert.error { background: var(--error-soft); color: #8B2A20; }
+    .alert.error .alert-icon { background: rgba(192,57,43,0.18); color: var(--error); }
+    .alert.info { background: var(--student-soft); color: var(--student-ink); }
+    .alert.info .alert-icon { background: rgba(109,40,217,0.18); color: var(--student); }
+    .alert b { font-weight: 600; display: block; margin-bottom: 2px; color: inherit; }
+
+    /* Tables */
+    .data-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 13px;
+    }
+    .data-table th {
+      text-align: left;
+      font-size: 10.5px; font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--stone);
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--mist);
+    }
+    .data-table td {
+      padding: 14px;
+      border-bottom: 1px solid var(--mist);
+      color: var(--slate);
+      vertical-align: middle;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover td { background: var(--bone); }
+
+    /* Sidebar nav demo */
+    .nav-demo-row {
+      width: 220px;
+      display: flex; align-items: center; gap: 10px;
+      height: 38px; padding: 0 12px;
+      border-radius: var(--r-sm);
+      font-size: 13.5px; color: var(--slate); font-weight: 500;
+    }
+    .nav-demo-row.active { background: var(--student-soft); color: var(--student-deep); font-weight: 600; }
+    .nav-demo-row:hover:not(.active) { background: var(--bone); color: var(--ink); }
+
+    /* Modal mock */
+    .modal-mock {
+      width: 380px;
+      background: var(--paper);
+      border-radius: 14px;
+      box-shadow: var(--shadow-card-lg);
+      padding: 22px 22px 18px;
+    }
+
+    /* Avatar demos */
+    .avatar-portrait {
+      background: linear-gradient(135deg, #FCD34D, #F59E0B);
+    }
+
+    /* Inline icon for demos */
+    .icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Token table */
+    .token-table {
+      width: 100%; border-collapse: collapse; font-size: 12.5px;
+    }
+    .token-table th {
+      text-align: left; font-size: 10.5px; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--stone); font-weight: 600;
+      padding: 10px 12px; border-bottom: 1px solid var(--mist);
+    }
+    .token-table td {
+      padding: 12px;
+      border-bottom: 1px dashed var(--mist);
+      color: var(--slate);
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 12px;
+    }
+    .token-table td:first-child { color: var(--student-deep); font-weight: 600; }
+    .token-table tr:last-child td { border-bottom: none; }
+
+    /* Misc */
+    .kbd-stack { display: flex; gap: 6px; align-items: center; }
+    .muted { color: var(--stone); }
+
+    /* Page header demo */
+    .page-header-demo {
+      display: flex; align-items: flex-start; gap: 16px;
+      padding-bottom: 8px;
+    }
+    .page-header-demo h1 {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 28px;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin: 6px 0 6px;
+      line-height: 1.15;
+    }
+    .crumbs {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12.5px; color: var(--stone); margin-bottom: 8px;
+    }
+    .crumbs .crumb-active { color: var(--ink); font-weight: 600; }
+
+    /* Footer note */
+    .ds-footer {
+      margin-top: 80px;
+      padding: 32px;
+      background: var(--paper);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-card);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ds-layout">
+
+    <!-- ────────── SIDEBAR NAV ────────── -->
+    <aside class="ds-sidebar">
+      <div class="ds-brand">
+        <img src="assets/links-logo-violet.png" alt="LINKS" style="height: 32px; width: auto; display: block;" />
+        <div class="ds-brand-sub" style="margin-left: 4px;">Design System</div>
+      </div>
+
+      <div class="ds-nav-title">Foundations</div>
+      <a class="ds-nav-link active" href="#overview">Overview</a>
+      <a class="ds-nav-link" href="#brand">Brand</a>
+      <a class="ds-nav-link" href="#color">Color</a>
+      <a class="ds-nav-link" href="#typography">Typography</a>
+      <a class="ds-nav-link" href="#spacing">Spacing</a>
+      <a class="ds-nav-link" href="#radii">Radii</a>
+      <a class="ds-nav-link" href="#shadows">Shadows &amp; elevation</a>
+      <a class="ds-nav-link" href="#motion">Motion</a>
+
+      <div class="ds-nav-title">Components</div>
+      <a class="ds-nav-link" href="#buttons">Buttons</a>
+      <a class="ds-nav-link" href="#inputs">Inputs &amp; controls</a>
+      <a class="ds-nav-link" href="#cards">Cards &amp; surfaces</a>
+      <a class="ds-nav-link" href="#tactile">Tactile elements</a>
+      <a class="ds-nav-link" href="#chips">Chips, tags &amp; badges</a>
+      <a class="ds-nav-link" href="#avatars">Avatars</a>
+      <a class="ds-nav-link" href="#alerts">Alerts &amp; banners</a>
+      <a class="ds-nav-link" href="#nav">Navigation</a>
+      <a class="ds-nav-link" href="#tables">Tables</a>
+      <a class="ds-nav-link" href="#modals">Modals, popovers &amp; menus</a>
+      <a class="ds-nav-link" href="#calendar">Calendar</a>
+      <a class="ds-nav-link" href="#iconography">Iconography</a>
+      <a class="ds-nav-link" href="#empty-states">Empty states</a>
+      <a class="ds-nav-link" href="#loading">Loading &amp; skeletons</a>
+      <a class="ds-nav-link" href="#accessibility">Accessibility</a>
+
+      <div class="ds-nav-title">Patterns</div>
+      <a class="ds-nav-link" href="#patterns">Page layouts</a>
+      <a class="ds-nav-link" href="#growth">Growing the system</a>
+    </aside>
+
+    <!-- ────────── CONTENT ────────── -->
+    <main class="ds-content">
+
+      <!-- Hero -->
+      <section class="ds-hero" id="overview">
+        <h1>The <span class="accent">LINKS</span><br/>Design System</h1>
+        <p class="lede">
+          Foundations and components that ship every LINKS portal.
+          Calm, school-warm surfaces; weight-driven type;
+          a single violet primary that ties the student experience together;
+          and a portal-role color set that lets us flex into Instructor, Admin, Parent &amp; Services without rewriting the chrome.
+        </p>
+        <div class="meta">
+          <span class="pill pill-purple">v1.0 · Student portal baseline</span>
+          <span class="pill">styles.css · single source of truth</span>
+          <span class="pill pill-ghost">Designed to grow with the product</span>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════ BRAND ════════════════════════════════ -->
+      <section class="ds-section" id="brand">
+        <h2>Brand</h2>
+        <p class="section-lede">
+          The mark is a single rounded glyph in our primary violet, paired with the wordmark in Poppins.
+          The wordmark is always paired with a portal sub-label
+          (<span class="muted">STUDENT PORTAL</span>, <span class="muted">INSTRUCTOR PORTAL</span>, etc.) set in tight uppercase.
+        </p>
+
+        <div class="demo demo-row" style="gap: 56px; padding: 36px 32px;">
+          <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 18px 24px; background: #2E024B; border-radius: 14px;">
+            <img src="assets/links-logo.png" alt="LINKS" style="height: 44px; width: auto; display: block;" />
+            <div style="font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.55); letter-spacing: 0.18em;">PRIMARY · ON DEEP VIOLET</div>
+          </div>
+
+          <div style="height: 80px; width: 1px; background: var(--mist);"></div>
+
+          <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 10px;">
+            <div style="padding: 18px 24px; border-radius: 14px; background-color: #ffffff; background-image: linear-gradient(45deg, #ECECEF 25%, transparent 25%), linear-gradient(-45deg, #ECECEF 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ECECEF 75%), linear-gradient(-45deg, transparent 75%, #ECECEF 75%); background-size: 14px 14px; background-position: 0 0, 0 7px, 7px -7px, -7px 0px;">
+              <img src="assets/links-logo.png" alt="LINKS" style="height: 44px; width: auto; display: block;" />
+            </div>
+            <div style="font-size: 10px; font-weight: 600; color: var(--silver); letter-spacing: 0.18em;">TRANSPARENT · ANY SURFACE</div>
+          </div>
+
+          <div style="height: 80px; width: 1px; background: var(--mist);"></div>
+
+          <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 18px 24px; background: var(--ink); border-radius: 14px;">
+            <img src="assets/links-logo.png" alt="LINKS" style="height: 44px; width: auto; display: block;" />
+            <div style="font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.55); letter-spacing: 0.18em;">REVERSED · ON INK</div>
+          </div>
+        </div>
+
+        <div class="ds-subsection">
+          <h3>Voice &amp; tone</h3>
+          <div class="demo-grid cols-3">
+            <div class="demo">
+              <div class="demo-label">Warm, not cute</div>
+              <p style="margin: 0; color: var(--slate); font-size: 13.5px; line-height: 1.55;">"Welcome back, Alex. Let's pick up where you left off."</p>
+              <p style="margin: 8px 0 0; color: var(--silver); font-size: 12px; font-style: italic;">Not "Hey hey 👋 ready to crush it?"</p>
+            </div>
+            <div class="demo">
+              <div class="demo-label">Clear, not jargon</div>
+              <p style="margin: 0; color: var(--slate); font-size: 13.5px; line-height: 1.55;">"3 assignments due this week."</p>
+              <p style="margin: 8px 0 0; color: var(--silver); font-size: 12px; font-style: italic;">Not "Outstanding deliverables in your queue."</p>
+            </div>
+            <div class="demo">
+              <div class="demo-label">Honest, never surveillance-y</div>
+              <p style="margin: 0; color: var(--slate); font-size: 13.5px; line-height: 1.55;">"Submitted 14 of 18 assignments."</p>
+              <p style="margin: 8px 0 0; color: var(--silver); font-size: 12px; font-style: italic;">Never "Last seen 2 min ago."</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════ COLOR ════════════════════════════════ -->
+      <section class="ds-section" id="color">
+        <h2>Color</h2>
+        <p class="section-lede">
+          One muted violet primary anchors the student portal. Five additional <strong>portal-role</strong> colors are reserved for the Instructor, Admin, Parent, Services and Public portals — they should never appear inside another portal's chrome. Neutrals are warm-cool slate; the app surface is a soft lavender-grey wash that keeps cards reading as paper.
+        </p>
+
+        <div class="ds-subsection">
+          <h3>Primary — Student violet</h3>
+          <div class="demo-grid cols-6">
+            <div class="swatch">
+              <div class="swatch-chip" style="background: var(--student-50);"></div>
+              <div class="swatch-meta"><div class="name">Violet 50</div><div class="var">--student-50</div><div class="hex">#F5F3FF</div></div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-chip" style="background: var(--student-100);"></div>
+              <div class="swatch-meta"><div class="name">Violet 100</div><div class="var">--student-100</div><div class="hex">#EDE9FE</div></div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-chip" style="background: var(--student-200);"></div>
+              <div class="swatch-meta"><div class="name">Violet 200</div><div class="var">--student-200</div><div class="hex">#DDD6FE</div></div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-chip" style="background: var(--student-300);"></div>
+              <div class="swatch-meta"><div class="name">Violet 300</div><div class="var">--student-300</div><div class="hex">#C4B5FD</div></div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-chip" style="background: var(--student);"><span class="role">Primary</span></div>
+              <div class="swatch-meta"><div class="name">Violet 600</div><div class="var">--student</div><div class="hex">#6D28D9</div></div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-chip" style="background: var(--student-deep);"><span class="role">Hover</span></div>
+              <div class="swatch-meta"><div class="name">Violet 700</div><div class="var">--student-deep</div><div class="hex">#5B21B6</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ds-subsection">
+          <h3>Portal roles — one per audience</h3>
+          <div class="demo-grid cols-6">
+            <div class="swatch">
+              <div class="swatch-chip" style="background: var(--student);"><span class="role">Student</span></div>
+              <div class="swatch-meta"><div class="name">Student violet</div><div class="var">--student</div><div class="hex">#6D28D9</div></div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-chip" style="background: var(--instructor);"><span class="role">Instructor</span></div>
+              <div class="swatch-meta"><div class="name">Instructor navy</div><div class="var">--instructor</div><div class="hex">#153A5B</div></div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-chip" style="background: var(--admin);"><span class="role">Admin</span></div>
+              <div class="swatch-meta"><div class="name">Admin teal</div><div class="var">--admin</div><div class="hex">#1E6F8C</div></div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-chip" style="background: var(--parent);"><span class="role">Parent</span></div>
+              <div class="swatch-meta"><div class="name">Parent green</div><div class="var">--parent</div><div class="hex">#2E9B62</div></div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-chip" style="background: var(--services);"><span class="role">Services</span></div>
+              <div class="swatch-meta"><div class="name">Services orange</div><div class="var">--services</div><div class="hex">#E07A2D</div></div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-chip" style="background: var(--public);"><span class="role">Public</span></div>
+              <div class="swatch-meta"><div class="name">Public red</div><div class="var">--public</div><div class="hex">#C0392B</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ds-subsection">
+          <h3>Semantic — success, warning, error</h3>
+          <div class="demo-grid cols-3">
+            <div class="swatch">
+              <div class="swatch-chip" style="background: var(--success);"><span class="role">Success</span></div>
+              <div class="swatch-meta"><div class="name">Success / parent green</div><div class="var">--success</div><div class="hex">#2E9B62</div></div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-chip" style="background: var(--warning);"><span class="role">Warning</span></div>
+              <div class="swatch-meta"><div class="name">Warning / services orange</div><div class="var">--warning</div><div class="hex">#E07A2D</div></div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-chip" style="background: var(--error);"><span class="role">Error</span></div>
+              <div class="swatch-meta"><div class="name">Error / public red</div><div class="var">--error</div><div class="hex">#C0392B</div></div>
+            </div>
+          </div>
+          <p class="muted" style="font-size: 12.5px; margin-top: 12px;">
+            Semantic colors share hex values with their portal-role twin so toasts read consistently across portals — a "saved" green in the student portal is the same green that anchors the parent portal.
+          </p>
+        </div>
+
+        <div class="ds-subsection">
+          <h3>Neutrals &amp; surfaces</h3>
+          <div class="demo-grid cols-4" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="swatch"><div class="swatch-chip" style="background: var(--ink);"></div><div class="swatch-meta"><div class="name">Ink</div><div class="var">--ink</div><div class="hex">#0F172A</div></div></div>
+            <div class="swatch"><div class="swatch-chip" style="background: var(--slate);"></div><div class="swatch-meta"><div class="name">Slate</div><div class="var">--slate</div><div class="hex">#334155</div></div></div>
+            <div class="swatch"><div class="swatch-chip" style="background: var(--stone);"></div><div class="swatch-meta"><div class="name">Stone</div><div class="var">--stone</div><div class="hex">#64748B</div></div></div>
+            <div class="swatch"><div class="swatch-chip" style="background: var(--silver);"></div><div class="swatch-meta"><div class="name">Silver</div><div class="var">--silver</div><div class="hex">#94A3B8</div></div></div>
+            <div class="swatch"><div class="swatch-chip" style="background: var(--mist); border-bottom: 1px solid var(--mist);"></div><div class="swatch-meta"><div class="name">Mist (border)</div><div class="var">--mist</div><div class="hex">#E2E8F0</div></div></div>
+            <div class="swatch"><div class="swatch-chip" style="background: var(--bone); border-bottom: 1px solid var(--mist);"></div><div class="swatch-meta"><div class="name">Bone (hover)</div><div class="var">--bone</div><div class="hex">#F1F5F9</div></div></div>
+            <div class="swatch"><div class="swatch-chip" style="background: var(--surface); border-bottom: 1px solid var(--mist);"></div><div class="swatch-meta"><div class="name">Surface (app bg)</div><div class="var">--surface</div><div class="hex">#F7F6FB</div></div></div>
+            <div class="swatch"><div class="swatch-chip" style="background: var(--paper); border-bottom: 1px solid var(--mist);"></div><div class="swatch-meta"><div class="name">Paper (card)</div><div class="var">--paper</div><div class="hex">#FFFFFF</div></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════ TYPE ════════════════════════════════ -->
+      <section class="ds-section" id="typography">
+        <h2>Typography</h2>
+        <p class="section-lede">
+          Two families: <strong>Poppins</strong> for display headlines and the wordmark, <strong>Inter</strong> for everything else.
+          Hierarchy is established by weight contrast and tight tracking on display sizes — never by color alone, and never with more than three sizes per screen.
+        </p>
+
+        <div class="demo">
+          <div class="type-row">
+            <span class="type-key">Display · H1</span>
+            <span class="t-h1" style="font-size: 36px;">Welcome back, Alex.</span>
+            <span class="type-spec">Poppins 600 · 28px / 1.15 / -0.02em</span>
+          </div>
+          <div class="type-row">
+            <span class="type-key">H2 / Section</span>
+            <span class="t-h2" style="font-size: 24px;">This week's classes</span>
+            <span class="type-spec">Poppins 600 · 20px / 1.2 / -0.01em</span>
+          </div>
+          <div class="type-row">
+            <span class="type-key">H3 / Card title</span>
+            <span class="t-h3" style="font-size: 17px;">Algebra II — Period 3</span>
+            <span class="type-spec">Inter 600 · 15px / 1.4</span>
+          </div>
+          <div class="type-row">
+            <span class="type-key">Eyebrow</span>
+            <span class="t-eyebrow" style="font-size: 12px;">DUE THIS WEEK</span>
+            <span class="type-spec">Inter 600 · 11px / 0.08em uppercase</span>
+          </div>
+          <div class="type-row">
+            <span class="type-key">Body</span>
+            <span class="t-body" style="font-size: 14.5px;">Open the assignment to read the prompt and start your draft. Your work autosaves every 30 seconds, and your teacher can see your progress.</span>
+            <span class="type-spec">Inter 400 · 14px / 1.55</span>
+          </div>
+          <div class="type-row">
+            <span class="type-key">Caption</span>
+            <span class="t-caption">Last edited 3 min ago</span>
+            <span class="type-spec">Inter 400 · 12px / stone</span>
+          </div>
+          <div class="type-row">
+            <span class="type-key">Numerals · tabular</span>
+            <span class="t-num" style="font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--ink);">12 / 18 · 67%</span>
+            <span class="type-spec">font-variant-numeric: tabular-nums</span>
+          </div>
+        </div>
+
+        <div class="ds-subsection">
+          <h3>Type rules</h3>
+          <div class="demo-grid cols-2">
+            <div class="demo">
+              <div class="demo-label">Do</div>
+              <ul style="margin: 0; padding-left: 18px; line-height: 1.7; font-size: 13.5px; color: var(--slate);">
+                <li>Pair Poppins display with Inter body — no other families.</li>
+                <li>Use weight (500 / 600 / 700) for hierarchy first; size second.</li>
+                <li>Apply <code style="background: var(--bone); padding: 1px 5px; border-radius: 3px;">tabular-nums</code> on counts, scores, times.</li>
+                <li>Keep line-length under 72ch for paragraphs.</li>
+              </ul>
+            </div>
+            <div class="demo">
+              <div class="demo-label">Don't</div>
+              <ul style="margin: 0; padding-left: 18px; line-height: 1.7; font-size: 13.5px; color: var(--slate);">
+                <li>Don't use ALL CAPS for emphasis — use the eyebrow style for short labels only.</li>
+                <li>Don't introduce a third typeface (no Roboto, no system-ui fallbacks in chrome).</li>
+                <li>Don't use color as the only hierarchy signal — students with low vision must still see structure.</li>
+                <li>Don't go below 12px for any UI text.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════ SPACING ════════════════════════════════ -->
+      <section class="ds-section" id="spacing">
+        <h2>Spacing</h2>
+        <p class="section-lede">
+          A 4-px base grid, with most components landing on 4 / 8 / 12 / 16 / 20 / 24 / 32. Card padding is <strong>20–24px</strong>; vertical gap inside a card is 8–12px; gap between cards is 16–24px. A density toggle (<code style="background: var(--bone); padding: 1px 5px; border-radius: 3px;">data-density="compact"</code>) tightens row height and card padding for instructor and admin portals.
+        </p>
+
+        <div class="demo">
+          <div class="rail">
+            <div class="rail-item"><div class="rail-block" style="width: 4px; height: 80px;"></div><div class="label">4</div></div>
+            <div class="rail-item"><div class="rail-block" style="width: 8px; height: 80px;"></div><div class="label">8</div></div>
+            <div class="rail-item"><div class="rail-block" style="width: 12px; height: 80px;"></div><div class="label">12</div></div>
+            <div class="rail-item"><div class="rail-block" style="width: 16px; height: 80px;"></div><div class="label">16</div></div>
+            <div class="rail-item"><div class="rail-block" style="width: 20px; height: 80px;"></div><div class="label">20</div></div>
+            <div class="rail-item"><div class="rail-block" style="width: 24px; height: 80px;"></div><div class="label">24</div></div>
+            <div class="rail-item"><div class="rail-block" style="width: 32px; height: 80px;"></div><div class="label">32</div></div>
+            <div class="rail-item"><div class="rail-block" style="width: 40px; height: 80px;"></div><div class="label">40</div></div>
+            <div class="rail-item"><div class="rail-block" style="width: 56px; height: 80px;"></div><div class="label">56</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════ RADII ════════════════════════════════ -->
+      <section class="ds-section" id="radii">
+        <h2>Radii</h2>
+        <p class="section-lede">
+          Four working radii cover most surfaces: <code style="background: var(--bone); padding: 1px 5px; border-radius: 3px;">--r-xs</code> (4px) for badges and tight chips; <code style="background: var(--bone); padding: 1px 5px; border-radius: 3px;">--r-sm</code> (6px) for buttons, inputs, alerts — slightly rounded but still rectangular; <code style="background: var(--bone); padding: 1px 5px; border-radius: 3px;">--r</code> (16px) for cards; <code style="background: var(--bone); padding: 1px 5px; border-radius: 3px;">--r-lg</code> (22px) for modals, drawers and the AI Coach panel. Avatars, status dots and tags use full-round (999px).
+        </p>
+
+        <div class="demo demo-row" style="gap: 36px;">
+          <div class="rail-item"><div class="radius-tile" style="border-radius: 4px;"></div><div class="label">--r-xs · 4</div></div>
+          <div class="rail-item"><div class="radius-tile" style="border-radius: 6px;"></div><div class="label">--r-sm · 6</div></div>
+          <div class="rail-item"><div class="radius-tile" style="border-radius: 12px;"></div><div class="label">--r · 12</div></div>
+          <div class="rail-item"><div class="radius-tile" style="border-radius: 18px;"></div><div class="label">--r-lg · 18</div></div>
+          <div class="rail-item"><div class="radius-tile" style="border-radius: 999px;"></div><div class="label">999px · pill</div></div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════ SHADOWS ════════════════════════════════ -->
+      <section class="ds-section" id="shadows">
+        <h2>Shadows &amp; elevation</h2>
+        <p class="section-lede">
+          Cards float on warm slate-tinted shadows — never hairline borders.
+          Elevation comes in four steps and reads as soft daylight, not hard drop-shadow.
+        </p>
+
+        <div class="demo demo-row" style="gap: 36px; padding: 36px;">
+          <div class="rail-item"><div class="shadow-tile" style="box-shadow: var(--shadow-1);">--shadow-1</div><div class="label">Hairline lift</div></div>
+          <div class="rail-item"><div class="shadow-tile" style="box-shadow: var(--shadow-card);">--shadow-card</div><div class="label">Card · default</div></div>
+          <div class="rail-item"><div class="shadow-tile" style="box-shadow: var(--shadow-card-lg);">--shadow-card-lg</div><div class="label">Hover / raised</div></div>
+          <div class="rail-item"><div class="shadow-tile" style="box-shadow: var(--shadow-pop);">--shadow-pop</div><div class="label">Popover · menu</div></div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════ MOTION ════════════════════════════════ -->
+      <section class="ds-section" id="motion">
+        <h2>Motion</h2>
+        <p class="section-lede">
+          Restrained, school-Chromebook-friendly. Standard easing is <code style="background: var(--bone); padding: 1px 5px; border-radius: 3px;">cubic-bezier(0.4, 0, 0.2, 1)</code>; durations 120 / 160 / 200 / 320 ms. Fades and small (4–8px) translates only — no bounces, no spring physics, no Lottie.
+        </p>
+
+        <div class="demo-grid cols-3">
+          <div class="demo">
+            <div class="demo-label">120ms · hover</div>
+            <p style="font-size: 13.5px; color: var(--slate); margin: 0;">Background tint changes, icon color shifts. Snappy enough that hover feels reactive.</p>
+          </div>
+          <div class="demo">
+            <div class="demo-label">200ms · expand</div>
+            <p style="font-size: 13.5px; color: var(--slate); margin: 0;">Sidebar branch open/close, accordion, dropdown reveal. Pairs with chevron rotate.</p>
+          </div>
+          <div class="demo">
+            <div class="demo-label">320ms · drawer</div>
+            <p style="font-size: 13.5px; color: var(--slate); margin: 0;">Right-side drawers (AI Coach, message thread). Translate-X with eased ease-out.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════ BUTTONS ════════════════════════════════ -->
+      <section class="ds-section" id="buttons">
+        <h2>Buttons</h2>
+        <p class="section-lede">
+          Three intents (primary, default, ghost) across three sizes. Primary uses the violet — never the role color of another portal. Secondary buttons are paper-on-mist; ghost is bare until hover. Destructive actions inherit the public red.
+        </p>
+
+        <div class="demo">
+          <div class="demo-label">Intents</div>
+          <div class="demo-row">
+            <button class="btn btn-primary">Submit assignment</button>
+            <button class="btn">Save draft</button>
+            <button class="btn btn-ghost">Cancel</button>
+            <button class="btn" style="background: var(--public); border-color: var(--public); color: #fff;">Withdraw</button>
+            <button class="btn btn-primary" disabled style="opacity: 0.5; cursor: not-allowed;">Disabled</button>
+          </div>
+        </div>
+
+        <div class="demo">
+          <div class="demo-label">Sizes</div>
+          <div class="demo-row">
+            <button class="btn btn-primary btn-sm">Small · 28</button>
+            <button class="btn btn-primary">Default · 36</button>
+            <button class="btn btn-primary btn-lg">Large · 42</button>
+          </div>
+        </div>
+
+        <div class="demo">
+          <div class="demo-label">Icon &amp; pill variants</div>
+          <div class="demo-row">
+            <button class="btn btn-primary">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+              New post
+            </button>
+            <button class="btn">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4-4"/></svg>
+              Filter
+            </button>
+            <button class="btn" style="background: var(--student-soft); color: var(--student-deep); border-color: var(--student-200); border-radius: 999px; height: 36px; padding: 0 16px;">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>
+              AI Coach
+            </button>
+            <button class="btn btn-ghost" aria-label="Settings" style="width: 36px; padding: 0; justify-content: center;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════ INPUTS ════════════════════════════════ -->
+      <section class="ds-section" id="inputs">
+        <h2>Inputs &amp; controls</h2>
+        <p class="section-lede">
+          Inputs use the small radius (10px), a single mist border, and a 3-px violet halo on focus. The global search field uses a pill radius and floats above the page on a soft shadow — that pattern is reserved for the topbar search.
+        </p>
+
+        <div class="demo-grid cols-2">
+          <div class="demo">
+            <div class="field">
+              <label>Email address</label>
+              <input class="input" type="email" placeholder="alex@wpa.edu" value="a.johnson@wpa.edu" />
+            </div>
+            <div class="field">
+              <label>Password</label>
+              <input class="input" type="password" placeholder="••••••••" value="hunter2hunter2" />
+            </div>
+            <div class="field">
+              <label>Notes for your teacher</label>
+              <textarea class="textarea" placeholder="Add a note…">I'll need an extra day on Q3 — soccer tournament this weekend.</textarea>
+            </div>
+          </div>
+
+          <div class="demo">
+            <div class="demo-label">Topbar search · pill</div>
+            <div class="input-search" style="margin-bottom: 18px;">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--stone)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4-4"/></svg>
+              <input type="text" placeholder="Search classes, assignments, people…" />
+              <span class="kbd">⌘K</span>
+            </div>
+
+            <div class="demo-label">Toggles &amp; checks</div>
+            <div class="demo-row" style="gap: 24px; margin-bottom: 18px;">
+              <div class="demo-row" style="gap: 8px;"><div class="toggle on"></div><span style="font-size: 13px;">Notifications on</span></div>
+              <div class="demo-row" style="gap: 8px;"><div class="toggle"></div><span style="font-size: 13px; color: var(--stone);">Quiet mode</span></div>
+              <div class="demo-row" style="gap: 8px;"><div class="check on"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5L10 17.5l9-11"/></svg></div><span style="font-size: 13px;">I've completed the readings</span></div>
+              <div class="demo-row" style="gap: 8px;"><div class="check"></div><span style="font-size: 13px; color: var(--stone);">I've finished the practice problems</span></div>
+            </div>
+
+            <div class="demo-label">Focused state</div>
+            <input class="input" type="text" value="alex@wpa.edu" style="border-color: var(--student); box-shadow: 0 0 0 3px rgba(109,40,217,0.15);" />
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════ CARDS ════════════════════════════════ -->
+      <section class="ds-section" id="cards">
+        <h2>Cards &amp; surfaces</h2>
+        <p class="section-lede">
+          The card is the workhorse: paper-white background, no visible border, soft three-layer shadow, 16px radius, 20–24px padding. Avoid stacking visible borders inside cards — use 1px <code style="background: var(--bone); padding: 1px 5px; border-radius: 3px;">--mist</code> dividers instead.
+        </p>
+
+        <div class="demo-grid cols-3">
+          <div class="card">
+            <div class="t-eyebrow" style="margin-bottom: 8px;">DUE TODAY</div>
+            <h3 class="t-h3" style="margin: 0 0 4px;">Persuasive essay draft</h3>
+            <p class="t-caption" style="margin: 0 0 14px;">English · Mr. Patel · Period 4</p>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="pill pill-warning">3:00 PM</span>
+              <span class="pill pill-ghost">800 words</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;">
+              <div>
+                <div class="t-eyebrow" style="margin-bottom: 6px;">PROGRESS</div>
+                <h3 class="t-h3" style="margin: 0;">Algebra II</h3>
+              </div>
+              <span class="pill pill-purple">B+</span>
+            </div>
+            <div style="height: 6px; border-radius: 999px; background: var(--bone); overflow: hidden; margin-bottom: 8px;">
+              <div style="height: 100%; width: 72%; background: var(--student); border-radius: 999px;"></div>
+            </div>
+            <p class="t-caption" style="margin: 0;"><span class="t-num" style="color: var(--ink); font-weight: 600;">14</span> of 18 assignments submitted</p>
+          </div>
+
+          <div class="card" style="background: linear-gradient(150deg, #7C3AED 0%, #5B21B6 100%); color: #fff; box-shadow: 0 8px 22px -8px rgba(91,33,182,0.55);">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#FCD34D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>
+              <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(255,255,255,0.85);">AI Coach</span>
+            </div>
+            <h3 style="font-family: var(--font-display); font-size: 17px; font-weight: 600; margin: 0 0 6px; color: #fff;">"Ready to review for Friday's quiz?"</h3>
+            <p style="font-size: 13px; color: rgba(255,255,255,0.78); margin: 0;">Quick 5-minute warm-up on quadratic functions.</p>
+          </div>
+        </div>
+
+        <div class="ds-subsection">
+          <h3>Card hierarchies</h3>
+          <div class="demo-grid cols-3">
+            <div class="card" style="box-shadow: var(--shadow-1);">
+              <div class="t-eyebrow" style="margin-bottom: 4px;">--shadow-1</div>
+              <p style="margin: 0; font-size: 13px; color: var(--slate);">Inline list rows, tight clusters where the page already provides visual rhythm.</p>
+            </div>
+            <div class="card">
+              <div class="t-eyebrow" style="margin-bottom: 4px;">--shadow-card · default</div>
+              <p style="margin: 0; font-size: 13px; color: var(--slate);">Standard card. Use for almost everything.</p>
+            </div>
+            <div class="card" style="box-shadow: var(--shadow-card-lg);">
+              <div class="t-eyebrow" style="margin-bottom: 4px;">--shadow-card-lg</div>
+              <p style="margin: 0; font-size: 13px; color: var(--slate);">Hover state, raised tiles, hero stats.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════ TACTILE ════════════════════════════ -->
+      <section class="ds-section" id="tactile">
+        <h2>Tactile elements</h2>
+        <p class="section-lede">
+          A small layer of <strong>scumorphic</strong> objects — tape, pins, polaroids, paper-cutout stamps — that sit on top of the clean foundation to add warmth and personality.
+          Use them only at <strong>moments of celebration or human voice</strong>: achievements, streaks, pinned announcements, profile photos.
+          <strong>Never</strong> on data, forms, dense lists, or anything a student needs to read fast.
+          Rotation budget: ±3° on any single object — small enough that screenshots and screen readers still read it as straight.
+        </p>
+
+        <!-- Tape -->
+        <div class="demo">
+          <div class="demo-label">Washi tape — four colorways, two corner placements</div>
+          <div class="demo-row" style="gap: 32px; flex-wrap: wrap; padding-top: 18px;">
+            <div class="paper has-tape" style="width: 180px; height: 120px;"></div>
+            <div class="paper has-tape tape-color-mint" style="width: 180px; height: 120px;"></div>
+            <div class="paper has-tape tape-color-lavender" style="width: 180px; height: 120px;"></div>
+            <div class="paper has-tape tape-color-butter" style="width: 180px; height: 120px;"></div>
+          </div>
+          <div class="demo-row" style="gap: 32px; flex-wrap: wrap; padding-top: 24px;">
+            <div class="paper has-tape tape-corner-tl" style="width: 200px; height: 120px;"></div>
+            <div class="paper has-tape tape-corner-tr tape-color-mint" style="width: 200px; height: 120px;"></div>
+            <div class="paper has-tape tape-corner-tl tape-color-lavender" style="width: 200px; height: 120px;"></div>
+          </div>
+          <div class="demo-caption" style="margin-top: 14px;">
+            Apply <code>.has-tape</code>; configure with <code>--tape-x</code>, <code>--tape-y</code>, <code>--tape-w</code>, <code>--tape-rot</code>, or use <code>.tape-corner-tl</code> / <code>.tape-corner-tr</code>. Color modifiers: <code>.tape-color-mint</code>, <code>.tape-color-lavender</code>, <code>.tape-color-butter</code>.
+          </div>
+        </div>
+
+        <!-- Pushpins -->
+        <div class="demo">
+          <div class="demo-label">Pushpins — three colors, top-center / top-left / top-right</div>
+          <div class="demo-row" style="gap: 32px; flex-wrap: wrap; padding-top: 18px;">
+            <div class="paper has-pin" style="width: 180px; height: 120px;"></div>
+            <div class="paper has-pin pin-amber pin-tl" style="width: 180px; height: 120px;"></div>
+            <div class="paper has-pin pin-teal pin-tr" style="width: 180px; height: 120px;"></div>
+          </div>
+          <div class="demo-caption" style="margin-top: 14px;">
+            Apply <code>.has-pin</code>. Color: <code>.pin-amber</code>, <code>.pin-teal</code> (default red). Position: <code>.pin-tl</code>, <code>.pin-tr</code> (default top-center).
+          </div>
+        </div>
+
+        <!-- Polaroid -->
+        <div class="demo">
+          <div class="demo-label">Polaroid frame — for any portrait or featured photo</div>
+          <div class="demo-row" style="gap: 32px; flex-wrap: wrap; padding-top: 18px; align-items: flex-end;">
+            <div class="polaroid tilt-l-2" style="width: 180px;">
+              <div class="polaroid-img" style="height: 180px; background: linear-gradient(135deg, #FCD9B4 0%, #E07A2D 100%);"></div>
+              <div class="polaroid-caption">Sept '25</div>
+            </div>
+            <div class="polaroid has-tape tape-corner-tl tape-color-mint tilt-r-1" style="width: 180px;">
+              <div class="polaroid-img" style="height: 180px; background: linear-gradient(135deg, #C4E5D0 0%, #2E9B62 100%);"></div>
+              <div class="polaroid-caption">Field trip</div>
+            </div>
+            <div class="polaroid has-pin pin-amber tilt-l-1" style="width: 180px;">
+              <div class="polaroid-img" style="height: 180px; background: linear-gradient(135deg, #DDD6FE 0%, #6D28D9 100%);"></div>
+              <div class="polaroid-caption">Recital</div>
+            </div>
+          </div>
+          <div class="demo-caption" style="margin-top: 14px;">
+            <code>.polaroid</code> wraps <code>.polaroid-img</code> + <code>.polaroid-caption</code>. Compose with <code>.has-tape</code> or <code>.has-pin</code>; tilt with <code>.tilt-l-1</code>…<code>.tilt-r-3</code>.
+          </div>
+        </div>
+
+        <!-- Paper-cutout stamp / badge -->
+        <div class="demo">
+          <div class="demo-label">Paper-cutout achievement stamps — scalloped edge, postmark for date</div>
+          <div class="demo-row" style="gap: 28px; flex-wrap: wrap; padding-top: 22px; align-items: center;">
+            <div class="stamp-paper tilt-l-2" style="--stamp-color: #F5E9C8;">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                <i data-lucide="flame" style="color: #E07A2D; width: 24px; height: 24px;"></i>
+                <div style="font-family: var(--font-display); font-size: 11px; font-weight: 700; color: #6B4F1A; letter-spacing: 0.06em; text-transform: uppercase;">12-Day</div>
+                <div style="font-family: var(--font-display); font-size: 9.5px; font-weight: 600; color: #8B6A3D; letter-spacing: 0.06em; text-transform: uppercase;">Streak</div>
+              </div>
+            </div>
+            <div class="stamp-paper tilt-r-1" style="--stamp-color: #DDF0E0;">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                <i data-lucide="trophy" style="color: #2E9B62; width: 24px; height: 24px;"></i>
+                <div style="font-family: var(--font-display); font-size: 11px; font-weight: 700; color: #1F5C3A; letter-spacing: 0.06em; text-transform: uppercase;">Math</div>
+                <div style="font-family: var(--font-display); font-size: 9.5px; font-weight: 600; color: #2E7B4E; letter-spacing: 0.06em; text-transform: uppercase;">Solver</div>
+              </div>
+            </div>
+            <div class="stamp-paper tilt-l-1" style="--stamp-color: #E5DEFB;">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                <i data-lucide="sparkles" style="color: #6D28D9; width: 24px; height: 24px;"></i>
+                <div style="font-family: var(--font-display); font-size: 11px; font-weight: 700; color: #4C1D95; letter-spacing: 0.06em; text-transform: uppercase;">Kind</div>
+                <div style="font-family: var(--font-display); font-size: 9.5px; font-weight: 600; color: #5B21B6; letter-spacing: 0.06em; text-transform: uppercase;">Words</div>
+              </div>
+            </div>
+            <div class="stamp-paper tilt-r-2" style="--stamp-color: #FBE0E0;">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                <i data-lucide="book-open" style="color: #C0392B; width: 24px; height: 24px;"></i>
+                <div style="font-family: var(--font-display); font-size: 11px; font-weight: 700; color: #7A1F18; letter-spacing: 0.06em; text-transform: uppercase;">Reader</div>
+                <div style="font-family: var(--font-display); font-size: 9.5px; font-weight: 600; color: #A02E22; letter-spacing: 0.06em; text-transform: uppercase;">Lvl 5</div>
+              </div>
+            </div>
+            <div class="postmark tilt-l-3" style="--pm-color: #C0392B;">
+              <span>Earned</span>
+              <span class="pm-date">MAR 12</span>
+              <span>2026</span>
+            </div>
+          </div>
+          <div class="demo-caption" style="margin-top: 14px;">
+            <code>.stamp-paper</code> with a <code>--stamp-color</code> custom property. Compose with <code>.tilt-*</code>. Pair with <code>.postmark</code> for a "DATE EARNED" cancel.
+          </div>
+        </div>
+
+        <!-- Pinned announcement composition -->
+        <div class="demo">
+          <div class="demo-label">Composition — pinned announcement on the corkboard</div>
+          <div style="padding: 36px 32px 24px; background: var(--surface); border-radius: var(--r); display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-start;">
+            <div class="paper has-pin tilt-l-2" style="width: 240px; padding: 18px 18px 16px;">
+              <div style="font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--paper-warm-ink); margin-bottom: 6px;">Picture day Friday</div>
+              <div style="font-size: 12.5px; color: #5C4A2C; line-height: 1.5;">Wear your house color. Smiles are mandatory. Photographer arrives at 9 sharp.</div>
+            </div>
+            <div class="paper has-tape tape-corner-tr tape-color-mint tilt-r-1" style="width: 240px; padding: 18px;">
+              <div style="font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--paper-warm-ink); margin-bottom: 6px;">Field trip permission</div>
+              <div style="font-size: 12.5px; color: #5C4A2C; line-height: 1.5;">Slip due back by Wednesday. Ask a parent or guardian to sign at the dotted line.</div>
+            </div>
+            <div class="paper has-pin pin-amber pin-tl tilt-l-1" style="width: 240px; padding: 18px;">
+              <div style="font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--paper-warm-ink); margin-bottom: 6px;">Spring assembly</div>
+              <div style="font-size: 12.5px; color: #5C4A2C; line-height: 1.5;">Mr. Patel's class is performing. Bring your friends and a quiet voice for the speeches.</div>
+            </div>
+          </div>
+          <div class="demo-caption" style="margin-top: 14px;">
+            Tactile objects sit on the regular cool-lavender surface — the warm-cream paper makes them read as a different material. Mix tape and pins; vary tilt by ±2°; never align them on a strict grid.
+          </div>
+        </div>
+
+        <!-- Rules -->
+        <div class="demo">
+          <div class="demo-label">Rules</div>
+          <ul class="rules">
+            <li><strong>Use sparingly.</strong> Tactile objects are seasoning. A dashboard with one polaroid and one stamp lands; one with five lands as a craft project.</li>
+            <li><strong>Reserved for celebration and personality.</strong> Achievements, streaks, profile photos, pinned notes, milestone moments. <strong>Not</strong> for data, forms, tables, calendar grids, navigation, or anything time-sensitive.</li>
+            <li><strong>Rotation budget: ±3° max.</strong> Anything more makes screenshots look broken and copies less readable.</li>
+            <li><strong>Warm paper on cool surface.</strong> The whole effect depends on the contrast between <code>--paper-warm</code> objects and the cool <code>--surface</code> desk. Don't put warm paper on a warm background.</li>
+            <li><strong>Respect reduced motion.</strong> No tilt animations on hover; objects sit still.</li>
+            <li><strong>Accessible labels.</strong> A stamp is decoration around real text — the achievement title and date must still live in semantic markup, not in the stamp's image.</li>
+          </ul>
+        </div>
+      </section>
+      <!-- ════════════════════════════════════════════════════════════════════════ -->
+      <section class="ds-section" id="chips">
+        <h2>Chips, tags &amp; badges</h2>
+        <p class="section-lede">
+          Pills carry status, category and metadata. Always full-rounded; default (mist), purple (active/portal), and three semantic tones (success / warning / error). Numeric badges on icon buttons live in <code style="background: var(--bone); padding: 1px 5px; border-radius: 3px;">--public</code> red, with a 1.5px paper border.
+        </p>
+
+        <div class="demo">
+          <div class="demo-label">Pills</div>
+          <div class="demo-row">
+            <span class="pill">Default</span>
+            <span class="pill pill-purple">Portal · Student</span>
+            <span class="pill pill-success">Submitted</span>
+            <span class="pill pill-warning">Due soon</span>
+            <span class="pill pill-error">Overdue</span>
+            <span class="pill pill-ghost">Optional</span>
+          </div>
+        </div>
+
+        <div class="demo">
+          <div class="demo-label">With icons &amp; counts</div>
+          <div class="demo-row">
+            <span class="pill pill-success"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5L10 17.5l9-11"/></svg>Submitted</span>
+            <span class="pill pill-warning">3:00 PM</span>
+            <span class="pill pill-purple"><span class="t-num">14</span> of 18</span>
+            <span class="pill pill-ghost">Grade 10</span>
+            <span class="pill" style="background: var(--instructor); color: #fff; border-color: transparent;">Instructor view</span>
+            <span class="pill" style="background: var(--admin); color: #fff; border-color: transparent;">Admin view</span>
+          </div>
+        </div>
+
+        <div class="demo">
+          <div class="demo-label">Notification badge</div>
+          <div class="demo-row" style="gap: 24px;">
+            <div style="position: relative; width: 36px; height: 36px; border-radius: 8px; background: var(--bone); display: inline-flex; align-items: center; justify-content: center;">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--stone)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
+              <span style="position: absolute; top: 4px; right: 4px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: var(--public); color: #fff; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; border: 1.5px solid var(--paper);">2</span>
+            </div>
+            <div style="position: relative; width: 36px; height: 36px; border-radius: 8px; background: var(--bone); display: inline-flex; align-items: center; justify-content: center;">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--stone)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-4 4v-4H6a2 2 0 0 1-2-2z"/></svg>
+              <span style="position: absolute; top: 4px; right: 4px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: var(--public); color: #fff; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; border: 1.5px solid var(--paper);">9+</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════ AVATARS ════════════════════════════════ -->
+      <section class="ds-section" id="avatars">
+        <h2>Avatars</h2>
+        <p class="section-lede">
+          Avatars are always full-round with a 1px mist border so they read against any surface. Three sizes — 24, 32, 56 — cover row, header and profile use. Initials sit in the violet soft tint; portrait avatars use a warm gradient backdrop.
+        </p>
+
+        <div class="demo demo-row" style="gap: 28px; align-items: flex-end;">
+          <div class="rail-item">
+            <div class="avatar avatar-sm">AJ</div>
+            <div class="label">avatar-sm · 24</div>
+          </div>
+          <div class="rail-item">
+            <div class="avatar">AJ</div>
+            <div class="label">avatar · 32</div>
+          </div>
+          <div class="rail-item">
+            <div class="avatar avatar-lg">AJ</div>
+            <div class="label">avatar-lg · 56</div>
+          </div>
+          <div class="rail-item">
+            <div class="avatar avatar-portrait" style="color: #fff;">
+              <svg viewBox="0 0 32 32" width="32" height="32"><circle cx="16" cy="13" r="6" fill="#A87856"/><ellipse cx="16" cy="32" rx="14" ry="10" fill="#1E293B"/></svg>
+            </div>
+            <div class="label">portrait</div>
+          </div>
+          <div class="rail-item">
+            <div style="display: flex;">
+              <div class="avatar" style="background: #FBE9D7; color: #8B4A12; border: 2px solid var(--paper);">EM</div>
+              <div class="avatar" style="margin-left: -8px; background: #DCFCE7; color: #166534; border: 2px solid var(--paper);">JB</div>
+              <div class="avatar" style="margin-left: -8px; background: #DBEAFE; color: #1E40AF; border: 2px solid var(--paper);">RS</div>
+              <div class="avatar" style="margin-left: -8px; background: var(--bone); color: var(--stone); border: 2px solid var(--paper); font-size: 10px;">+4</div>
+            </div>
+            <div class="label">stack</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════ ALERTS ════════════════════════════════ -->
+      <section class="ds-section" id="alerts">
+        <h2>Alerts &amp; banners</h2>
+        <p class="section-lede">
+          Four tones: info (violet), success, warning, error. Always paired with a 28px icon chip on the left, a single bold lead-line, and one supporting sentence. Use plain language — never "Oops!" or "Something went wrong 😬".
+        </p>
+
+        <div class="demo-grid cols-2">
+          <div class="alert info">
+            <div class="alert-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v.01M12 11v6"/></svg></div>
+            <div><b>Quiz Friday — 12 questions, 40 minutes.</b>Make sure your laptop is charged. We've added a study guide to your Materials.</div>
+          </div>
+          <div class="alert success">
+            <div class="alert-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5L10 17.5l9-11"/></svg></div>
+            <div><b>Submitted to Mr. Patel.</b>You'll see a grade once he's reviewed your work — usually 2–3 days.</div>
+          </div>
+          <div class="alert warning">
+            <div class="alert-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17v.01M12 3l10 17H2z"/></svg></div>
+            <div><b>Two assignments due today.</b>Persuasive essay draft (3:00 PM) and Ch. 7 problem set (11:59 PM).</div>
+          </div>
+          <div class="alert error">
+            <div class="alert-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16v.01"/></svg></div>
+            <div><b>We couldn't save your work.</b>You're offline. We'll keep your draft and try again as soon as you're back.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════ NAV ════════════════════════════════ -->
+      <section class="ds-section" id="nav">
+        <h2>Navigation</h2>
+        <p class="section-lede">
+          The portal sidebar is a two-level tree (L1 with icon · L2 indented dot-marker). Active rows get the violet soft tint and a 600-weight label. The topbar combines a pill search field, an AI Coach pill, three icon buttons, and a user menu with avatar.
+        </p>
+
+        <div class="ds-subsection">
+          <h3>Sidebar items</h3>
+          <div class="demo" style="padding: 18px 12px; max-width: 280px;">
+            <div class="nav-demo-row">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--stone)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>
+              <span>Home</span>
+            </div>
+            <div class="nav-demo-row active">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--student)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2 2 0 0 1 6 3.5h11a2 2 0 0 1 2 2v13a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2"/><path d="M4 5.5V19"/></svg>
+              <span>My Classes</span>
+              <span style="margin-left: auto; min-width: 18px; height: 18px; padding: 0 6px; border-radius: 999px; background: var(--student); color: #fff; font-size: 10.5px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">3</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 1px; margin-left: 8px; padding-left: 10px;">
+              <div class="nav-demo-row" style="height: 32px; font-size: 12.5px;">
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px;"><span style="width: 4px; height: 4px; border-radius: 999px; background: var(--silver); opacity: 0.6;"></span></span>
+                <span>Algebra II</span>
+              </div>
+              <div class="nav-demo-row active" style="height: 32px; font-size: 12.5px;">
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px;"><span style="width: 4px; height: 4px; border-radius: 999px; background: var(--student);"></span></span>
+                <span>English &amp; Literature</span>
+              </div>
+              <div class="nav-demo-row" style="height: 32px; font-size: 12.5px;">
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px;"><span style="width: 4px; height: 4px; border-radius: 999px; background: var(--silver); opacity: 0.6;"></span></span>
+                <span>World History</span>
+              </div>
+            </div>
+            <div class="nav-demo-row">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--stone)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+              <span>Materials</span>
+            </div>
+            <div class="nav-demo-row">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--stone)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+              <span>My Calendar</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ds-subsection">
+          <h3>Tabs</h3>
+          <div class="demo">
+            <div style="display: flex; align-items: center; gap: 4px; border-bottom: 1px solid var(--mist); padding-bottom: 0;">
+              <button style="background: none; border: none; padding: 10px 14px 12px; font-size: 13.5px; font-weight: 600; color: var(--student-deep); border-bottom: 2px solid var(--student); margin-bottom: -1px;">Overview</button>
+              <button style="background: none; border: none; padding: 10px 14px 12px; font-size: 13.5px; font-weight: 500; color: var(--stone);">Assignments</button>
+              <button style="background: none; border: none; padding: 10px 14px 12px; font-size: 13.5px; font-weight: 500; color: var(--stone);">Materials</button>
+              <button style="background: none; border: none; padding: 10px 14px 12px; font-size: 13.5px; font-weight: 500; color: var(--stone);">People</button>
+              <button style="background: none; border: none; padding: 10px 14px 12px; font-size: 13.5px; font-weight: 500; color: var(--stone);">Discussion</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="ds-subsection">
+          <h3>Breadcrumbs &amp; page header</h3>
+          <div class="demo">
+            <div class="crumbs">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--stone)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>
+              <a href="#" style="color: var(--stone); text-decoration: none;">Home</a>
+              <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="var(--silver)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+              <a href="#" style="color: var(--stone); text-decoration: none;">My Classes</a>
+              <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="var(--silver)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+              <span class="crumb-active">English &amp; Literature</span>
+            </div>
+            <div class="page-header-demo">
+              <div style="flex: 1;">
+                <h1>English &amp; Literature</h1>
+                <p style="font-size: 14px; color: var(--stone); margin: 0; max-width: 640px; line-height: 1.55;">Mr. Patel · Period 4 · Tuesdays &amp; Thursdays · Room 214</p>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn">Materials</button>
+                <button class="btn btn-primary">Open assignment</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════ TABLES ════════════════════════════════ -->
+      <section class="ds-section" id="tables">
+        <h2>Tables</h2>
+        <p class="section-lede">
+          Tables read as a list of cards collapsed onto rails. Header is uppercase 11px stone; rows separated by 1px mist; hover wash is bone. Status pills do the heavy lifting in the rightmost column. No zebra striping.
+        </p>
+
+        <div class="card card-flush">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Assignment</th>
+                <th>Class</th>
+                <th>Due</th>
+                <th>Progress</th>
+                <th style="text-align: right;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div style="font-weight: 600; color: var(--ink); margin-bottom: 2px;">Persuasive essay draft</div><div class="t-caption">Argument · 800 words</div></td>
+                <td>English</td>
+                <td><span class="t-num">Today · 3:00 PM</span></td>
+                <td><div style="display: flex; align-items: center; gap: 8px;"><div style="height: 6px; flex: 1; max-width: 100px; border-radius: 999px; background: var(--bone); overflow: hidden;"><div style="height: 100%; width: 65%; background: var(--student);"></div></div><span class="t-num" style="font-size: 12px; color: var(--stone);">65%</span></div></td>
+                <td style="text-align: right;"><span class="pill pill-warning">Due soon</span></td>
+              </tr>
+              <tr>
+                <td><div style="font-weight: 600; color: var(--ink); margin-bottom: 2px;">Ch. 7 problem set</div><div class="t-caption">Quadratics · 18 questions</div></td>
+                <td>Algebra II</td>
+                <td><span class="t-num">Today · 11:59 PM</span></td>
+                <td><div style="display: flex; align-items: center; gap: 8px;"><div style="height: 6px; flex: 1; max-width: 100px; border-radius: 999px; background: var(--bone); overflow: hidden;"><div style="height: 100%; width: 22%; background: var(--student);"></div></div><span class="t-num" style="font-size: 12px; color: var(--stone);">22%</span></div></td>
+                <td style="text-align: right;"><span class="pill pill-warning">Due soon</span></td>
+              </tr>
+              <tr>
+                <td><div style="font-weight: 600; color: var(--ink); margin-bottom: 2px;">Lab notebook · entry 4</div><div class="t-caption">Photosynthesis</div></td>
+                <td>Biology</td>
+                <td><span class="t-num">Mar 17 · 8:00 AM</span></td>
+                <td><div style="display: flex; align-items: center; gap: 8px;"><div style="height: 6px; flex: 1; max-width: 100px; border-radius: 999px; background: var(--bone); overflow: hidden;"><div style="height: 100%; width: 100%; background: var(--success);"></div></div><span class="t-num" style="font-size: 12px; color: var(--stone);">100%</span></div></td>
+                <td style="text-align: right;"><span class="pill pill-success">Submitted</span></td>
+              </tr>
+              <tr>
+                <td><div style="font-weight: 600; color: var(--ink); margin-bottom: 2px;">Vocabulary check 5</div><div class="t-caption">Unit 5 · Industrialization</div></td>
+                <td>World History</td>
+                <td><span class="t-num">Mar 12 · 11:59 PM</span></td>
+                <td><div style="display: flex; align-items: center; gap: 8px;"><div style="height: 6px; flex: 1; max-width: 100px; border-radius: 999px; background: var(--bone); overflow: hidden;"><div style="height: 100%; width: 100%; background: var(--error);"></div></div><span class="t-num" style="font-size: 12px; color: var(--stone);">Late</span></div></td>
+                <td style="text-align: right;"><span class="pill pill-error">Overdue</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════ MODALS ════════════════════════════════ -->
+      <section class="ds-section" id="modals">
+        <h2>Modals, popovers &amp; menus</h2>
+        <p class="section-lede">
+          Floating surfaces use the large radius (22px for modals, 14px for menus) and the pop shadow. Always with at least 16px of safe-area padding from the viewport edge; never with a colored backdrop tint — modal overlay is plain ink at 50%.
+        </p>
+
+        <div class="demo demo-row" style="gap: 36px; align-items: flex-start; padding: 36px;">
+          <!-- Modal -->
+          <div class="modal-mock">
+            <h3 style="font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--ink); margin: 0 0 6px;">Submit assignment?</h3>
+            <p style="font-size: 13.5px; color: var(--stone); margin: 0 0 18px; line-height: 1.55;">Once you submit, you won't be able to edit your work. Mr. Patel will review your draft and send notes by Friday.</p>
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+              <button class="btn btn-ghost">Keep editing</button>
+              <button class="btn btn-primary">Submit</button>
+            </div>
+          </div>
+
+          <!-- Popover menu -->
+          <div style="width: 220px; background: var(--paper); border-radius: 14px; box-shadow: var(--shadow-pop); padding: 8px 0;">
+            <div style="padding: 10px 14px 12px; border-bottom: 1px solid var(--mist);">
+              <div style="font-size: 13px; font-weight: 600; color: var(--ink);">Alex Johnson</div>
+              <div style="font-size: 11.5px; color: var(--stone);">a.johnson@wpa.edu</div>
+            </div>
+            <div style="padding: 6px 0;">
+              <div style="padding: 6px 14px 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--silver);">My Account</div>
+              <button style="width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px 14px; border: none; background: var(--student-soft); color: var(--student-deep); font-size: 13px; font-weight: 600; text-align: left;">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+                Profile
+              </button>
+              <button style="width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px 14px; border: none; background: transparent; color: var(--slate); font-size: 13px; font-weight: 500; text-align: left;">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--stone)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8M4.6 9a1.7 1.7 0 0 0-.3-1.8"/></svg>
+                Settings
+              </button>
+            </div>
+          </div>
+
+          <!-- Toast -->
+          <div style="width: 320px; background: var(--ink); color: #fff; border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow-card-lg); display: flex; align-items: flex-start; gap: 12px;">
+            <div style="width: 28px; height: 28px; border-radius: 8px; background: rgba(46,155,98,0.25); color: #6EE7B7; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5L10 17.5l9-11"/></svg>
+            </div>
+            <div style="flex: 1; font-size: 13px; line-height: 1.5;">
+              <div style="font-weight: 600; margin-bottom: 2px; color: #fff;">Saved as draft</div>
+              <div style="color: rgba(255,255,255,0.72);">We'll keep your work here. Submit when you're ready.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════ CALENDAR ════════════════════════════════ -->
+      <section class="ds-section" id="calendar">
+        <h2>Calendar</h2>
+        <p class="section-lede">
+          A single calendar component with four resolutions — <strong>Year</strong>, <strong>Month</strong>, <strong>Week</strong>, <strong>Day</strong> — and per-person filtering. The year view encodes event density as a heatmap (the more events on a day, the deeper the violet); clicking any day drills into the Day view. Person filters and the view switcher work together: filtering re-derives the heatmap and stack from only the visible people's events.
+        </p>
+
+        <style>
+          /* ───────── Calendar component ───────── */
+          .cal {
+            background: var(--paper);
+            border-radius: var(--r);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+          }
+          .cal-toolbar {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--mist);
+            flex-wrap: wrap;
+          }
+          .cal-title {
+            font-family: var(--font-display);
+            font-size: 18px; font-weight: 600;
+            color: var(--ink);
+            letter-spacing: -0.01em;
+            min-width: 160px;
+          }
+          .cal-nav { display: inline-flex; align-items: center; gap: 4px; }
+          .cal-nav button {
+            width: 30px; height: 30px;
+            display: inline-flex; align-items: center; justify-content: center;
+            border: 1px solid var(--mist);
+            background: var(--paper);
+            color: var(--slate);
+            border-radius: var(--r-sm);
+            cursor: pointer;
+            transition: background 120ms;
+          }
+          .cal-nav button:hover { background: var(--bone); color: var(--ink); }
+          .cal-today {
+            height: 30px; padding: 0 12px;
+            border: 1px solid var(--mist);
+            background: var(--paper);
+            color: var(--slate);
+            font-size: 12.5px; font-weight: 500;
+            border-radius: var(--r-sm);
+            cursor: pointer;
+          }
+          .cal-today:hover { background: var(--bone); color: var(--ink); }
+
+          .cal-segment {
+            display: inline-flex;
+            background: var(--bone);
+            border-radius: var(--r-sm);
+            padding: 3px;
+            gap: 0;
+          }
+          .cal-segment button {
+            height: 26px; padding: 0 14px;
+            border: none; background: transparent;
+            font-family: var(--font-ui);
+            font-size: 12.5px; font-weight: 500;
+            color: var(--stone);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 120ms;
+          }
+          .cal-segment button:hover { color: var(--ink); }
+          .cal-segment button.active {
+            background: var(--paper);
+            color: var(--ink);
+            font-weight: 600;
+            box-shadow: 0 1px 2px rgba(15,23,42,0.06), 0 0 0 1px rgba(15,23,42,0.04);
+          }
+
+          .cal-people {
+            display: flex; align-items: center; gap: 8px;
+            margin-left: auto;
+            flex-wrap: wrap;
+          }
+          .cal-person-chip {
+            display: inline-flex; align-items: center; gap: 7px;
+            height: 28px; padding: 0 12px 0 6px;
+            background: var(--bone);
+            border: 1px solid transparent;
+            border-radius: 999px;
+            font-size: 12px; font-weight: 500;
+            color: var(--stone);
+            cursor: pointer;
+            transition: all 120ms;
+            user-select: none;
+          }
+          .cal-person-chip:hover { color: var(--ink); }
+          .cal-person-chip.active {
+            background: var(--paper);
+            border-color: var(--mist);
+            color: var(--ink);
+          }
+          .cal-person-chip.active.dim { opacity: 1; }
+          .cal-person-chip.dim { opacity: 0.45; }
+          .cal-person-dot {
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            color: #fff;
+            font-size: 9px; font-weight: 700;
+            font-family: var(--font-ui);
+            letter-spacing: 0.02em;
+          }
+
+          .cal-body { padding: 22px; }
+
+          /* ── Year view ── */
+          .cal-year {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 22px;
+          }
+          .cal-mini { display: flex; flex-direction: column; gap: 8px; }
+          .cal-mini-head {
+            font-family: var(--font-display);
+            font-size: 13px; font-weight: 600;
+            color: var(--ink);
+            letter-spacing: -0.005em;
+            display: flex; align-items: baseline; justify-content: space-between;
+          }
+          .cal-mini-head .cnt {
+            font-family: var(--font-ui);
+            font-size: 10.5px; font-weight: 500;
+            color: var(--silver);
+            font-variant-numeric: tabular-nums;
+          }
+          .cal-mini-dow {
+            display: grid; grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            font-size: 9px; font-weight: 500;
+            color: var(--silver);
+            text-align: center;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+          }
+          .cal-mini-grid {
+            display: grid; grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+          }
+          .cal-mini-day {
+            aspect-ratio: 1;
+            border-radius: 3px;
+            font-family: var(--font-ui);
+            font-size: 9.5px;
+            color: var(--stone);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: outline 120ms;
+            outline: 2px solid transparent;
+            outline-offset: -2px;
+            position: relative;
+          }
+          .cal-mini-day.empty { cursor: default; visibility: hidden; }
+          .cal-mini-day:hover:not(.empty) { outline-color: var(--student); z-index: 1; }
+          .cal-mini-day.today {
+            outline-color: var(--ink);
+            font-weight: 700;
+          }
+          /* Heatmap density tiers — student violet ramp */
+          .cal-mini-day.d0 { background: var(--bone); color: var(--silver); }
+          .cal-mini-day.d1 { background: var(--student-100); color: var(--student-deep); }
+          .cal-mini-day.d2 { background: var(--student-300); color: var(--student-ink); font-weight: 600; }
+          .cal-mini-day.d3 { background: var(--student); color: #fff; font-weight: 600; }
+          .cal-mini-day.d4 { background: var(--student-deep); color: #fff; font-weight: 700; }
+
+          .cal-legend {
+            display: flex; align-items: center; gap: 8px;
+            margin-top: 8px;
+            padding: 14px 22px 0;
+            border-top: 1px solid var(--mist);
+            font-size: 11px;
+            color: var(--silver);
+          }
+          .cal-legend-scale { display: inline-flex; gap: 3px; align-items: center; }
+          .cal-legend-scale span {
+            width: 12px; height: 12px; border-radius: 3px;
+            display: inline-block;
+          }
+
+          /* ── Month view ── */
+          .cal-month {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-auto-rows: minmax(96px, auto);
+            border: 1px solid var(--mist);
+            border-radius: var(--r-sm);
+            overflow: hidden;
+            background: var(--mist);
+            gap: 1px;
+          }
+          .cal-month-dow {
+            grid-row: 1; padding: 8px 10px;
+            background: var(--paper);
+            font-size: 10.5px; font-weight: 600;
+            color: var(--silver);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            text-align: left;
+          }
+          .cal-month-cell {
+            background: var(--paper);
+            padding: 8px 8px 10px;
+            display: flex; flex-direction: column; gap: 4px;
+            cursor: pointer;
+            transition: background 120ms;
+          }
+          .cal-month-cell:hover { background: var(--surface); }
+          .cal-month-cell.muted { background: var(--surface-quiet); }
+          .cal-month-cell.muted .cal-month-num { color: var(--silver); }
+          .cal-month-cell.today .cal-month-num {
+            background: var(--student);
+            color: #fff;
+            border-radius: 50%;
+            width: 22px; height: 22px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-weight: 600;
+          }
+          .cal-month-num {
+            font-family: var(--font-ui);
+            font-size: 12px; font-weight: 500;
+            color: var(--ink);
+            line-height: 1;
+            margin-bottom: 2px;
+          }
+          .cal-event {
+            font-size: 10.5px; line-height: 1.25;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #fff;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          .cal-event.subtle {
+            color: var(--ink);
+            font-weight: 500;
+          }
+          .cal-event.subtle .cal-event-dot {
+            display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+            margin-right: 5px; vertical-align: middle; transform: translateY(-1px);
+          }
+          .cal-month-more {
+            font-size: 10.5px; color: var(--stone); font-weight: 500;
+            padding: 1px 6px;
+          }
+
+          /* ── Week view ── */
+          .cal-week {
+            display: grid;
+            grid-template-columns: 56px repeat(7, 1fr);
+            border: 1px solid var(--mist);
+            border-radius: var(--r-sm);
+            overflow: hidden;
+          }
+          .cal-week-head {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: 56px repeat(7, 1fr);
+            border-bottom: 1px solid var(--mist);
+            background: var(--paper);
+          }
+          .cal-week-head > div {
+            padding: 10px 10px 12px;
+            border-right: 1px solid var(--mist);
+            font-size: 11px;
+            color: var(--silver);
+          }
+          .cal-week-head > div:last-child { border-right: none; }
+          .cal-week-head .gutter { background: var(--paper); }
+          .cal-week-day-label {
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 600;
+            font-size: 10.5px;
+          }
+          .cal-week-day-num {
+            font-family: var(--font-display);
+            font-size: 18px; font-weight: 600;
+            color: var(--ink);
+            margin-top: 2px;
+            line-height: 1;
+          }
+          .cal-week-head .today .cal-week-day-num {
+            color: var(--student);
+          }
+          .cal-week-head .today .cal-week-day-label {
+            color: var(--student);
+          }
+          .cal-week-grid {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: 56px repeat(7, 1fr);
+            position: relative;
+          }
+          .cal-week-hours {
+            display: grid; grid-template-rows: repeat(13, 48px);
+            border-right: 1px solid var(--mist);
+            background: var(--paper);
+          }
+          .cal-week-hour {
+            font-size: 10px; color: var(--silver);
+            padding: 2px 6px 0 0;
+            text-align: right;
+            transform: translateY(-6px);
+          }
+          .cal-week-col {
+            position: relative;
+            display: grid; grid-template-rows: repeat(13, 48px);
+            border-right: 1px solid var(--mist);
+            background: var(--paper);
+          }
+          .cal-week-col:last-child { border-right: none; }
+          .cal-week-col.today { background: var(--student-50); }
+          .cal-week-col-row {
+            border-bottom: 1px solid var(--mist);
+          }
+          .cal-week-col-row:nth-child(odd) {
+            border-bottom-style: dashed;
+            border-bottom-color: rgba(226,232,240,0.6);
+          }
+          .cal-week-event {
+            position: absolute;
+            left: 4px; right: 4px;
+            border-radius: 5px;
+            padding: 4px 6px;
+            color: #fff;
+            font-size: 10.5px;
+            line-height: 1.25;
+            font-weight: 500;
+            box-shadow: 0 1px 2px rgba(15,23,42,0.12);
+            overflow: hidden;
+            cursor: pointer;
+          }
+          .cal-week-event .ev-time {
+            font-size: 9.5px;
+            opacity: 0.8;
+            font-weight: 500;
+            margin-top: 1px;
+          }
+          .cal-week-now {
+            position: absolute; left: 0; right: 0;
+            height: 0;
+            border-top: 2px solid var(--public);
+            z-index: 2;
+            pointer-events: none;
+          }
+          .cal-week-now::before {
+            content: '';
+            position: absolute; left: -4px; top: -5px;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--public);
+          }
+
+          /* ── Day view ── */
+          .cal-day {
+            display: grid;
+            grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+            gap: 22px;
+          }
+          .cal-day-grid {
+            border: 1px solid var(--mist);
+            border-radius: var(--r-sm);
+            background: var(--paper);
+            overflow: hidden;
+            position: relative;
+          }
+          .cal-day-grid-inner {
+            display: grid;
+            grid-template-columns: 64px 1fr;
+            position: relative;
+          }
+          .cal-day-hours {
+            display: grid; grid-template-rows: repeat(13, 56px);
+            border-right: 1px solid var(--mist);
+          }
+          .cal-day-hour {
+            font-size: 10.5px; color: var(--silver);
+            padding: 2px 8px 0 0;
+            text-align: right;
+            transform: translateY(-6px);
+          }
+          .cal-day-col {
+            position: relative;
+            display: grid; grid-template-rows: repeat(13, 56px);
+          }
+          .cal-day-col-row {
+            border-bottom: 1px solid var(--mist);
+          }
+          .cal-day-col-row:nth-child(odd) {
+            border-bottom-style: dashed;
+            border-bottom-color: rgba(226,232,240,0.6);
+          }
+          .cal-day-event {
+            position: absolute;
+            border-radius: 6px;
+            padding: 8px 10px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.3;
+            box-shadow: 0 1px 3px rgba(15,23,42,0.14);
+            overflow: hidden;
+            cursor: pointer;
+          }
+          .cal-day-event .ev-title { font-weight: 600; font-size: 13px; }
+          .cal-day-event .ev-time { font-size: 11px; opacity: 0.85; margin-top: 2px; }
+          .cal-day-event .ev-people {
+            display: flex; gap: -4px;
+            margin-top: 6px;
+          }
+          .cal-day-event .ev-people .av {
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            border: 1.5px solid #fff;
+            margin-left: -4px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 9px; font-weight: 700;
+            color: #fff;
+          }
+          .cal-day-event .ev-people .av:first-child { margin-left: 0; }
+
+          .cal-day-side {
+            display: flex; flex-direction: column; gap: 14px;
+          }
+          .cal-day-side h4 {
+            font-family: var(--font-display);
+            font-size: 13px; font-weight: 600;
+            color: var(--ink);
+            margin: 0 0 8px;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            font-size: 10.5px;
+            color: var(--stone);
+          }
+          .cal-side-list {
+            display: flex; flex-direction: column;
+            border-top: 1px solid var(--mist);
+          }
+          .cal-side-row {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--mist);
+            display: flex; align-items: flex-start; gap: 10px;
+          }
+          .cal-side-row .stripe {
+            width: 3px; align-self: stretch; border-radius: 999px; flex-shrink: 0;
+          }
+          .cal-side-row .body { flex: 1; min-width: 0; }
+          .cal-side-row .title {
+            font-weight: 600; color: var(--ink); font-size: 13px;
+            line-height: 1.3;
+          }
+          .cal-side-row .meta {
+            font-size: 11.5px; color: var(--stone); margin-top: 3px;
+            display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+          }
+
+          .cal-day-empty {
+            text-align: center;
+            padding: 38px 16px;
+            color: var(--silver);
+            font-size: 13px;
+          }
+
+          /* Density swatch in legend */
+          .cal-summary {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 12px; color: var(--stone);
+            font-weight: 500;
+          }
+          .cal-summary .num {
+            font-family: var(--font-display);
+            font-size: 14px; font-weight: 600;
+            color: var(--ink);
+            font-variant-numeric: tabular-nums;
+          }
+        </style>
+
+        <div class="cal" id="ds-calendar">
+          <div class="cal-toolbar">
+            <div class="cal-title" data-cal-title>—</div>
+            <div class="cal-nav">
+              <button data-cal-prev aria-label="Previous">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <button data-cal-today class="cal-today" style="width: auto;">Today</button>
+              <button data-cal-next aria-label="Next">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+            <div class="cal-segment" data-cal-segment>
+              <button data-view="year">Year</button>
+              <button data-view="month" class="active">Month</button>
+              <button data-view="week">Week</button>
+              <button data-view="day">Day</button>
+            </div>
+            <div class="cal-people" data-cal-people></div>
+          </div>
+
+          <div class="cal-body" data-cal-body></div>
+
+          <div class="cal-legend">
+            <span class="cal-summary"><span class="num" data-cal-event-count>0</span> events shown</span>
+            <span style="margin-left: auto; display: inline-flex; align-items: center; gap: 8px;">
+              <span>Density</span>
+              <span class="cal-legend-scale">
+                <span style="background: var(--bone);"></span>
+                <span style="background: var(--student-100);"></span>
+                <span style="background: var(--student-300);"></span>
+                <span style="background: var(--student);"></span>
+                <span style="background: var(--student-deep);"></span>
+              </span>
+              <span>5+ events</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="ds-subsection">
+          <h3>How density is calculated</h3>
+          <div class="demo-grid cols-3" style="grid-template-columns: repeat(3, 1fr);">
+            <div class="demo">
+              <div class="demo-label">Per visible person</div>
+              <p style="margin: 0; font-size: 13px; color: var(--slate); line-height: 1.55;">
+                The heatmap reflects only events from people whose chip is active. Toggling a person off recolors the year instantly.
+              </p>
+            </div>
+            <div class="demo">
+              <div class="demo-label">Five density tiers</div>
+              <p style="margin: 0; font-size: 13px; color: var(--slate); line-height: 1.55;">
+                <code style="background: var(--bone); padding: 1px 4px; border-radius: 3px;">0 / 1 / 2 / 3–4 / 5+</code> events. Tiers map to <code style="background: var(--bone); padding: 1px 4px; border-radius: 3px;">--bone → --student-100 → --student-300 → --student → --student-deep</code>.
+              </p>
+            </div>
+            <div class="demo">
+              <div class="demo-label">Click drills in</div>
+              <p style="margin: 0; font-size: 13px; color: var(--slate); line-height: 1.55;">
+                Clicking any year-view day jumps directly into the Day view for that date. Month-view cells do the same.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════ ICONOGRAPHY ════════════════════════════════ -->
+      <section class="ds-section" id="iconography">
+        <h2>Iconography</h2>
+        <p class="section-lede">
+          LINKS uses <strong>Lucide</strong> — a clean, open-source line icon set already used in the portal. Stick to a single weight (1.6px stroke), use the slate token for default state, the student-deep token for active/selected, and never tint icons with the same color as text behind them.
+        </p>
+
+        <style>
+          .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 4px;
+            border: 1px solid var(--mist);
+            border-radius: var(--r-sm);
+            background: var(--paper);
+            padding: 12px;
+          }
+          .icon-tile {
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            padding: 14px 8px;
+            border-radius: var(--r-sm);
+            cursor: pointer;
+            transition: background 120ms;
+          }
+          .icon-tile:hover { background: var(--bone); }
+          .icon-tile svg { color: var(--slate); width: 22px; height: 22px; stroke-width: 1.6; }
+          .icon-tile .nm { font-size: 11px; color: var(--stone); font-family: var(--font-ui); font-variant-numeric: tabular-nums; }
+          .icon-sizes { display: inline-flex; align-items: center; gap: 28px; padding: 18px 24px; }
+          .icon-sizes-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+          .icon-sizes-item svg { color: var(--ink); stroke-width: 1.6; }
+          .icon-sizes-item .lbl { font-size: 10.5px; color: var(--silver); letter-spacing: 0.04em; text-transform: uppercase; font-weight: 500; }
+          .icon-stroke-row { display: flex; gap: 32px; padding: 18px 24px; }
+          .icon-stroke-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+          .icon-stroke-item .lbl { font-size: 10.5px; color: var(--silver); letter-spacing: 0.04em; text-transform: uppercase; font-weight: 500; }
+        </style>
+
+        <div class="ds-subsection">
+          <h3>Sizing</h3>
+          <p style="margin: 0 0 14px; font-size: 13px; color: var(--slate);">Three canonical sizes. Larger feature sizes (32+, 48+) are for empty-states and brand contexts only.</p>
+          <div class="demo" style="padding: 0;">
+            <div class="icon-sizes">
+              <div class="icon-sizes-item"><i data-lucide="calendar" style="width:14px;height:14px;"></i><span class="lbl">14 · Inline</span></div>
+              <div class="icon-sizes-item"><i data-lucide="calendar" style="width:16px;height:16px;"></i><span class="lbl">16 · UI default</span></div>
+              <div class="icon-sizes-item"><i data-lucide="calendar" style="width:20px;height:20px;"></i><span class="lbl">20 · Nav</span></div>
+              <div class="icon-sizes-item"><i data-lucide="calendar" style="width:24px;height:24px;"></i><span class="lbl">24 · Toolbar</span></div>
+              <div class="icon-sizes-item"><i data-lucide="calendar" style="width:32px;height:32px;"></i><span class="lbl">32 · Feature</span></div>
+              <div class="icon-sizes-item"><i data-lucide="calendar" style="width:48px;height:48px;color:var(--student);"></i><span class="lbl">48 · Empty state</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ds-subsection">
+          <h3>Stroke &amp; color</h3>
+          <div class="demo-grid cols-3">
+            <div class="demo">
+              <div class="demo-label">Default — slate</div>
+              <div class="icon-stroke-row" style="padding: 16px 0;">
+                <i data-lucide="user" style="color: var(--slate); stroke-width: 1.6;"></i>
+                <i data-lucide="settings" style="color: var(--slate); stroke-width: 1.6;"></i>
+                <i data-lucide="bell" style="color: var(--slate); stroke-width: 1.6;"></i>
+                <i data-lucide="search" style="color: var(--slate); stroke-width: 1.6;"></i>
+              </div>
+              <p style="margin: 0; font-size: 12px; color: var(--stone);">Use <code style="background:var(--bone);padding:1px 4px;border-radius:3px;">var(--slate)</code> on light surfaces. Most icons in the product live here.</p>
+            </div>
+            <div class="demo">
+              <div class="demo-label">Active — student-deep</div>
+              <div class="icon-stroke-row" style="padding: 16px 0;">
+                <i data-lucide="user" style="color: var(--student-deep); stroke-width: 1.8;"></i>
+                <i data-lucide="settings" style="color: var(--student-deep); stroke-width: 1.8;"></i>
+                <i data-lucide="bell" style="color: var(--student-deep); stroke-width: 1.8;"></i>
+                <i data-lucide="search" style="color: var(--student-deep); stroke-width: 1.8;"></i>
+              </div>
+              <p style="margin: 0; font-size: 12px; color: var(--stone);">Selected nav, active filters. Bump stroke to 1.8 to compensate for color.</p>
+            </div>
+            <div class="demo">
+              <div class="demo-label">Inverted — paper</div>
+              <div style="display: flex; gap: 32px; padding: 16px 14px; background: var(--ink); border-radius: var(--r-sm); justify-content: space-around;">
+                <i data-lucide="user" style="color: var(--paper); stroke-width: 1.6;"></i>
+                <i data-lucide="settings" style="color: var(--paper); stroke-width: 1.6;"></i>
+                <i data-lucide="bell" style="color: var(--paper); stroke-width: 1.6;"></i>
+                <i data-lucide="search" style="color: var(--paper); stroke-width: 1.6;"></i>
+              </div>
+              <p style="margin: 8px 0 0; font-size: 12px; color: var(--stone);">Use paper on dark surfaces. Never tint to match the surface — preserve contrast.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="ds-subsection">
+          <h3>Core set</h3>
+          <p style="margin: 0 0 14px; font-size: 13px; color: var(--slate);">The 36 icons covering ~90% of LINKS UI. Everything else: pull from <a href="https://lucide.dev/icons" target="_blank" rel="noopener" style="color: var(--student-deep); text-decoration: none; font-weight: 500; border-bottom: 1px solid var(--student-200);">lucide.dev</a> and add to this list before using.</p>
+          <div class="icon-grid" data-icon-grid>
+            <!-- Filled by JS for compactness -->
+          </div>
+        </div>
+
+        <div class="ds-subsection">
+          <h3>Do &amp; don't</h3>
+          <div class="demo-grid cols-3">
+            <div class="demo">
+              <div class="demo-label" style="color: var(--success);">Do — line, single weight</div>
+              <div style="display: flex; gap: 18px; padding: 14px 0;">
+                <i data-lucide="folder" style="color: var(--slate);"></i>
+                <i data-lucide="file-text" style="color: var(--slate);"></i>
+                <i data-lucide="check-circle" style="color: var(--slate);"></i>
+              </div>
+            </div>
+            <div class="demo">
+              <div class="demo-label" style="color: var(--error);">Don't — mix filled + line</div>
+              <div style="display: flex; gap: 18px; padding: 14px 0; opacity: 0.85;">
+                <i data-lucide="folder" style="color: var(--slate); fill: var(--silver);"></i>
+                <i data-lucide="file-text" style="color: var(--slate);"></i>
+                <i data-lucide="check-circle" style="color: var(--success); fill: var(--success-soft);"></i>
+              </div>
+              <p style="margin: 0; font-size: 12px; color: var(--stone);">Filled and outline icons together break the visual rhythm.</p>
+            </div>
+            <div class="demo">
+              <div class="demo-label" style="color: var(--error);">Don't — emoji as iconography</div>
+              <div style="display: flex; gap: 18px; padding: 14px 0; font-size: 22px;">📁 📄 ✅</div>
+              <p style="margin: 0; font-size: 12px; color: var(--stone);">Emoji rendering varies across OSes. Reserve emoji for user-authored content (chat, comments).</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="ds-subsection">
+          <h3>Implementation</h3>
+          <div class="demo">
+            <div class="demo-label">Loading Lucide</div>
+            <pre style="margin: 0; padding: 14px 16px; background: var(--ink); color: var(--paper); border-radius: var(--r-sm); font-family: ui-monospace, 'SF Mono', monospace; font-size: 12.5px; line-height: 1.55; overflow-x: auto;"><span style="color: #94A3B8;">&lt;!-- in head --&gt;</span>
+&lt;script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"&gt;&lt;/script&gt;
+
+<span style="color: #94A3B8;">&lt;!-- in body --&gt;</span>
+&lt;i data-lucide="calendar"&gt;&lt;/i&gt;
+
+<span style="color: #94A3B8;">&lt;!-- after DOM ready --&gt;</span>
+&lt;script&gt;lucide.createIcons();&lt;/script&gt;</pre>
+          </div>
+        </div>
+
+        <script>
+          (function () {
+            const ICONS = [
+              'home', 'user', 'users', 'settings', 'bell', 'search', 'menu', 'x', 'plus', 'minus',
+              'check', 'chevron-right', 'chevron-down', 'chevron-left', 'arrow-right', 'more-horizontal', 'more-vertical',
+              'calendar', 'clock', 'file-text', 'folder', 'paperclip', 'image', 'download', 'upload',
+              'mail', 'phone', 'map-pin', 'graduation-cap', 'book-open', 'book',
+              'edit-3', 'trash-2', 'eye', 'lock', 'log-out',
+              'alert-triangle', 'info', 'check-circle', 'circle',
+            ];
+            const grid = document.querySelector('[data-icon-grid]');
+            if (grid) {
+              ICONS.forEach((name) => {
+                const tile = document.createElement('div');
+                tile.className = 'icon-tile';
+                tile.title = name;
+                tile.innerHTML = `<i data-lucide="${name}"></i><span class="nm">${name}</span>`;
+                grid.appendChild(tile);
+              });
+            }
+            // Render all Lucide icons on the page
+            if (window.lucide && lucide.createIcons) lucide.createIcons();
+          })();
+        </script>
+      </section>
+
+      <!-- ════════════════════════════════ EMPTY STATES ════════════════════════════════ -->
+      <section class="ds-section" id="empty-states">
+        <h2>Empty states</h2>
+        <p class="section-lede">
+          An empty state is the first impression of a feature. Use a feature-color icon, one short headline, one supporting line, and one primary action. Never show a blank panel — never use stock illustration filler.
+        </p>
+
+        <style>
+          .empty {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center;
+            padding: 48px 24px;
+            background: var(--paper);
+            border-radius: var(--r);
+            border: 1px dashed var(--mist);
+            min-height: 280px;
+          }
+          .empty .ico {
+            width: 56px; height: 56px;
+            border-radius: 16px;
+            background: var(--student-50);
+            color: var(--student);
+            display: inline-flex; align-items: center; justify-content: center;
+            margin-bottom: 18px;
+          }
+          .empty .ico svg { width: 26px; height: 26px; stroke-width: 1.6; }
+          .empty h4 {
+            font-family: var(--font-display);
+            font-size: 17px; font-weight: 600;
+            color: var(--ink);
+            margin: 0 0 6px;
+            letter-spacing: -0.005em;
+          }
+          .empty p {
+            margin: 0 0 18px;
+            font-size: 13.5px; color: var(--stone);
+            max-width: 280px;
+            line-height: 1.5;
+          }
+          .empty.error .ico { background: var(--error-soft); color: var(--error); }
+          .empty.success .ico { background: var(--success-soft); color: var(--success); }
+        </style>
+
+        <div class="ds-subsection">
+          <h3>The four kinds</h3>
+          <div class="demo-grid cols-2">
+            <div class="empty">
+              <div class="ico"><i data-lucide="inbox"></i></div>
+              <h4>No assignments yet</h4>
+              <p>Your instructor will post work here. We'll let you know the moment it arrives.</p>
+              <button class="btn btn-primary btn-sm"><i data-lucide="bell" style="width:13px;height:13px;"></i> Turn on alerts</button>
+            </div>
+            <div class="empty">
+              <div class="ico"><i data-lucide="search"></i></div>
+              <h4>Nothing matches "kepler"</h4>
+              <p>Try fewer keywords or check spelling. We searched assignments, lessons, and messages.</p>
+              <button class="btn btn-sm">Clear search</button>
+            </div>
+            <div class="empty error">
+              <div class="ico"><i data-lucide="alert-triangle"></i></div>
+              <h4>Couldn't load your schedule</h4>
+              <p>The connection dropped. Your work is safe — let's try again.</p>
+              <button class="btn btn-sm"><i data-lucide="refresh-cw" style="width:13px;height:13px;"></i> Retry</button>
+            </div>
+            <div class="empty success">
+              <div class="ico"><i data-lucide="check"></i></div>
+              <h4>You're all caught up</h4>
+              <p>No pending tasks for today. New work appears here as instructors post it.</p>
+              <button class="btn btn-sm">View this week</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="ds-subsection">
+          <h3>Anatomy</h3>
+          <div class="demo-grid cols-3">
+            <div class="demo">
+              <div class="demo-label">Headline</div>
+              <p style="margin: 0; font-size: 13px; color: var(--slate); line-height: 1.55;">State the situation in human language. <em>"No assignments yet"</em> not <em>"Empty result set."</em></p>
+            </div>
+            <div class="demo">
+              <div class="demo-label">Supporting line</div>
+              <p style="margin: 0; font-size: 13px; color: var(--slate); line-height: 1.55;">Explain what happens next or what to do. Keep under 18 words. Always reassuring, never apologetic.</p>
+            </div>
+            <div class="demo">
+              <div class="demo-label">Action</div>
+              <p style="margin: 0; font-size: 13px; color: var(--slate); line-height: 1.55;">Exactly one primary CTA. If there's nothing actionable, omit the button — don't pad with "Learn more."</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════ LOADING ════════════════════════════════ -->
+      <section class="ds-section" id="loading">
+        <h2>Loading &amp; skeletons</h2>
+        <p class="section-lede">
+          Loading should feel like the page is already there. Use <strong>skeletons</strong> that mirror final layout for any wait &gt; 200ms; <strong>spinners</strong> only inside button-bound async actions; <strong>progress bars</strong> for known-duration uploads/exports. Never block the whole screen for routine loads.
+        </p>
+
+        <style>
+          @keyframes ds-shimmer {
+            0%   { background-position: -400px 0; }
+            100% { background-position: 400px 0; }
+          }
+          .skel {
+            background: linear-gradient(90deg, var(--bone) 0%, var(--mist) 50%, var(--bone) 100%);
+            background-size: 800px 100%;
+            animation: ds-shimmer 1.4s linear infinite;
+            border-radius: 6px;
+            display: block;
+          }
+          .skel-line { height: 12px; }
+          .skel-line.short { width: 38%; }
+          .skel-line.med { width: 62%; }
+          .skel-line.long { width: 88%; }
+          .skel-circle { width: 32px; height: 32px; border-radius: 50%; }
+
+          @keyframes ds-spin { to { transform: rotate(360deg); } }
+          .spinner {
+            width: 18px; height: 18px;
+            border: 2px solid var(--mist);
+            border-top-color: var(--student);
+            border-radius: 50%;
+            animation: ds-spin 0.8s linear infinite;
+            display: inline-block;
+          }
+          .spinner-sm { width: 12px; height: 12px; border-width: 1.5px; }
+
+          .progress {
+            height: 6px;
+            background: var(--bone);
+            border-radius: 999px;
+            overflow: hidden;
+            position: relative;
+          }
+          .progress-bar {
+            height: 100%;
+            background: var(--student);
+            border-radius: 999px;
+            transition: width 240ms;
+          }
+          .progress-indeterminate::before {
+            content: '';
+            position: absolute; top: 0; height: 100%;
+            width: 40%;
+            background: var(--student);
+            border-radius: 999px;
+            animation: ds-indeterminate 1.4s ease-in-out infinite;
+          }
+          @keyframes ds-indeterminate {
+            0%   { left: -40%; }
+            100% { left: 100%; }
+          }
+        </style>
+
+        <div class="ds-subsection">
+          <h3>Skeletons</h3>
+          <div class="demo-grid cols-2">
+            <div class="demo">
+              <div class="demo-label">Card skeleton — mirrors final shape</div>
+              <div style="display: flex; gap: 14px; padding: 16px; border: 1px solid var(--mist); border-radius: var(--r-sm); background: var(--paper);">
+                <div class="skel skel-circle"></div>
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 8px; padding-top: 4px;">
+                  <div class="skel skel-line med"></div>
+                  <div class="skel skel-line long"></div>
+                  <div class="skel skel-line short"></div>
+                </div>
+              </div>
+            </div>
+            <div class="demo">
+              <div class="demo-label">Table row skeleton</div>
+              <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border: 1px solid var(--mist); border-radius: var(--r-sm); background: var(--paper);">
+                <div style="display: flex; gap: 14px; align-items: center;">
+                  <div class="skel skel-circle" style="width: 24px; height: 24px;"></div>
+                  <div class="skel skel-line" style="flex: 1; height: 10px;"></div>
+                  <div class="skel skel-line" style="width: 60px; height: 10px;"></div>
+                  <div class="skel skel-line" style="width: 40px; height: 10px;"></div>
+                </div>
+                <div style="display: flex; gap: 14px; align-items: center;">
+                  <div class="skel skel-circle" style="width: 24px; height: 24px;"></div>
+                  <div class="skel skel-line" style="flex: 1; height: 10px;"></div>
+                  <div class="skel skel-line" style="width: 60px; height: 10px;"></div>
+                  <div class="skel skel-line" style="width: 40px; height: 10px;"></div>
+                </div>
+                <div style="display: flex; gap: 14px; align-items: center;">
+                  <div class="skel skel-circle" style="width: 24px; height: 24px;"></div>
+                  <div class="skel skel-line" style="flex: 1; height: 10px;"></div>
+                  <div class="skel skel-line" style="width: 60px; height: 10px;"></div>
+                  <div class="skel skel-line" style="width: 40px; height: 10px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ds-subsection">
+          <h3>Spinners &amp; progress</h3>
+          <div class="demo-grid cols-3">
+            <div class="demo">
+              <div class="demo-label">Inline spinner — button-bound</div>
+              <div style="display: flex; gap: 16px; align-items: center; padding: 12px 0;">
+                <button class="btn btn-primary"><span class="spinner-sm" style="border-color: rgba(255,255,255,0.4); border-top-color: white;"></span> Saving…</button>
+                <button class="btn"><span class="spinner spinner-sm"></span> Loading</button>
+              </div>
+              <p style="margin: 0; font-size: 12px; color: var(--stone);">Spinners go inside the action they're waiting on.</p>
+            </div>
+            <div class="demo">
+              <div class="demo-label">Determinate progress</div>
+              <div style="display: flex; flex-direction: column; gap: 6px; padding: 14px 0;">
+                <div class="progress"><div class="progress-bar" style="width: 64%;"></div></div>
+                <div style="display: flex; justify-content: space-between; font-size: 11.5px; color: var(--stone);">
+                  <span>Uploading transcripts.pdf</span>
+                  <span>64%</span>
+                </div>
+              </div>
+              <p style="margin: 0; font-size: 12px; color: var(--stone);">Use when total is known (uploads, exports).</p>
+            </div>
+            <div class="demo">
+              <div class="demo-label">Indeterminate progress</div>
+              <div style="padding: 14px 0;">
+                <div class="progress progress-indeterminate"></div>
+                <div style="margin-top: 6px; font-size: 11.5px; color: var(--stone);">Syncing schedule…</div>
+              </div>
+              <p style="margin: 0; font-size: 12px; color: var(--stone);">Background refreshes where duration is unknown.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="ds-subsection">
+          <h3>Rules</h3>
+          <div class="demo-grid cols-3">
+            <div class="demo">
+              <div class="demo-label">Match the shape</div>
+              <p style="margin: 0; font-size: 13px; color: var(--slate); line-height: 1.55;">A skeleton's blocks should occupy the same regions as the final content — same circle for avatar, same row count, same widths.</p>
+            </div>
+            <div class="demo">
+              <div class="demo-label">Hold for ≥ 400ms</div>
+              <p style="margin: 0; font-size: 13px; color: var(--slate); line-height: 1.55;">Don't flash the skeleton if real content arrives in &lt; 200ms. Showing then yanking it feels worse than a brief blank.</p>
+            </div>
+            <div class="demo">
+              <div class="demo-label">Never spinner-blanket</div>
+              <p style="margin: 0; font-size: 13px; color: var(--slate); line-height: 1.55;">A centered spinner over a whole panel is a signal of poor architecture. Render shell + skeletons; load regions independently.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════ ACCESSIBILITY ════════════════════════════════ -->
+      <section class="ds-section" id="accessibility">
+        <h2>Accessibility</h2>
+        <p class="section-lede">
+          A11y is non-negotiable in an education product — students and parents may use screen readers, keyboard navigation, low vision, or have vestibular sensitivities. Target <strong>WCAG 2.2 AA</strong> minimum; aim for AAA on critical text. Test with keyboard only and a screen reader at least once per release.
+        </p>
+
+        <div class="ds-subsection">
+          <h3>Color contrast</h3>
+          <div class="demo-grid cols-2">
+            <div class="demo">
+              <div class="demo-label">Text contrast — verified pairings</div>
+              <div style="display: flex; flex-direction: column; gap: 8px; padding: 8px 0;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <span style="background: var(--paper); color: var(--ink); padding: 6px 10px; border-radius: 6px; font-size: 13px; border: 1px solid var(--mist);">Ink on paper</span>
+                  <span style="font-size: 11.5px; color: var(--success); font-weight: 600;">15.8:1 · AAA</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <span style="background: var(--paper); color: var(--slate); padding: 6px 10px; border-radius: 6px; font-size: 13px; border: 1px solid var(--mist);">Slate on paper</span>
+                  <span style="font-size: 11.5px; color: var(--success); font-weight: 600;">10.4:1 · AAA</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <span style="background: var(--paper); color: var(--stone); padding: 6px 10px; border-radius: 6px; font-size: 13px; border: 1px solid var(--mist);">Stone on paper</span>
+                  <span style="font-size: 11.5px; color: var(--success); font-weight: 600;">5.7:1 · AA</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <span style="background: var(--student); color: var(--paper); padding: 6px 10px; border-radius: 6px; font-size: 13px;">Paper on student</span>
+                  <span style="font-size: 11.5px; color: var(--success); font-weight: 600;">7.4:1 · AAA</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <span style="background: var(--bone); color: var(--silver); padding: 6px 10px; border-radius: 6px; font-size: 13px;">Silver on bone</span>
+                  <span style="font-size: 11.5px; color: var(--error); font-weight: 600;">2.7:1 · FAIL</span>
+                </div>
+              </div>
+              <p style="margin: 8px 0 0; font-size: 12px; color: var(--stone);">Silver is for placeholders only — never set body text in silver.</p>
+            </div>
+            <div class="demo">
+              <div class="demo-label">Don't rely on color alone</div>
+              <div style="display: flex; flex-direction: column; gap: 8px; padding: 8px 0;">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--success);">
+                  <i data-lucide="check-circle" style="width:16px;height:16px;"></i> Submitted
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--warning);">
+                  <i data-lucide="clock" style="width:16px;height:16px;"></i> Due tomorrow
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--error);">
+                  <i data-lucide="alert-circle" style="width:16px;height:16px;"></i> Overdue
+                </div>
+              </div>
+              <p style="margin: 8px 0 0; font-size: 12px; color: var(--stone);">Status always carries a label and an icon — color is reinforcement, never the only cue. ~8% of users have some color vision deficiency.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="ds-subsection">
+          <h3>Focus &amp; keyboard</h3>
+          <div class="demo-grid cols-3">
+            <div class="demo">
+              <div class="demo-label">Visible focus ring</div>
+              <div style="display: flex; gap: 10px; padding: 14px 0;">
+                <button class="btn" style="outline: 2px solid var(--student); outline-offset: 2px;">Focused</button>
+                <button class="btn">Resting</button>
+              </div>
+              <p style="margin: 0; font-size: 12px; color: var(--stone);"><code style="background:var(--bone);padding:1px 4px;border-radius:3px;">:focus-visible</code> ring is 2px <code style="background:var(--bone);padding:1px 4px;border-radius:3px;">var(--student)</code> at 2px offset. Never <code style="background:var(--bone);padding:1px 4px;border-radius:3px;">outline: none</code>.</p>
+            </div>
+            <div class="demo">
+              <div class="demo-label">Tab order matches reading order</div>
+              <p style="margin: 0; font-size: 13px; color: var(--slate); line-height: 1.55;">Don't <code style="background:var(--bone);padding:1px 4px;border-radius:3px;">tabindex</code> elements out of source order. Skip-to-main link hidden until focused.</p>
+            </div>
+            <div class="demo">
+              <div class="demo-label">Keyboard shortcuts</div>
+              <p style="margin: 0; font-size: 13px; color: var(--slate); line-height: 1.55;">Modals close on <span class="kbd">Esc</span>. Menus: <span class="kbd">↑↓</span> to navigate, <span class="kbd">Enter</span> to select. Calendar: <span class="kbd">←→</span> moves the cursor by one unit of the active view.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="ds-subsection">
+          <h3>Motion &amp; reduced motion</h3>
+          <div class="demo-grid cols-2">
+            <div class="demo">
+              <div class="demo-label">Respect prefers-reduced-motion</div>
+              <pre style="margin: 0; padding: 14px 16px; background: var(--ink); color: var(--paper); border-radius: var(--r-sm); font-family: ui-monospace, 'SF Mono', monospace; font-size: 12.5px; line-height: 1.55; overflow-x: auto;"><span style="color: #94A3B8;">/* Disable non-essential motion */</span>
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}</pre>
+              <p style="margin: 8px 0 0; font-size: 12px; color: var(--stone);">Vestibular sensitivities can trigger nausea from parallax + auto-play. Always honor this preference.</p>
+            </div>
+            <div class="demo">
+              <div class="demo-label">Motion principles</div>
+              <ul style="margin: 0; padding-left: 18px; font-size: 13px; color: var(--slate); line-height: 1.7;">
+                <li>Animations under 240ms feel responsive; over 400ms feel sluggish.</li>
+                <li>No autoplay video, no infinite carousels, no parallax on scroll.</li>
+                <li>Toasts and tooltips fade — they don't slide across the viewport.</li>
+                <li>Loading skeletons shimmer subtly (1.4s loop, low contrast).</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="ds-subsection">
+          <h3>Semantics &amp; ARIA</h3>
+          <div class="demo-grid cols-3">
+            <div class="demo">
+              <div class="demo-label">Use real elements first</div>
+              <p style="margin: 0; font-size: 13px; color: var(--slate); line-height: 1.55;"><code style="background:var(--bone);padding:1px 4px;border-radius:3px;">&lt;button&gt;</code> not <code style="background:var(--bone);padding:1px 4px;border-radius:3px;">&lt;div onclick&gt;</code>. <code style="background:var(--bone);padding:1px 4px;border-radius:3px;">&lt;a href&gt;</code> for navigation. Form inputs in <code style="background:var(--bone);padding:1px 4px;border-radius:3px;">&lt;label&gt;</code>.</p>
+            </div>
+            <div class="demo">
+              <div class="demo-label">Landmarks</div>
+              <p style="margin: 0; font-size: 13px; color: var(--slate); line-height: 1.55;">Every page: <code style="background:var(--bone);padding:1px 4px;border-radius:3px;">&lt;header&gt;</code>, <code style="background:var(--bone);padding:1px 4px;border-radius:3px;">&lt;nav&gt;</code>, <code style="background:var(--bone);padding:1px 4px;border-radius:3px;">&lt;main&gt;</code>, <code style="background:var(--bone);padding:1px 4px;border-radius:3px;">&lt;footer&gt;</code>. Single H1 per page.</p>
+            </div>
+            <div class="demo">
+              <div class="demo-label">Live regions</div>
+              <p style="margin: 0; font-size: 13px; color: var(--slate); line-height: 1.55;">Toasts and alerts use <code style="background:var(--bone);padding:1px 4px;border-radius:3px;">role="status"</code> (polite) or <code style="background:var(--bone);padding:1px 4px;border-radius:3px;">role="alert"</code> (assertive) so screen readers announce them.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="ds-subsection">
+          <h3>Touch targets</h3>
+          <div class="demo">
+            <p style="margin: 0; font-size: 13px; color: var(--slate); line-height: 1.55;">Minimum hit target is <strong>44×44 px</strong> (WCAG 2.5.5 AAA, also Apple HIG). Visually smaller controls (icon buttons, chips) get padding to reach this; the visible mark can stay smaller.</p>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ════════════════════════════════ PATTERNS ════════════════════════════════ -->
+      <section class="ds-section" id="patterns">
+        <h2>Page layout patterns</h2>
+        <p class="section-lede">
+          Every page in the portal follows one of three patterns: <strong>Dashboard</strong> (stats row + content grid), <strong>List view</strong> (filters + table or card list), or <strong>Detail view</strong> (page header + tabs + content). Sidebar + topbar chrome is shared.
+        </p>
+
+        <div class="demo" style="padding: 0; overflow: hidden;">
+          <div style="display: grid; grid-template-columns: 100px 1fr; min-height: 320px; background: var(--surface);">
+            <!-- Mini sidebar -->
+            <div style="background: var(--paper); padding: 16px 10px; border-right: 1px solid var(--mist); display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 14px;">
+                <span style="width: 18px; height: 18px; border-radius: 5px; background: var(--student); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 11px; font-weight: 700;">L</span>
+                <span style="font-family: var(--font-display); font-size: 11px; font-weight: 700; color: var(--student);">LINKS</span>
+              </div>
+              <div style="height: 6px; border-radius: 3px; background: var(--bone);"></div>
+              <div style="height: 6px; border-radius: 3px; background: var(--student-soft);"></div>
+              <div style="height: 6px; border-radius: 3px; background: var(--bone);"></div>
+              <div style="height: 6px; border-radius: 3px; background: var(--bone);"></div>
+              <div style="height: 6px; border-radius: 3px; background: var(--bone);"></div>
+              <div style="height: 6px; border-radius: 3px; background: var(--bone); width: 70%;"></div>
+            </div>
+            <div style="padding: 14px 18px;">
+              <!-- Topbar -->
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 18px;">
+                <div style="height: 28px; flex: 1; max-width: 240px; border-radius: 999px; background: var(--paper); box-shadow: var(--shadow-1);"></div>
+                <div style="flex: 1;"></div>
+                <div style="height: 26px; width: 76px; border-radius: 999px; background: var(--student-soft);"></div>
+                <div style="width: 28px; height: 28px; border-radius: 999px; background: linear-gradient(135deg, #FCD34D, #F59E0B);"></div>
+              </div>
+              <!-- Body -->
+              <div style="height: 12px; width: 50%; background: var(--ink); border-radius: 4px; margin-bottom: 6px;"></div>
+              <div style="height: 8px; width: 60%; background: var(--mist); border-radius: 3px; margin-bottom: 16px;"></div>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px;">
+                <div style="height: 64px; background: var(--paper); border-radius: 8px; box-shadow: var(--shadow-1);"></div>
+                <div style="height: 64px; background: var(--paper); border-radius: 8px; box-shadow: var(--shadow-1);"></div>
+                <div style="height: 64px; background: linear-gradient(150deg, #7C3AED, #5B21B6); border-radius: 8px;"></div>
+              </div>
+              <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px;">
+                <div style="height: 90px; background: var(--paper); border-radius: 8px; box-shadow: var(--shadow-1);"></div>
+                <div style="height: 90px; background: var(--paper); border-radius: 8px; box-shadow: var(--shadow-1);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ds-subsection">
+          <h3>The three page archetypes</h3>
+          <div class="demo-grid cols-3">
+            <div class="demo">
+              <div class="demo-label">Dashboard</div>
+              <p style="margin: 0 0 12px; font-size: 13px; color: var(--slate); line-height: 1.55;">Page header → stat row (3–4 cards) → primary content grid (2 col) → secondary feed.</p>
+              <p style="margin: 0; font-size: 12px; color: var(--silver);">Used for: Home, class overviews, my-time hub.</p>
+            </div>
+            <div class="demo">
+              <div class="demo-label">List view</div>
+              <p style="margin: 0 0 12px; font-size: 13px; color: var(--slate); line-height: 1.55;">Page header → filter bar → table or card list → pagination footer.</p>
+              <p style="margin: 0; font-size: 12px; color: var(--silver);">Used for: Materials, Messages list, Calendar table view.</p>
+            </div>
+            <div class="demo">
+              <div class="demo-label">Detail view</div>
+              <p style="margin: 0 0 12px; font-size: 13px; color: var(--slate); line-height: 1.55;">Breadcrumbs → page header → tab strip → tab content (often 2-col with sidecar).</p>
+              <p style="margin: 0; font-size: 12px; color: var(--silver);">Used for: Class detail, lesson, message thread, quiz.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════ TOKENS ════════════════════════════════ -->
+      <section class="ds-section" id="tokens">
+        <h2>Token reference</h2>
+        <p class="section-lede">
+          Every token below is exposed as a CSS custom property in <code style="background: var(--bone); padding: 1px 5px; border-radius: 3px;">styles.css</code>. Reference them — never hard-code hex.
+        </p>
+
+        <div class="card card-flush">
+          <table class="token-table">
+            <thead>
+              <tr><th style="width: 30%;">Variable</th><th style="width: 25%;">Value</th><th>Purpose</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>--student</td><td>#6D28D9</td><td>Primary action, active nav, links, focus</td></tr>
+              <tr><td>--student-deep</td><td>#5B21B6</td><td>Primary hover, deep-on-soft text</td></tr>
+              <tr><td>--student-soft</td><td>#F5F3FF</td><td>Active nav fill, AI Coach pill, low-emphasis bg</td></tr>
+              <tr><td>--instructor / --admin / --parent / --services / --public</td><td>per portal</td><td>Reserved for non-student portals</td></tr>
+              <tr><td>--success / --warning / --error</td><td>parent / services / public</td><td>Semantic states</td></tr>
+              <tr><td>--ink / --slate / --stone / --silver</td><td>#0F172A → #94A3B8</td><td>Text scale, dark to light</td></tr>
+              <tr><td>--mist / --bone</td><td>#E2E8F0 / #F1F5F9</td><td>Hairline borders, hover wash</td></tr>
+              <tr><td>--surface / --paper</td><td>#F7F6FB / #FFFFFF</td><td>App canvas / card</td></tr>
+              <tr><td>--r-xs / --r-sm / --r / --r-lg</td><td>4 / 6 / 12 / 18</td><td>Badges / buttons-inputs / cards / modals</td></tr>
+              <tr><td>--shadow-card / --shadow-card-lg / --shadow-pop</td><td>composite</td><td>Card · raised · floating</td></tr>
+              <tr><td>--font-display / --font-ui</td><td>Poppins / Inter</td><td>Display / UI</td></tr>
+              <tr><td>--row-h / --pad-card</td><td>44 / 24 (compact: 36 / 18)</td><td>Density-aware</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════ GROWTH ════════════════════════════════ -->
+      <section class="ds-section" id="growth">
+        <h2>Growing the system</h2>
+        <p class="section-lede">
+          This system is the v1.0 baseline — captured from the Student Portal as it stands today. As LINKS expands into the other six portals and into new product surfaces, follow these principles so the system grows without fracturing.
+        </p>
+
+        <div class="demo-grid cols-2">
+          <div class="demo">
+            <div class="demo-label">Adding a new component</div>
+            <ol style="margin: 0; padding-left: 18px; line-height: 1.7; font-size: 13.5px; color: var(--slate);">
+              <li>Compose from existing tokens first; never introduce a one-off color or radius.</li>
+              <li>If a token doesn't exist, propose it as <code style="background: var(--bone); padding: 1px 4px; border-radius: 3px;">--name</code> in <code style="background: var(--bone); padding: 1px 4px; border-radius: 3px;">styles.css</code> with a <em>semantic</em> name (purpose, not appearance).</li>
+              <li>Document it here with a demo card and a token row.</li>
+              <li>Replace any inline values across the codebase with the new token.</li>
+            </ol>
+          </div>
+
+          <div class="demo">
+            <div class="demo-label">Adding a new portal</div>
+            <ol style="margin: 0; padding-left: 18px; line-height: 1.7; font-size: 13.5px; color: var(--slate);">
+              <li>Reuse the same chrome (sidebar / topbar / page header).</li>
+              <li>Swap the primary <code style="background: var(--bone); padding: 1px 4px; border-radius: 3px;">--student</code> binding to that portal's role color via a body-level data attribute.</li>
+              <li>Update the portal sub-label under the wordmark.</li>
+              <li>Adjust nav labels and content; do not introduce new component patterns just for that portal.</li>
+            </ol>
+          </div>
+
+          <div class="demo">
+            <div class="demo-label">When you can't find a fit</div>
+            <p style="margin: 0; font-size: 13.5px; color: var(--slate); line-height: 1.6;">
+              If a brief truly demands a pattern this system doesn't cover (a graph, a calendar grid, a media player), build it as a <strong>composition of tokens</strong> — borrow the card surface, the radii, the type scale — rather than treating it as license to invent new visual language.
+            </p>
+          </div>
+
+          <div class="demo">
+            <div class="demo-label">Versioning</div>
+            <p style="margin: 0; font-size: 13.5px; color: var(--slate); line-height: 1.6;">
+              Tag the <code style="background: var(--bone); padding: 1px 4px; border-radius: 3px;">styles.css</code> file with a version comment and bump on every breaking change. Document rename / removal in a changelog at the top of <code style="background: var(--bone); padding: 1px 4px; border-radius: 3px;">styles.css</code> — consumers depend on the variable names.
+            </p>
+          </div>
+        </div>
+
+        <div class="ds-footer">
+          <h3 style="font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--ink); margin: 0 0 8px;">One source of truth</h3>
+          <p style="margin: 0; font-size: 14px; color: var(--slate); line-height: 1.6; max-width: 720px;">
+            This document is the contract between design and engineering. <code style="background: var(--bone); padding: 1px 5px; border-radius: 3px;">styles.css</code> is the implementation. If they disagree, fix both — never let one drift.
+          </p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    // ───────── Calendar component ─────────
+    (function () {
+      const root = document.getElementById('ds-calendar');
+      if (!root) return;
+
+      const titleEl = root.querySelector('[data-cal-title]');
+      const bodyEl = root.querySelector('[data-cal-body]');
+      const peopleEl = root.querySelector('[data-cal-people]');
+      const segmentEl = root.querySelector('[data-cal-segment]');
+      const eventCountEl = root.querySelector('[data-cal-event-count]');
+      const prevBtn = root.querySelector('[data-cal-prev]');
+      const nextBtn = root.querySelector('[data-cal-next]');
+      const todayBtn = root.querySelector('[data-cal-today]');
+
+      // ── People ──
+      const PEOPLE = [
+        { id: 'al', name: 'Alex Chen',     initials: 'AC', color: 'var(--student)',    deep: 'var(--student-deep)', token: '#6D28D9' },
+        { id: 'ji', name: 'Jordan Imani',  initials: 'JI', color: 'var(--instructor)', deep: '#0E2A45',             token: '#153A5B' },
+        { id: 'sk', name: 'Sam Kapoor',    initials: 'SK', color: 'var(--admin)',      deep: '#155570',             token: '#1E6F8C' },
+        { id: 'ml', name: 'Maya Lopez',    initials: 'ML', color: 'var(--services)',   deep: '#B85A1C',             token: '#E07A2D' },
+      ];
+      const peopleById = Object.fromEntries(PEOPLE.map((p) => [p.id, p]));
+
+      // ── Generate sample events ──
+      // Anchored to "today" so the demo always feels current.
+      const TODAY = new Date();
+      TODAY.setHours(0, 0, 0, 0);
+
+      const TITLES_BY_PERSON = {
+        al: ['Driving lesson', 'Math tutoring', 'Theory test prep', 'Mock exam', 'Highway practice', 'Parallel parking', 'Night drive'],
+        ji: ['Lesson — Alex', 'Lesson — Maya', 'Instructor sync', 'New student intake', 'Route planning', 'Refresher session', 'Group debrief'],
+        sk: ['Admin review', 'Compliance audit', 'Staff 1:1', 'Schedule planning', 'Fleet inspection', 'Quarterly report', 'Parent meeting'],
+        ml: ['Family pick-up', 'Parent-teacher', 'Volunteer slot', 'Field trip chaperone', 'School board mtg', 'Booster club', 'Form night'],
+      };
+
+      // Deterministic PRNG so the year looks the same on every reload
+      let _seed = 7;
+      const rand = () => {
+        _seed = (_seed * 9301 + 49297) % 233280;
+        return _seed / 233280;
+      };
+
+      function genEvents() {
+        const events = [];
+        const startYear = TODAY.getFullYear();
+        const start = new Date(startYear, 0, 1);
+        const end = new Date(startYear + 1, 0, 1);
+        for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
+          const dow = d.getDay();
+          for (const p of PEOPLE) {
+            // Density per person varies by weekday + a touch of randomness
+            const baseRate = dow === 0 || dow === 6 ? 0.18 : 0.42;
+            const personMod = { al: 0.0, ji: 0.25, sk: -0.05, ml: -0.12 }[p.id];
+            const r = rand();
+            if (r > baseRate + personMod) continue;
+            // Occasional double-booked day
+            const count = r < 0.05 ? 2 : 1;
+            for (let i = 0; i < count; i++) {
+              const titles = TITLES_BY_PERSON[p.id];
+              const title = titles[Math.floor(rand() * titles.length)];
+              // Hours spread between 8 and 19
+              const startHour = 8 + Math.floor(rand() * 11);
+              const startMin = rand() < 0.5 ? 0 : 30;
+              const dur = [30, 45, 60, 60, 90, 120][Math.floor(rand() * 6)];
+              events.push({
+                personId: p.id,
+                title,
+                date: new Date(d.getFullYear(), d.getMonth(), d.getDate()),
+                startHour, startMin, durMin: dur,
+              });
+            }
+          }
+        }
+        return events;
+      }
+
+      const ALL_EVENTS = genEvents();
+
+      // ── State ──
+      const state = {
+        view: 'month',
+        cursor: new Date(TODAY),
+        active: new Set(PEOPLE.map((p) => p.id)),
+      };
+
+      // ── Helpers ──
+      const sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+      const fmtMonth = (d) => d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+      const fmtMonthShort = (d) => d.toLocaleString('en-US', { month: 'short' });
+      const fmtDayLong = (d) => d.toLocaleString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+      const fmtTime = (h, m) => {
+        const period = h >= 12 ? 'pm' : 'am';
+        const hh = ((h + 11) % 12) + 1;
+        return `${hh}:${String(m).padStart(2, '0')} ${period}`;
+      };
+      const startOfWeek = (d) => {
+        const c = new Date(d);
+        c.setDate(c.getDate() - c.getDay());
+        c.setHours(0, 0, 0, 0);
+        return c;
+      };
+      const visibleEvents = () => ALL_EVENTS.filter((e) => state.active.has(e.personId));
+
+      // ── People chips ──
+      function renderPeople() {
+        peopleEl.innerHTML = '';
+        for (const p of PEOPLE) {
+          const chip = document.createElement('button');
+          const active = state.active.has(p.id);
+          chip.className = 'cal-person-chip' + (active ? ' active' : ' dim');
+          chip.innerHTML = `
+            <span class="cal-person-dot" style="background: ${p.token};">${p.initials}</span>
+            <span>${p.name}</span>
+          `;
+          chip.addEventListener('click', () => {
+            if (state.active.has(p.id)) state.active.delete(p.id);
+            else state.active.add(p.id);
+            // Don't allow zero — re-add if empty
+            if (state.active.size === 0) state.active.add(p.id);
+            renderPeople();
+            render();
+          });
+          peopleEl.appendChild(chip);
+        }
+      }
+
+      // ── Year view ──
+      function renderYear() {
+        const year = state.cursor.getFullYear();
+        titleEl.textContent = String(year);
+
+        const events = visibleEvents();
+        const byDate = new Map();
+        for (const e of events) {
+          if (e.date.getFullYear() !== year) continue;
+          const key = `${e.date.getMonth()}-${e.date.getDate()}`;
+          byDate.set(key, (byDate.get(key) || 0) + 1);
+        }
+        eventCountEl.textContent = events.filter((e) => e.date.getFullYear() === year).length.toLocaleString();
+
+        const dows = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+        const wrap = document.createElement('div');
+        wrap.className = 'cal-year';
+
+        for (let m = 0; m < 12; m++) {
+          const monthDate = new Date(year, m, 1);
+          const daysInMonth = new Date(year, m + 1, 0).getDate();
+          const startDow = monthDate.getDay();
+
+          let monthCount = 0;
+          for (let d = 1; d <= daysInMonth; d++) {
+            const k = `${m}-${d}`;
+            monthCount += byDate.get(k) || 0;
+          }
+
+          const card = document.createElement('div');
+          card.className = 'cal-mini';
+
+          const head = document.createElement('div');
+          head.className = 'cal-mini-head';
+          head.innerHTML = `<span>${fmtMonthShort(monthDate)}</span><span class="cnt">${monthCount}</span>`;
+          card.appendChild(head);
+
+          const dowRow = document.createElement('div');
+          dowRow.className = 'cal-mini-dow';
+          for (const d of dows) {
+            const e = document.createElement('span');
+            e.textContent = d;
+            dowRow.appendChild(e);
+          }
+          card.appendChild(dowRow);
+
+          const grid = document.createElement('div');
+          grid.className = 'cal-mini-grid';
+
+          for (let i = 0; i < startDow; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'cal-mini-day empty';
+            grid.appendChild(cell);
+          }
+          for (let d = 1; d <= daysInMonth; d++) {
+            const cell = document.createElement('button');
+            const count = byDate.get(`${m}-${d}`) || 0;
+            const tier = count === 0 ? 0 : count === 1 ? 1 : count === 2 ? 2 : count <= 4 ? 3 : 4;
+            cell.className = `cal-mini-day d${tier}`;
+            const cellDate = new Date(year, m, d);
+            if (sameDay(cellDate, TODAY)) cell.classList.add('today');
+            cell.textContent = String(d);
+            cell.title = `${cellDate.toDateString()} · ${count} event${count === 1 ? '' : 's'}`;
+            cell.addEventListener('click', () => {
+              state.view = 'day';
+              state.cursor = cellDate;
+              syncSegment();
+              render();
+            });
+            grid.appendChild(cell);
+          }
+          card.appendChild(grid);
+          wrap.appendChild(card);
+        }
+
+        bodyEl.innerHTML = '';
+        bodyEl.appendChild(wrap);
+      }
+
+      // ── Month view ──
+      function renderMonth() {
+        const cursor = state.cursor;
+        const year = cursor.getFullYear();
+        const month = cursor.getMonth();
+        const monthStart = new Date(year, month, 1);
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const startDow = monthStart.getDay();
+        const totalCells = Math.ceil((startDow + daysInMonth) / 7) * 7;
+
+        titleEl.textContent = fmtMonth(cursor);
+
+        const events = visibleEvents().filter((e) => e.date.getFullYear() === year && e.date.getMonth() === month);
+        const byDay = new Map();
+        for (const e of events) {
+          const k = e.date.getDate();
+          if (!byDay.has(k)) byDay.set(k, []);
+          byDay.get(k).push(e);
+        }
+        // Sort each day's events by start time
+        for (const list of byDay.values()) {
+          list.sort((a, b) => (a.startHour * 60 + a.startMin) - (b.startHour * 60 + b.startMin));
+        }
+        eventCountEl.textContent = events.length.toLocaleString();
+
+        const grid = document.createElement('div');
+        grid.className = 'cal-month';
+
+        const dows = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        for (const d of dows) {
+          const h = document.createElement('div');
+          h.className = 'cal-month-dow';
+          h.textContent = d;
+          grid.appendChild(h);
+        }
+
+        for (let i = 0; i < totalCells; i++) {
+          const dayNum = i - startDow + 1;
+          const inMonth = dayNum >= 1 && dayNum <= daysInMonth;
+          const cellDate = new Date(year, month, dayNum);
+          const cell = document.createElement('div');
+          cell.className = 'cal-month-cell' + (inMonth ? '' : ' muted');
+          if (inMonth && sameDay(cellDate, TODAY)) cell.classList.add('today');
+          if (inMonth) {
+            cell.addEventListener('click', () => {
+              state.view = 'day';
+              state.cursor = cellDate;
+              syncSegment();
+              render();
+            });
+          }
+          const numEl = document.createElement('div');
+          numEl.className = 'cal-month-num';
+          numEl.textContent = String(inMonth ? dayNum : (dayNum < 1 ? new Date(year, month, dayNum).getDate() : dayNum - daysInMonth));
+          cell.appendChild(numEl);
+
+          if (inMonth) {
+            const dayEvents = byDay.get(dayNum) || [];
+            const max = 3;
+            for (let j = 0; j < Math.min(max, dayEvents.length); j++) {
+              const ev = dayEvents[j];
+              const p = peopleById[ev.personId];
+              const pill = document.createElement('div');
+              pill.className = 'cal-event';
+              pill.style.background = p.token;
+              pill.textContent = `${fmtTime(ev.startHour, ev.startMin)} ${ev.title}`;
+              cell.appendChild(pill);
+            }
+            if (dayEvents.length > max) {
+              const more = document.createElement('div');
+              more.className = 'cal-month-more';
+              more.textContent = `+${dayEvents.length - max} more`;
+              cell.appendChild(more);
+            }
+          }
+
+          grid.appendChild(cell);
+        }
+
+        bodyEl.innerHTML = '';
+        bodyEl.appendChild(grid);
+      }
+
+      // ── Week view ──
+      const HOUR_START = 7;
+      const HOUR_END = 20; // 13 hours
+
+      function renderWeek() {
+        const weekStart = startOfWeek(state.cursor);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+
+        const sameMonth = weekStart.getMonth() === weekEnd.getMonth();
+        const titleStr = sameMonth
+          ? `${weekStart.toLocaleString('en-US', { month: 'long' })} ${weekStart.getDate()}–${weekEnd.getDate()}, ${weekStart.getFullYear()}`
+          : `${weekStart.toLocaleString('en-US', { month: 'short', day: 'numeric' })} – ${weekEnd.toLocaleString('en-US', { month: 'short', day: 'numeric' })}, ${weekStart.getFullYear()}`;
+        titleEl.textContent = titleStr;
+
+        const events = visibleEvents().filter((e) => e.date >= weekStart && e.date <= new Date(weekEnd.getFullYear(), weekEnd.getMonth(), weekEnd.getDate(), 23, 59));
+        eventCountEl.textContent = events.length.toLocaleString();
+
+        const dows = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const wrap = document.createElement('div');
+        wrap.className = 'cal-week';
+
+        // Header row
+        const head = document.createElement('div');
+        head.className = 'cal-week-head';
+        const gutter = document.createElement('div');
+        gutter.className = 'gutter';
+        head.appendChild(gutter);
+        for (let i = 0; i < 7; i++) {
+          const dayDate = new Date(weekStart);
+          dayDate.setDate(dayDate.getDate() + i);
+          const cell = document.createElement('div');
+          if (sameDay(dayDate, TODAY)) cell.classList.add('today');
+          cell.innerHTML = `<div class="cal-week-day-label">${dows[i]}</div><div class="cal-week-day-num">${dayDate.getDate()}</div>`;
+          head.appendChild(cell);
+        }
+        wrap.appendChild(head);
+
+        // Grid: hours column + 7 day columns
+        const grid = document.createElement('div');
+        grid.className = 'cal-week-grid';
+        const hours = document.createElement('div');
+        hours.className = 'cal-week-hours';
+        for (let h = HOUR_START; h <= HOUR_END; h++) {
+          const cell = document.createElement('div');
+          cell.className = 'cal-week-hour';
+          cell.textContent = h === 12 ? '12 pm' : h > 12 ? `${h - 12} pm` : `${h} am`;
+          hours.appendChild(cell);
+        }
+        grid.appendChild(hours);
+
+        for (let i = 0; i < 7; i++) {
+          const dayDate = new Date(weekStart);
+          dayDate.setDate(dayDate.getDate() + i);
+          const col = document.createElement('div');
+          col.className = 'cal-week-col' + (sameDay(dayDate, TODAY) ? ' today' : '');
+          for (let r = 0; r < 13; r++) {
+            const row = document.createElement('div');
+            row.className = 'cal-week-col-row';
+            col.appendChild(row);
+          }
+
+          // place events
+          const dayEvents = events.filter((e) => sameDay(e.date, dayDate));
+          for (const ev of dayEvents) {
+            const totalMin = (ev.startHour - HOUR_START) * 60 + ev.startMin;
+            if (totalMin < 0) continue;
+            const top = (totalMin / 60) * 48;
+            const height = Math.max(20, (ev.durMin / 60) * 48 - 2);
+            const p = peopleById[ev.personId];
+            const el = document.createElement('div');
+            el.className = 'cal-week-event';
+            el.style.top = `${top}px`;
+            el.style.height = `${height}px`;
+            el.style.background = p.token;
+            el.innerHTML = `<div>${ev.title}</div><div class="ev-time">${fmtTime(ev.startHour, ev.startMin)}</div>`;
+            col.appendChild(el);
+          }
+
+          // "now" indicator on today
+          if (sameDay(dayDate, TODAY)) {
+            const now = new Date();
+            const mins = (now.getHours() - HOUR_START) * 60 + now.getMinutes();
+            if (mins >= 0 && mins <= (HOUR_END - HOUR_START + 1) * 60) {
+              const line = document.createElement('div');
+              line.className = 'cal-week-now';
+              line.style.top = `${(mins / 60) * 48}px`;
+              col.appendChild(line);
+            }
+          }
+
+          grid.appendChild(col);
+        }
+        wrap.appendChild(grid);
+
+        bodyEl.innerHTML = '';
+        bodyEl.appendChild(wrap);
+      }
+
+      // ── Day view ──
+      function renderDay() {
+        const cursor = state.cursor;
+        titleEl.textContent = fmtDayLong(cursor);
+
+        const events = visibleEvents().filter((e) => sameDay(e.date, cursor)).sort((a, b) => (a.startHour * 60 + a.startMin) - (b.startHour * 60 + b.startMin));
+        eventCountEl.textContent = events.length.toLocaleString();
+
+        const wrap = document.createElement('div');
+        wrap.className = 'cal-day';
+
+        // Left grid
+        const grid = document.createElement('div');
+        grid.className = 'cal-day-grid';
+        const inner = document.createElement('div');
+        inner.className = 'cal-day-grid-inner';
+        const hours = document.createElement('div');
+        hours.className = 'cal-day-hours';
+        for (let h = HOUR_START; h <= HOUR_END; h++) {
+          const cell = document.createElement('div');
+          cell.className = 'cal-day-hour';
+          cell.textContent = h === 12 ? '12 pm' : h > 12 ? `${h - 12} pm` : `${h} am`;
+          hours.appendChild(cell);
+        }
+        const col = document.createElement('div');
+        col.className = 'cal-day-col';
+        for (let r = 0; r < 13; r++) {
+          const row = document.createElement('div');
+          row.className = 'cal-day-col-row';
+          col.appendChild(row);
+        }
+
+        // simple side-by-side overlap layout
+        const placed = [];
+        for (const ev of events) {
+          const startMin = (ev.startHour - HOUR_START) * 60 + ev.startMin;
+          const endMin = startMin + ev.durMin;
+          let lane = 0;
+          while (placed.some((pe) => pe.lane === lane && !(endMin <= pe.startMin || startMin >= pe.endMin))) {
+            lane++;
+          }
+          placed.push({ ev, lane, startMin, endMin });
+        }
+        const lanes = Math.max(1, ...placed.map((p) => p.lane + 1));
+
+        for (const { ev, lane, startMin } of placed) {
+          const top = (startMin / 60) * 56;
+          const height = Math.max(30, (ev.durMin / 60) * 56 - 2);
+          const p = peopleById[ev.personId];
+          const el = document.createElement('div');
+          el.className = 'cal-day-event';
+          el.style.top = `${top}px`;
+          el.style.height = `${height}px`;
+          el.style.background = p.token;
+          const widthPct = 100 / lanes;
+          el.style.left = `calc(${lane * widthPct}% + 6px)`;
+          el.style.width = `calc(${widthPct}% - 12px)`;
+          el.innerHTML = `
+            <div class="ev-title">${ev.title}</div>
+            <div class="ev-time">${fmtTime(ev.startHour, ev.startMin)} · ${ev.durMin} min</div>
+            <div class="ev-people">
+              <span class="av" style="background: ${p.token};">${p.initials}</span>
+            </div>
+          `;
+          col.appendChild(el);
+        }
+
+        if (sameDay(cursor, TODAY)) {
+          const now = new Date();
+          const mins = (now.getHours() - HOUR_START) * 60 + now.getMinutes();
+          if (mins >= 0 && mins <= (HOUR_END - HOUR_START + 1) * 60) {
+            const line = document.createElement('div');
+            line.className = 'cal-week-now';
+            line.style.top = `${(mins / 60) * 56}px`;
+            col.appendChild(line);
+          }
+        }
+
+        inner.appendChild(hours);
+        inner.appendChild(col);
+        grid.appendChild(inner);
+        wrap.appendChild(grid);
+
+        // Right side: event list
+        const side = document.createElement('div');
+        side.className = 'cal-day-side';
+        side.innerHTML = '<h4>Schedule</h4>';
+        const list = document.createElement('div');
+        list.className = 'cal-side-list';
+        if (events.length === 0) {
+          const empty = document.createElement('div');
+          empty.className = 'cal-day-empty';
+          empty.textContent = 'No events for the selected people.';
+          side.appendChild(empty);
+        } else {
+          for (const ev of events) {
+            const p = peopleById[ev.personId];
+            const row = document.createElement('div');
+            row.className = 'cal-side-row';
+            row.innerHTML = `
+              <div class="stripe" style="background: ${p.token};"></div>
+              <div class="body">
+                <div class="title">${ev.title}</div>
+                <div class="meta">
+                  <span>${fmtTime(ev.startHour, ev.startMin)}</span>
+                  <span style="width: 3px; height: 3px; border-radius: 50%; background: var(--silver);"></span>
+                  <span>${ev.durMin} min</span>
+                  <span style="width: 3px; height: 3px; border-radius: 50%; background: var(--silver);"></span>
+                  <span style="display: inline-flex; align-items: center; gap: 5px;">
+                    <span class="cal-person-dot" style="background: ${p.token}; width: 14px; height: 14px; font-size: 8px;">${p.initials}</span>
+                    ${p.name}
+                  </span>
+                </div>
+              </div>
+            `;
+            list.appendChild(row);
+          }
+          side.appendChild(list);
+        }
+        wrap.appendChild(side);
+
+        bodyEl.innerHTML = '';
+        bodyEl.appendChild(wrap);
+      }
+
+      // ── Master render + nav ──
+      function render() {
+        if (state.view === 'year') renderYear();
+        else if (state.view === 'month') renderMonth();
+        else if (state.view === 'week') renderWeek();
+        else if (state.view === 'day') renderDay();
+      }
+      function syncSegment() {
+        segmentEl.querySelectorAll('button').forEach((b) => {
+          b.classList.toggle('active', b.dataset.view === state.view);
+        });
+      }
+      segmentEl.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-view]');
+        if (!btn) return;
+        state.view = btn.dataset.view;
+        syncSegment();
+        render();
+      });
+      prevBtn.addEventListener('click', () => {
+        const c = state.cursor;
+        if (state.view === 'year') c.setFullYear(c.getFullYear() - 1);
+        else if (state.view === 'month') c.setMonth(c.getMonth() - 1);
+        else if (state.view === 'week') c.setDate(c.getDate() - 7);
+        else c.setDate(c.getDate() - 1);
+        render();
+      });
+      nextBtn.addEventListener('click', () => {
+        const c = state.cursor;
+        if (state.view === 'year') c.setFullYear(c.getFullYear() + 1);
+        else if (state.view === 'month') c.setMonth(c.getMonth() + 1);
+        else if (state.view === 'week') c.setDate(c.getDate() + 7);
+        else c.setDate(c.getDate() + 1);
+        render();
+      });
+      todayBtn.addEventListener('click', () => {
+        state.cursor = new Date(TODAY);
+        render();
+      });
+
+      renderPeople();
+      render();
+    })();
+
+    // Sidebar nav active state on scroll
+    const sections = document.querySelectorAll(".ds-section, #overview");
+    const links = document.querySelectorAll(".ds-nav-link");
+    const linkById = {};
+    links.forEach((l) => { linkById[l.getAttribute("href").slice(1)] = l; });
+
+    const setActive = (id) => {
+      links.forEach((l) => l.classList.remove("active"));
+      if (linkById[id]) linkById[id].classList.add("active");
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      // pick the topmost entry that's intersecting
+      const visible = entries
+        .filter((e) => e.isIntersecting)
+        .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      if (visible[0]) setActive(visible[0].target.id);
+    }, { rootMargin: "-20% 0px -70% 0px" });
+
+    sections.forEach((s) => { if (s.id) observer.observe(s); });
+
+    // Smooth-scroll
+    links.forEach((l) => {
+      l.addEventListener("click", (e) => {
+        const href = l.getAttribute("href");
+        if (!href || !href.startsWith("#")) return;
+        const target = document.getElementById(href.slice(1));
+        if (!target) return;
+        e.preventDefault();
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        history.replaceState(null, "", href);
+      });
+    });
+  </script>
+  <script>
+    // Render any data-lucide placeholders inserted after the iconography section
+    if (window.lucide && lucide.createIcons) lucide.createIcons();
+  </script>
+</body>
+</html>
