@@ -1,8 +1,22 @@
+# Claude Code local settings
+.claude/
+
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+
+# Backups
 *.bak
-__pycache__/
-*.pyc
+
+# Large office/PDF files (keep source assets out of git)
+*.xlsx
+*.docx
+*.pdf
+
+# Node / npm (if ever added)
 node_modules/
+
+# Uploads & generated assets
+uploads/
 .env
-.claude/settings.local.json
-.claude/launch.json

@@ -22,22 +22,10 @@
   --success: var(--parent);
   --warning: var(--services);
   --error: var(--public);
-  --danger: #E04C4C;
-  --info: #3B82F6;
 
   --success-soft: #E8F4EE;
   --warning-soft: #FBEFE2;
   --error-soft: #F7E2DF;
-
-  /* Tint-scale aliases used by calendar and other components */
-  --danger-50:  #FEF3F2;
-  --danger-100: #FECDCA;
-  --danger-300: #F87171;
-  --info-50:    #EFF6FF;
-  --info-100:   #DBEAFE;
-  --info-300:   #93C5FD;
-  --success-50: var(--success-soft);
-  --warning-50: var(--warning-soft);
 
   /* Neutrals — warm-cool slate, never hard greys */
   --ink: #0F172A;
@@ -87,8 +75,8 @@
 
   /* Shadows — soft elevation, must read as float not hairline */
   --shadow-1: 0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-card: 0 1px 3px rgba(15,23,42,0.06), 0 10px 24px -6px rgba(15,23,42,0.14), 0 24px 48px -16px rgba(15,23,42,0.10);
-  --shadow-card-lg: 0 2px 6px rgba(15,23,42,0.08), 0 18px 40px -10px rgba(15,23,42,0.18), 0 32px 64px -20px rgba(15,23,42,0.12);
+  --shadow-card: 0 2px 8px rgba(0,0,0,0.12), 0 8px 24px rgba(0,0,0,0.18);
+  --shadow-card-lg: 0 4px 12px rgba(0,0,0,0.16), 0 16px 40px rgba(0,0,0,0.24);
   --shadow-pop: 0 12px 32px -8px rgba(15, 23, 42, 0.20), 0 2px 6px rgba(15,23,42,0.08);
 }
 
@@ -114,6 +102,14 @@ html, body {
 
 button { font-family: inherit; cursor: pointer; }
 input, textarea, select { font-family: inherit; }
+
+/* ── Portfolio page ───────────────────────────────────────────────── */
+.portfolio-page { background: #FFFFFF !important; }
+.portfolio-card { box-shadow: 0 2px 8px rgba(0,0,0,0.12), 0 8px 24px rgba(0,0,0,0.18) !important; }
+
+/* ── Desk page (friendly dashboard restyle) ───────────────────────── */
+.desk-page  { background: #F4F5FA !important; }
+.desk-card  { box-shadow: 0 2px 16px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04) !important; border: none !important; }
 
 /* Typographic scale — weight contrast does the work, per brief */
 .t-display {
@@ -693,38 +689,6 @@ button:not(.btn-bare):not([data-bare]):active {
 
 @keyframes drawerIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
 @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
-
-/* Biology class page — responsive grids */
-.bio-grades-grid {
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  gap: 14px;
-}
-.bio-doc-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-.bio-quicklaunch-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
-}
-
-/* Tablet — collapse multi-column areas to single column */
-@media (max-width: 1100px) {
-  .bio-grades-grid { grid-template-columns: 1fr; }
-  .bio-doc-grid { grid-template-columns: 1fr; }
-  .bio-quicklaunch-grid { grid-template-columns: repeat(3, 1fr); }
-  .bio-today-sidebar { grid-template-columns: 1fr !important; }
-  .bio-today-top { grid-template-columns: 1fr !important; }
-  .bio-twoup { grid-template-columns: 1fr !important; }
-  .bio-growth-top { grid-template-columns: 1fr !important; }
-  .bio-improve-grid { grid-template-columns: 1fr !important; }
-}
-@media (max-width: 780px) {
-  .bio-quicklaunch-grid { grid-template-columns: repeat(2, 1fr); }
-}
 
 /* Utility */
 .row { display: flex; align-items: center; }

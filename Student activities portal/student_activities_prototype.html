@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Activities Portal — Prototype</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.40.0/tabler-icons.min.css">
+<style>
+  :root {
+    --color-background-primary: #ffffff;
+    --color-background-secondary: #F5F4EE;
+    --color-background-tertiary: #FAF9F5;
+    --color-background-info: #DBEAFB;
+    --color-background-danger: #FBE6E6;
+    --color-text-primary: #141413;
+    --color-text-secondary: #6B6A66;
+    --color-text-tertiary: #A0A09C;
+    --color-text-info: #0C447C;
+    --color-text-danger: #A32D2D;
+    --color-border-secondary: #C4C3BC;
+    --color-border-tertiary: #E5E4DD;
+    --color-border-info: #5BA0DE;
+    --border-radius-md: 6px;
+    --border-radius-lg: 10px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 20px;
+    background: #f0efe9;
+    color: var(--color-text-primary);
+    font-size: 14px;
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  button {
+    background: var(--color-background-primary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-md);
+    padding: 6px 12px;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--color-text-primary);
+  }
+  button:hover { background: var(--color-background-secondary); }
+  input, select, textarea {
+    background: var(--color-background-primary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-md);
+    padding: 6px 10px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--color-text-primary);
+  }
+  .sap-tab { padding: 12px 14px; font-size: 14px; color: var(--color-text-secondary); white-space: nowrap; display: flex; align-items: center; gap: 6px; cursor: pointer; border-bottom: 2px solid transparent; user-select: none; position: relative; }
+  .sap-tab:hover { color: var(--color-text-primary); }
+  .sap-tab.active { font-weight: 500; color: var(--color-text-primary); border-bottom-color: var(--color-text-primary); }
+  .sap-tab-badge { background: var(--color-background-danger); color: var(--color-text-danger); font-size: 10px; font-weight: 500; border-radius: 999px; padding: 1px 6px; min-width: 16px; text-align: center; }
+  .sap-panel { display: none; }
+  .sap-panel.active { display: block; }
+  .sap-card { background: var(--color-background-primary); border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); padding: 14px 16px; }
+  .sap-pill { font-size: 11px; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+  .sap-cal-day { aspect-ratio: 1; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 6px; font-size: 12px; display: flex; flex-direction: column; gap: 2px; min-height: 70px; background: var(--color-background-primary); cursor: pointer; user-select: none; }
+  .sap-cal-day:hover { border-color: var(--color-border-secondary); }
+  .sap-cal-day.muted { background: transparent; color: var(--color-text-tertiary); cursor: default; }
+  .sap-cal-day.muted:hover { border-color: var(--color-border-tertiary); }
+  .sap-cal-day.today { border: 1.5px solid var(--color-border-info); }
+  .sap-cal-day.selected { background: var(--color-background-info); border-color: var(--color-border-info); }
+  .sap-event-dot { font-size: 10px; padding: 1px 5px; border-radius: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+  .sap-filter-chip { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 0.5px solid var(--color-border-tertiary); cursor: pointer; user-select: none; background: var(--color-background-primary); }
+  .sap-filter-chip.on { background: var(--color-text-primary); color: var(--color-background-primary); border-color: var(--color-text-primary); }
+  .sap-overflow-btn { width: 30px; height: 30px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; color: var(--color-text-secondary); position: relative; flex-shrink: 0; }
+  .sap-overflow-btn:hover { background: var(--color-background-secondary); }
+  .sap-overflow-menu { position: absolute; right: 0; top: 36px; background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 4px; min-width: 200px; z-index: 50; box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
+  .sap-overflow-item { padding: 8px 10px; font-size: 13px; cursor: pointer; border-radius: var(--border-radius-md); display: flex; align-items: center; gap: 10px; color: var(--color-text-primary); white-space: nowrap; }
+  .sap-overflow-item:hover { background: var(--color-background-secondary); }
+  .sap-overflow-item.danger { color: var(--color-text-danger); }
+  .sap-overflow-divider { height: 0.5px; background: var(--color-border-tertiary); margin: 4px 0; }
+  .sap-hidden { display: none !important; }
+  .sap-unread-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-background-danger); display: inline-block; flex-shrink: 0; }
+  .sap-ann-card.read { opacity: 0.6; }
+  .sap-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
+  .sap-modal-box { background: var(--color-background-primary); border-radius: var(--border-radius-lg); padding: 20px; max-width: 560px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.25); }
+  .sap-event-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 0.5px solid var(--color-border-tertiary); }
+  .sap-event-row:first-child { border-top: none; padding-top: 4px; }
+  .sap-section-label { font-size: 11px; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; margin: 14px 0 6px; }
+  .sap-section-label:first-child { margin-top: 0; }
+</style>
+</head>
+<body>
+
+<!--
+=================================================================
+STUDENT ACTIVITIES PORTAL — INTERACTIVE PROTOTYPE
+=================================================================
+This is an HTML/CSS/JS mockup. It demonstrates UX flows and layout.
+No real data, no backend. See HANDOFF.docx for next steps.
+=================================================================
+-->
+
+<div style="background: var(--color-background-tertiary); border-radius: var(--border-radius-lg); padding: 0; overflow: hidden; border: 0.5px solid var(--color-border-tertiary); position: relative;">
+
+  <div style="background: var(--color-background-primary); padding: 14px 20px; border-bottom: 0.5px solid var(--color-border-tertiary); display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <i class="ti ti-school" style="font-size: 20px; color: var(--color-text-secondary);"></i>
+      <span style="font-size: 15px; font-weight: 500;">Activities</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <div style="position: relative;">
+        <i class="ti ti-bell" style="font-size: 18px; color: var(--color-text-secondary);"></i>
+        <span id="sap-bell-badge" style="position: absolute; top: -4px; right: -6px; background: var(--color-background-danger); color: var(--color-text-danger); font-size: 10px; font-weight: 500; border-radius: 999px; padding: 1px 5px;">4</span>
+      </div>
+      <div style="width: 30px; height: 30px; border-radius: 50%; background: var(--color-background-info); display: flex; align-items: center; justify-content: center; font-weight: 500; font-size: 12px; color: var(--color-text-info);">JK</div>
+    </div>
+  </div>
+
+  <div style="background: var(--color-background-primary); padding: 0 20px; border-bottom: 0.5px solid var(--color-border-tertiary); display: flex; gap: 4px; overflow-x: auto;" id="sap-tabs">
+    <div class="sap-tab" data-tab="discover"><i class="ti ti-compass" style="font-size:16px"></i>Discover</div>
+    <div class="sap-tab active" data-tab="my"><i class="ti ti-bookmark" style="font-size:16px"></i>My activities</div>
+    <div class="sap-tab" data-tab="calendar"><i class="ti ti-calendar" style="font-size:16px"></i>Events calendar</div>
+    <div class="sap-tab" data-tab="signups"><i class="ti ti-clipboard-list" style="font-size:16px"></i>Sign ups &amp; tryouts</div>
+    <div class="sap-tab" data-tab="announcements"><i class="ti ti-speakerphone" style="font-size:16px"></i>Announcements<span class="sap-tab-badge" id="sap-ann-tab-badge">4</span></div>
+  </div>
+
+  <!-- See HANDOFF document for the full feature list per tab. -->
+  <!-- For brevity, this file refers you to the live v4 prototype on Claude.ai. -->
+  <!-- The complete working code is preserved in the conversation that produced this handoff. -->
+
+  <div class="sap-panel active" data-panel="placeholder" style="padding: 40px 20px; text-align: center;">
+    <i class="ti ti-info-circle" style="font-size: 32px; color: var(--color-text-secondary);"></i>
+    <h2 style="margin: 16px 0 8px; font-size: 18px; font-weight: 500;">Prototype reference file</h2>
+    <p style="color: var(--color-text-secondary); font-size: 13px; max-width: 480px; margin: 0 auto;">
+      The full interactive prototype lives in the Claude.ai conversation that generated this handoff.
+      Use the HANDOFF.docx to recreate it in Claude Cowork with the prompts provided.
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>

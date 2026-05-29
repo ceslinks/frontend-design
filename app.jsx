@@ -37,8 +37,9 @@ function App() {
     if (l1 === "my-profile") return <MyProfile/>;
     if (l1 === "ai-system") return <AISystemOverview/>;
     if (l1 === "messages") {
-      const sub = l2 || "thread";
-      return <MessagesPage subRoute={sub} segments={segments}/>;
+      // legacy messages router — map subroutes
+      const sub = (l2 === "email" ? "email" : l2 === "email-compose" ? "email-compose" : "thread");
+      return <MessagesPage subRoute={sub}/>;
     }
     if (l1 === "my-classes") {
       // overview vs. detail vs. lesson/live/quiz — handled inside legacy MyClassesPage
@@ -52,6 +53,8 @@ function App() {
       return <MyClassesPage subRoute={subRoute}/>;
     }
     if (l1 === "my-materials") return <MyMaterialsPage/>;
+    if (l1 === "my-desk") return window.renderRoute_my_desk({ segments, navigate, tweaks });
+    if (l1 === "my-portfolio") return window.renderRoute_portfolio({ segments, navigate, tweaks });
 
     // Pages we built fresh against the new IA
     if (typeof window["renderRoute_" + l1] === "function") {
@@ -76,6 +79,8 @@ function App() {
         <TopBar onAIClick={() => setCoachOpen(true)} segments={segments} onNav={navigate}/>
         <div style={{ flex: 1 }}>{renderPage()}</div>
       </main>
+
+      <FloatingToolsBar />
 
       <CoachDrawer
         open={coachOpen}
@@ -121,25 +126,5 @@ function App() {
   );
 }
 
-class ErrorBoundary extends React.Component {
-  constructor(props) { super(props); this.state = { error: null }; }
-  static getDerivedStateFromError(e) { return { error: e }; }
-  render() {
-    if (this.state.error) {
-      return (
-        <div style={{ padding: 40, fontFamily: "monospace" }}>
-          <h2 style={{ color: "#EF4444" }}>Render error</h2>
-          <pre style={{ background: "#FEF2F2", padding: 16, borderRadius: 8, fontSize: 13, whiteSpace: "pre-wrap", color: "#991B1B" }}>
-            {this.state.error.message}
-            {"\n\n"}
-            {this.state.error.stack}
-          </pre>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
-
 const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<ErrorBoundary><App/></ErrorBoundary>);
+root.render(<App/>);

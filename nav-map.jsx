@@ -20,14 +20,9 @@ const NAV_MAP = [
   { id: "home", label: "Home", icon: "Home" },
 
   {
-    id: "my-time", label: "My Time", icon: "Time", hasLanding: true,
+    id: "my-time", label: "My Time", icon: "Time",
     children: [
-      { id: "my-schedule",   label: "My Schedule",   icon: "Clock",
-        children: [
-          { id: "schedule", label: "Schedule", icon: "Calendar"   },
-          { id: "projects", label: "Projects", icon: "ListChecks" },
-        ],
-      },
+      { id: "my-schedule",   label: "My Schedule",   icon: "Clock" },
       { id: "my-calendar",   label: "My Calendar",   icon: "Calendar" },
       { id: "study-planner", label: "Study Planner", icon: "Lightbulb", badge: "AI" },
     ],
@@ -56,7 +51,6 @@ const NAV_MAP = [
     children: [
       { id: "overview",            label: "Overview",          icon: "Home" },
       { id: "clubs",               label: "Clubs & Organizations", icon: "Team" },
-      { id: "events",              label: "Events",            icon: "Calendar" },
       { id: "athletics",           label: "Athletics",         icon: "Soccer",
         children: [
           { id: "dashboard",        label: "Dashboard",        icon: "ChartBar" },
@@ -70,6 +64,7 @@ const NAV_MAP = [
           },
         ],
       },
+      { id: "events",              label: "Events",            icon: "Calendar" },
       { id: "signups",             label: "Sign-Ups & Tryouts",icon: "Check" },
       { id: "announcements",       label: "Announcements",     icon: "Bell" },
     ],
@@ -92,15 +87,11 @@ const NAV_MAP = [
   {
     id: "my-team", label: "My Team", icon: "Team",
     children: [
-      { id: "overview",      label: "Overview",      icon: "Home"   },
+      { id: "overview",      label: "Overview",      icon: "Home" },
       { id: "teachers",      label: "Teachers",      icon: "School" },
-      { id: "advisors",      label: "Advisors",      icon: "User"   },
+      { id: "advisors",      label: "Advisors",      icon: "User" },
       { id: "coaches",       label: "Coaches",       icon: "Soccer" },
-      { id: "support",       label: "Support Staff", icon: "Heart"  },
-      { id: "doctors",       label: "Doctors",    icon: "Heart"  },
-      { id: "counselors",    label: "Counselors", icon: "User"   },
-      { id: "home-team",     label: "Home Team",            icon: "Home"   },
-      { id: "resources",     label: "Resources & Support",  icon: "LifeBuoy" },
+      { id: "support",       label: "Support Staff", icon: "Heart" },
     ],
   },
 
@@ -149,7 +140,7 @@ function findL1ForRoute(segments) {
 function parseRoute(hash) {
   // Accepts "#/foo/bar/baz" or "#foo" or ""; returns array of segments.
   if (!hash || hash === "#" || hash === "#/") return ["home"];
-  const m = hash.replace(/^#\/?/, "").replace(/\/$/, "").split("?")[0];
+  const m = hash.replace(/^#\/?/, "").replace(/\/$/, "");
   if (!m) return ["home"];
   return m.split("/").filter(Boolean);
 }

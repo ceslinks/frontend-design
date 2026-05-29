@@ -1,1324 +1,3657 @@
-// LINKS — My Desk (humanized)
-// L1 surface that is the student's *active workspace*. Per the MCG, this is
-// the home for in-flight work, captured thinking, saved files, pinned links,
-// and the daily lunch surface. We render six L2 panes from a single page so
-// state and chrome stay consistent.
+// LINKS — My Desk (refactored)
+// Student workspace dashboard with 4 tabs:
+// My Menu (dietary filters, lunch selection)
+// My Tools (quick-access app grid)
+// Files (file upload & management)
+// Bookmarks (URL bookmarks with tag filtering)
 //
-// VISUAL DIRECTION (May 26 revision)
-// "My Desk" should *feel* like a desk. Lean into the design system's tactile
-// layer (paper, washi tape, pushpins, polaroid frames, ±3° tilt budget) so
-// data has weight and personality without sacrificing legibility. Clinical
-// cards stay for dense data (file table, storage); everything that maps to
-// a real-world object becomes one — sticky notes ARE sticky notes, the lunch
-// pick IS a cafeteria ticket, bookmarks ARE clipped scraps, the AI nudges
-// are a Post-it pad. Rotation budget: ±3° max per object.
+// Uses internal state tabs for smoother UX with complex interactive state
 
-/* ============================================================
-   L2 tabs (matches NAV_MAP children for "my-desk")
-   ============================================================ */
-function DeskTabs({ segments }) {
-  const tabs = [
-    { id: "overview",  label: "Overview" },
-    { id: "my-menu",   label: "My Menu" },
-    { id: "my-tools",  label: "My Tools" },
-    { id: "notes",     label: "Notes" },
-    { id: "files",     label: "Files" },
-    { id: "bookmarks", label: "Bookmarks" },
-  ];
-  const active = segments[1] || "overview";
+const React = window.React;
+
+const COLORS = {
+  text: "#25253A",
+  textMuted: "#9090A8",
+  bg: "#F4F5FA",
+  surface: "#FFFFFF",
+  border: "#E8EAF2",
+  mint: "#A8E6CF",
+  coral: "#FFB5A7",
+  lavender: "#D4C5F9",
+  sky: "#B8D9FF",
+  yellow: "#FFE8A3",
+  teal: "#9fe1cb",
+  darkGreen: "#1a3a2a",
+  veg: "#27500A",
+  gf: "#185FA5",
+  halal: "#9fe1cb",
+  df: "#E07A2D",
+  allergen: "#E07A2D",
+  fileXLS: "#27500A",
+  filePDF: "#FFD4B4",
+  filePPT: "#E07A2D",
+  fileDOC: "#185FA5",
+  gold: "#FFD700",
+};
+
+const SOFT_SHADOW = "0 4px 20px rgba(0, 0, 0, 0.10)";
+const SUBTLE_SHADOW = "0 2px 12px rgba(0, 0, 0, 0.06)";
+const CARD_SHADOW = "0 2px 16px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04)";
+
+// ============================================================
+// DATA STRUCTURES
+// ============================================================
+
+const MENU_ITEMS = [
+  {
+    id: "m1",
+    name: "Pasta Primavera",
+    description: "Garden vegetables with seasonal pasta",
+    diets: "veg gf",
+    allergens: ["eggs"],
+    calories: 420,
+    ingredients: "Pasta, zucchini, bell peppers, tomatoes, garlic, olive oil, basil, parmesan cheese",
+  },
+  {
+    id: "m2",
+    name: "Grilled Chicken Bowl",
+    description: "Herb-marinated chicken with quinoa",
+    diets: "gf",
+    allergens: [],
+    calories: 520,
+    ingredients: "Chicken breast, quinoa, broccoli, carrots, lemon juice, herbs, olive oil",
+  },
+  {
+    id: "m3",
+    name: "Falafel Wrap",
+    description: "Crispy falafel with tahini sauce",
+    diets: "veg halal",
+    allergens: ["sesame", "nuts"],
+    calories: 480,
+    ingredients: "Chickpeas, tahini, garlic, lemon, cumin, whole wheat wrap, lettuce, tomato",
+  },
+  {
+    id: "m4",
+    name: "Salmon Teriyaki",
+    description: "Pan-seared salmon with brown rice",
+    diets: "gf halal",
+    allergens: ["fish", "soy"],
+    calories: 580,
+    ingredients: "Salmon fillet, brown rice, soy sauce, ginger, garlic, bok choy, sesame oil",
+  },
+  {
+    id: "m5",
+    name: "Caprese Salad",
+    description: "Fresh mozzarella, tomato, basil",
+    diets: "veg gf",
+    allergens: ["dairy"],
+    calories: 280,
+    ingredients: "Fresh mozzarella, vine tomatoes, fresh basil, balsamic vinegar, olive oil, sea salt",
+  },
+  {
+    id: "m6",
+    name: "Vegetable Stir-fry",
+    description: "Mixed vegetables with tofu",
+    diets: "veg gf halal",
+    allergens: ["soy"],
+    calories: 350,
+    ingredients: "Tofu, broccoli, snap peas, mushrooms, carrots, ginger, soy sauce, garlic, rice oil",
+  },
+];
+
+const DIETARY_FILTERS = [
+  { id: "veg", label: "Vegetarian", color: COLORS.veg },
+  { id: "gf", label: "Gluten Free", color: COLORS.gf },
+  { id: "halal", label: "Halal", color: COLORS.halal },
+  { id: "df", label: "Dairy Free", color: COLORS.df },
+  { id: "no-nuts", label: "No Nuts", color: "#D97706" },
+  { id: "no-eggs", label: "No Eggs", color: "#EC4899" },
+];
+
+// This week's menu organized by day
+const WEEK_MENU = [
+  {
+    day: "Wednesday",
+    date: "May 15, 2026",
+    isToday: false,
+    items: ["m1", "m2", "m5"],
+  },
+  {
+    day: "Thursday",
+    date: "May 16, 2026",
+    isToday: true,
+    items: ["m2", "m3", "m4"],
+  },
+  {
+    day: "Friday",
+    date: "May 17, 2026",
+    isToday: false,
+    items: ["m1", "m4", "m6"],
+  },
+];
+
+// Cycle menu organized by category
+const CYCLE_MENU = {
+  proteins: [
+    {
+      id: "p1",
+      name: "Free-range Chicken",
+      description: "Herb-marinated breast, oven-roasted",
+      diets: "gf halal",
+      allergens: [],
+      calories: 520,
+    },
+    {
+      id: "p2",
+      name: "Wild-caught Salmon",
+      description: "Pan-seared fillet with lemon",
+      diets: "gf halal",
+      allergens: ["fish"],
+      calories: 580,
+    },
+    {
+      id: "p3",
+      name: "House-made Falafel",
+      description: "Chickpea patties, tahini sauce",
+      diets: "veg halal",
+      allergens: ["sesame", "nuts"],
+      calories: 480,
+    },
+  ],
+  vegetables: [
+    {
+      id: "v1",
+      name: "Spring Greens",
+      description: "Spring harvest, garlic, lemon zest",
+      diets: "veg gf halal df",
+      allergens: [],
+      calories: 60,
+    },
+    {
+      id: "v2",
+      name: "Roasted Broccoli",
+      description: "Seasonal florets, olive oil, herbs",
+      diets: "veg gf halal df",
+      allergens: [],
+      calories: 80,
+    },
+    {
+      id: "v3",
+      name: "Carrot & Squash",
+      description: "Early season root vegetables, roasted",
+      diets: "veg gf halal df",
+      allergens: [],
+      calories: 90,
+    },
+  ],
+  staples: [
+    {
+      id: "s1",
+      name: "Brown Rice",
+      description: "Whole grain, offered daily",
+      diets: "veg gf halal df",
+      allergens: [],
+      calories: 215,
+    },
+    {
+      id: "s2",
+      name: "Mixed Greens",
+      description: "Fresh salad base, available daily",
+      diets: "veg gf halal df",
+      allergens: [],
+      calories: 25,
+    },
+    {
+      id: "s3",
+      name: "Seasonal Fruit Bowl",
+      description: "Local, in-season selection",
+      diets: "veg gf halal df",
+      allergens: [],
+      calories: 120,
+    },
+  ],
+};
+
+const TOOLS = [
+  {
+    id: "calc",
+    name: "Calculator",
+    description: "Basic arithmetic & conversions",
+    icon: "calc",
+    bgColor: "#FFD4B4",
+  },
+  {
+    id: "draw",
+    name: "Drawing",
+    description: "Sketch & paint tool",
+    icon: "draw",
+    bgColor: "#E8D5F2",
+  },
+  {
+    id: "sticky",
+    name: "Sticky Notes",
+    description: "Quick note-taking",
+    icon: "note",
+    bgColor: "#FFF4D4",
+  },
+  {
+    id: "write",
+    name: "Writing",
+    description: "Word processor",
+    icon: "write",
+    bgColor: "#D4E8FF",
+  },
+  {
+    id: "present",
+    name: "Presentation",
+    description: "Slide builder",
+    icon: "slides",
+    bgColor: "#A8D5BA",
+  },
+  {
+    id: "graphic",
+    name: "Graphic Design",
+    description: "Design templates",
+    icon: "design",
+    bgColor: "#FFD4B4",
+  },
+  {
+    id: "audio",
+    name: "Audio",
+    description: "Record & edit sound",
+    icon: "audio",
+    bgColor: "#E8D5F2",
+  },
+  {
+    id: "video",
+    name: "Video",
+    description: "Video editor",
+    icon: "video",
+    bgColor: "#D4E8FF",
+  },
+];
+
+const FILES_MOCK = [
+  {
+    id: "f1",
+    name: "Biology Notes",
+    subLabel: "Shared with Mr. Rivera",
+    class: "Biology",
+    type: "XLS",
+    source: "You",
+    size: "245 KB",
+    updated: "May 8",
+    starred: true,
+    shared: true,
+  },
+  {
+    id: "f2",
+    name: "History Essay",
+    subLabel: "Submitted",
+    class: "History",
+    type: "DOC",
+    source: "You",
+    size: "156 KB",
+    updated: "May 6",
+    starred: false,
+    shared: false,
+  },
+  {
+    id: "f3",
+    name: "Math Problem Set",
+    subLabel: "Shared with Ms. Chen",
+    class: "Math",
+    type: "PDF",
+    source: "You",
+    size: "324 KB",
+    updated: "May 7",
+    starred: false,
+    shared: true,
+  },
+  {
+    id: "f4",
+    name: "Chemistry Lab Report",
+    subLabel: "Returned by Dr. Smith",
+    class: "Chemistry",
+    type: "DOC",
+    source: "Dr. Smith",
+    size: "412 KB",
+    updated: "May 5",
+    starred: false,
+    shared: false,
+  },
+  {
+    id: "f5",
+    name: "Project Presentation",
+    subLabel: "Shared with Team",
+    class: "English",
+    type: "PPT",
+    source: "You",
+    size: "2.1 MB",
+    updated: "May 3",
+    starred: true,
+    shared: true,
+  },
+];
+
+const BOOKMARKS = [
+  {
+    id: "b1",
+    url: "https://www.khanacademy.org/science/biology",
+    title: "Khan Academy - Biology",
+    tags: "Biology Study",
+    starred: false,
+  },
+  {
+    id: "b2",
+    url: "https://www.wolframalpha.com",
+    title: "Wolfram Alpha",
+    tags: "Math Science",
+    starred: true,
+  },
+  {
+    id: "b3",
+    url: "https://www.youtube.com/results?search_query=organic+chemistry",
+    title: "Chemistry Tutorials",
+    tags: "Chemistry Watch later",
+    starred: false,
+  },
+  {
+    id: "b4",
+    url: "https://www.sparknotes.com",
+    title: "SparkNotes",
+    tags: "English Literature Study",
+    starred: true,
+  },
+];
+
+// ============================================================
+// MY MENU TAB
+// ============================================================
+
+function MenuBanner({ cycleLabel, cycleDate, lunchPeriod, viewToggle, onViewChange }) {
+  const views = ["Today", "This week", "Cycle"];
   return (
-    <div style={{ display: "flex", gap: 4, marginBottom: 24, borderBottom: "1px solid var(--mist)", overflowX: "auto" }}>
-      {tabs.map((t) => {
-        const isActive = active === t.id;
-        return (
-          <a key={t.id} href={"#/my-desk/" + t.id}
+    <div
+      style={{
+        background: COLORS.darkGreen,
+        borderRadius: 20,
+        padding: "40px 48px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 40,
+        boxShadow: SOFT_SHADOW,
+      }}
+    >
+      <div>
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            color: COLORS.teal,
+            letterSpacing: 1.5,
+            textTransform: "uppercase",
+            marginBottom: 8,
+          }}
+        >
+          {cycleLabel}
+        </div>
+        <div style={{ fontSize: 24, fontWeight: 700, color: "white", lineHeight: 1.2 }}>
+          {cycleDate}
+        </div>
+        <div style={{ fontSize: 13, color: "white", opacity: 0.7, marginTop: 6 }}>
+          {lunchPeriod}
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: 6, background: "rgba(255,255,255,0.1)", borderRadius: 16, padding: 4 }}>
+        {views.map((v) => (
+          <button
+            key={v}
+            onClick={() => onViewChange(v.toLowerCase())}
             style={{
-              padding: "10px 14px", textDecoration: "none",
-              color: isActive ? "var(--ink)" : "var(--stone)",
-              fontSize: 13, fontWeight: isActive ? 600 : 500,
-              borderBottom: isActive ? "2px solid var(--student)" : "2px solid transparent",
-              marginBottom: -1, whiteSpace: "nowrap",
-            }}>{t.label}</a>
+              padding: "8px 16px",
+              borderRadius: 12,
+              border: "none",
+              background: viewToggle === v.toLowerCase() ? "rgba(255,255,255,0.2)" : "transparent",
+              color: "white",
+              fontSize: 13,
+              fontWeight: viewToggle === v.toLowerCase() ? 700 : 500,
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+          >
+            {v}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DietaryFilterChips({ filters, activeFilters, onToggle }) {
+  return (
+    <div style={{ display: "flex", gap: 14, marginBottom: 24, flexWrap: "wrap" }}>
+      {filters.map((f) => {
+        const isActive = activeFilters.includes(f.id);
+        return (
+          <button
+            key={f.id}
+            onClick={() => onToggle(f.id)}
+            style={{
+              padding: "10px 18px",
+              borderRadius: 14,
+              border: isActive ? "none" : `1px solid ${COLORS.border}`,
+              background: isActive ? isActive ? f.color : "transparent" : "transparent",
+              color: isActive ? "white" : COLORS.text,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+              boxShadow: isActive ? SUBTLE_SHADOW : "none",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              if (isActive) {
+                e.currentTarget.style.boxShadow = SOFT_SHADOW;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (isActive) {
+                e.currentTarget.style.boxShadow = SUBTLE_SHADOW;
+              }
+            }}
+          >
+            {f.label}
+          </button>
         );
       })}
     </div>
   );
 }
 
-/* ============================================================
-   Shared mock data — keeps the surfaces self-consistent
-   ============================================================ */
-const DESK_WORK = [
-  { title: "Argumentative Essay — 'Cities & Equity'", course: "English Lit", status: "in-progress", due: "Fri May 16", progress: 72, color: "#A855F7", kind: "Essay" },
-  { title: "Cell Respiration Lab Report",            course: "Biology",     status: "in-progress", due: "Mon May 19", progress: 35, color: "#22C55E", kind: "Lab" },
-  { title: "Quadratics Practice Set 8.2",            course: "Algebra II",  status: "submitted",   due: "Submitted Tue", progress: 100, color: "#3B82F6", kind: "Problem set" },
-  { title: "1968 — A Civic Reflection",              course: "US History",  status: "returned",    due: "Feedback ready", progress: 100, color: "#F59E0B", kind: "Paper" },
-];
-
-const DESK_NOTES = [
-  { id: "n1", title: "Quadratics — vertex form intuition",  course: "Algebra II",  body: "Completing the square is just rewriting so the parabola's lowest/highest point is obvious…", updated: "Today, 10:24 AM", color: "#FFE9A8", pinned: true },
-  { id: "n2", title: "Cell respiration cheat-sheet",        course: "Biology",     body: "Glycolysis → Krebs → ETC. Ask Mr. Rivera about ATP yield discrepancies.", updated: "Today, 9:02 AM", color: "#C8EFD0" },
-  { id: "n3", title: "Gatsby — symbol of the green light",  course: "English Lit", body: "Tracks Gatsby's hope across chapters; pair with the Valley of Ashes contrast.", updated: "Yesterday", color: "#FFD9B0" },
-  { id: "n4", title: "Spanish III · Subjunctive triggers",  course: "Spanish III", body: "WEIRDO: Wishes, Emotion, Impersonal, Recommendations, Doubt, Ojalá.", updated: "Yesterday", color: "#FFB6B0" },
-  { id: "n5", title: "Football — receiver routes review",   course: "Athletics",   body: "Slant + post combos vs. Cover 2; talk to Coach Patel on Tue.", updated: "May 12", color: "#D5C9F2" },
-  { id: "n6", title: "Robotics — sensor wiring diagram",    course: "Robotics",    body: "Re-check pull-up resistors on the line sensor before Sat.", updated: "May 11", color: "#B6DCF5" },
-];
-
-const DESK_FILES = [
-  { name: "Cells_lab_results.xlsx",       kind: "xlsx", course: "Biology",    size: "84 KB",   updated: "Today",      from: "You",         shared: ["Mr. Rivera"] },
-  { name: "Essay_draft_v3.docx",          kind: "docx", course: "English Lit",size: "42 KB",   updated: "Today",      from: "You",         shared: [] },
-  { name: "Quadratics_practice.pdf",      kind: "pdf",  course: "Algebra II", size: "1.2 MB",  updated: "Yesterday",  from: "Ms. Chen",    shared: [] },
-  { name: "Gatsby_chapter_notes.pdf",     kind: "pdf",  course: "English Lit",size: "320 KB", updated: "May 13",     from: "Ms. Patel",   shared: [] },
-  { name: "Cell_diagram.png",             kind: "png",  course: "Biology",    size: "1.8 MB",  updated: "May 12",     from: "You",         shared: ["Sam K."] },
-  { name: "1968_paper_returned.docx",     kind: "docx", course: "US History", size: "58 KB",   updated: "May 10",     from: "Mr. Greene",  shared: [] },
-  { name: "Spanish_subjunctive_drill.pdf",kind: "pdf",  course: "Spanish III",size: "210 KB", updated: "May 9",      from: "Sra. Morales",shared: [] },
-];
-
-const DESK_BOOKMARKS = [
-  { title: "Khan Academy — Quadratic functions", url: "khanacademy.org",  tag: "Algebra II",   icon: "📐", color: "#3B82F6", saved: "Today" },
-  { title: "Crash Course — Cellular Respiration",url: "youtube.com",      tag: "Biology",      icon: "🎬", color: "#22C55E", saved: "Today" },
-  { title: "MLA in-text citations cheat sheet",  url: "owl.purdue.edu",   tag: "English Lit",  icon: "📖", color: "#A855F7", saved: "Yesterday" },
-  { title: "Desmos — Graphing calculator",       url: "desmos.com",       tag: "Tools",        icon: "📊", color: "#0EA5A4", saved: "May 12" },
-  { title: "WordReference — Spanish",            url: "wordreference.com",tag: "Spanish III",  icon: "🌐", color: "#EF4444", saved: "May 10" },
-  { title: "Common App essay prompts (2026)",    url: "commonapp.org",    tag: "College",      icon: "🎓", color: "#F59E0B", saved: "May 7" },
-];
-
-const DESK_LUNCH = {
-  cycle: "Cycle B · Day 3",
-  date: "Wed, May 15",
-  period: "5th period · 12:25 – 12:55 PM",
-  vote: { open: true, deadline: "Fri 3 PM", optionsCount: 4 },
-  options: [
-    { name: "Roasted veg + chickpea bowl",   tags: ["Veg", "GF"],            kcal: 540, allergens: ["Sesame"],      pick: true,  desc: "Brown rice, harissa chickpeas, charred peppers, lemon-tahini." },
-    { name: "Grilled chicken sandwich",      tags: ["Halal"],                kcal: 610, allergens: ["Wheat", "Egg"], pick: false, desc: "Brioche, slaw, pickles, avocado spread, oven fries." },
-    { name: "Three-bean chili + cornbread",  tags: ["Veg", "DF"],            kcal: 580, allergens: [],              pick: false, desc: "Slow-cooked chili, scallions, cornbread square, cheddar (opt.)." },
-    { name: "Chef's salad",                  tags: ["GF"],                   kcal: 420, allergens: ["Egg", "Dairy"], pick: false, desc: "Mixed greens, turkey, ham, egg, cheddar, croutons opt." },
-  ],
-  next: [
-    { day: "Mon", header: "Cycle A · Day 1", main: "Buddha bowl",            v: "Veg" },
-    { day: "Tue", header: "Cycle A · Day 2", main: "Chicken parm",           v: "" },
-    { day: "Wed", header: "Cycle A · Day 3", main: "Veg lasagna",            v: "Veg" },
-    { day: "Thu", header: "Cycle A · Day 4", main: "Tacos al pastor",        v: "" },
-    { day: "Fri", header: "Cycle A · Day 5", main: "Grilled cheese · soup",  v: "Veg" },
-  ],
-};
-
-/* ============================================================
-   Tactile primitives — composed from the design system's tokens.
-   These do the heavy lifting on My Desk. Kept inline (small) so
-   it's obvious what's drawing each effect.
-   ============================================================ */
-const HAND_FONT = "'Caveat', 'Kalam', 'Bradley Hand', cursive";
-const SCRIPT_FONT = "'Kalam', 'Caveat', 'Marker Felt', cursive";
-
-// Deterministic pseudo-random tilt (-2.5..+2.5deg) so re-renders are stable.
-function tiltFor(seed, max = 2.4) {
-  let h = 0;
-  for (let i = 0; i < String(seed).length; i++) h = (h * 31 + String(seed).charCodeAt(i)) | 0;
-  const r = ((h % 1000) / 1000) * 2 - 1;
-  return +(r * max).toFixed(2);
+function PlaceholderImage({ size = 60 }) {
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        background: "linear-gradient(135deg, #f5f3f0 0%, #ece9e6 100%)",
+        borderRadius: 14,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: 28,
+        color: COLORS.border,
+        border: `1px solid ${COLORS.border}`,
+        boxShadow: SUBTLE_SHADOW,
+        flexShrink: 0,
+      }}
+    >
+      🍽
+    </div>
+  );
 }
 
-// Washi tape strip placed via absolute positioning (more flexible than ::before).
-function Tape({ color = "lavender", rotate = -4, width = 80, top = -10, left = "50%", style = {} }) {
-  const colorMap = {
-    peach:    "rgba(247, 184, 152, 0.85)",
-    mint:     "rgba(167, 213, 184, 0.85)",
-    lavender: "rgba(196, 181, 253, 0.85)",
-    butter:   "rgba(248, 222, 152, 0.88)",
-    sky:      "rgba(167, 197, 235, 0.85)",
+function FullIngredientsModal({ item, isOpen, onClose }) {
+  if (!isOpen) return null;
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: "rgba(0, 0, 0, 0.15)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1000,
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: "white",
+          borderRadius: 24,
+          padding: 32,
+          maxWidth: 500,
+          width: "90%",
+          boxShadow: "0 12px 32px rgba(0, 0, 0, 0.08)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ display: "flex", gap: 24, marginBottom: 28 }}>
+          <PlaceholderImage size={110} />
+          <div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: COLORS.text, marginBottom: 8 }}>
+              {item.name}
+            </div>
+            <div style={{ fontSize: 14, color: COLORS.text + "80", marginBottom: 12, lineHeight: 1.4 }}>
+              {item.description}
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: COLORS.mint }}>
+              {item.calories} cal
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 28 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: COLORS.text, marginBottom: 10, textTransform: "uppercase", letterSpacing: 0.5 }}>
+            Ingredients
+          </div>
+          <div style={{ fontSize: 13, color: COLORS.text + "B3", lineHeight: 1.6 }}>
+            {item.ingredients}
+          </div>
+        </div>
+
+        {item.allergens && item.allergens.length > 0 && (
+          <div style={{ marginBottom: 28 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: COLORS.text, marginBottom: 10, textTransform: "uppercase", letterSpacing: 0.5 }}>
+              Allergens
+            </div>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              {item.allergens.map((allergen) => (
+                <span
+                  key={allergen}
+                  style={{
+                    padding: "5px 12px",
+                    borderRadius: 10,
+                    background: COLORS.df,
+                    color: COLORS.text,
+                    fontSize: 12,
+                    fontWeight: 600,
+                  }}
+                >
+                  {allergen}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <button
+          onClick={onClose}
+          style={{
+            width: "100%",
+            padding: "12px 16px",
+            borderRadius: 14,
+            border: "none",
+            background: COLORS.mint,
+            color: COLORS.text,
+            fontWeight: 600,
+            fontSize: 13,
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = SOFT_SHADOW;
+            e.currentTarget.style.transform = "translateY(-1px)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = "none";
+            e.currentTarget.style.transform = "translateY(0)";
+          }}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function MenuCard({ item, isSelected, onSelect, onViewIngredients }) {
+  return (
+    <div
+      className="desk-card"
+      style={{
+        borderRadius: 20,
+        border: isSelected ? `2px solid ${COLORS.gold}` : "none",
+        background: isSelected ? "#FFFBF0" : COLORS.surface,
+        transition: "all 0.2s ease",
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        overflow: "hidden",
+      }}
+    >
+      {/* Grows to fill — pushes buttons to bottom */}
+      <div style={{ flex: 1 }}>
+        {/* Top: icon + name/description */}
+        <div style={{ display: "flex", gap: 16, padding: "20px 20px 14px 20px", alignItems: "flex-start" }}>
+          <div style={{ flexShrink: 0 }}>
+            <PlaceholderImage size={64} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: COLORS.text, lineHeight: 1.2 }}>
+                {item.name}
+              </div>
+              {isSelected && (
+                <span style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: "#7a5200",
+                  background: "#FFF0C2",
+                  border: "1px solid #FFD700",
+                  borderRadius: 20,
+                  padding: "2px 8px",
+                  whiteSpace: "nowrap",
+                }}>
+                  + your pick
+                </span>
+              )}
+            </div>
+            <div style={{ fontSize: 12, color: COLORS.text + "99", lineHeight: 1.4 }}>
+              {item.description}
+            </div>
+          </div>
+        </div>
+
+        {/* Tags + calories row */}
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", padding: "0 20px 16px 20px" }}>
+          {item.diets.split(" ").map((diet) => {
+            const filter = DIETARY_FILTERS.find((f) => f.id === diet);
+            return (
+              <span
+                key={diet}
+                style={{
+                  padding: "3px 10px",
+                  borderRadius: 20,
+                  background: filter?.color || "#d9d9d9",
+                  color: "white",
+                  fontSize: 11,
+                  fontWeight: 700,
+                }}
+              >
+                {filter?.label || diet}
+              </span>
+            );
+          })}
+          <span style={{
+            padding: "3px 10px",
+            borderRadius: 20,
+            background: "#f3f4f6",
+            color: COLORS.text,
+            fontSize: 11,
+            fontWeight: 600,
+          }}>
+            {item.calories} kcal
+          </span>
+          {item.allergens && item.allergens.map((allergen) => (
+            <span
+              key={allergen}
+              style={{
+                padding: "3px 10px",
+                borderRadius: 20,
+                background: "#FFF3CD",
+                border: "1px solid #FFD080",
+                color: "#7a5200",
+                fontSize: 11,
+                fontWeight: 600,
+              }}
+            >
+              ⚠ {allergen}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div style={{ borderTop: `1px solid ${COLORS.border}` }} />
+
+      {/* Action buttons — always at bottom */}
+      <div style={{ display: "flex", alignItems: "center", padding: "12px 20px", gap: 12 }}>
+        <button
+          onClick={() => onViewIngredients(item.id)}
+          style={{
+            flex: 1,
+            background: "transparent",
+            border: "none",
+            color: COLORS.text,
+            cursor: "pointer",
+            fontWeight: 500,
+            fontSize: 12,
+            textAlign: "left",
+            textDecoration: "underline",
+            textUnderlineOffset: 2,
+            padding: 0,
+          }}
+        >
+          View full ingredients →
+        </button>
+        <button
+          onClick={() => onSelect(item.id)}
+          style={{
+            padding: "8px 20px",
+            borderRadius: 10,
+            border: isSelected ? `1px solid ${COLORS.gold}` : `1px solid ${COLORS.border}`,
+            background: isSelected ? "#FFF0C2" : "white",
+            color: isSelected ? "#7a5200" : COLORS.text,
+            fontWeight: 700,
+            fontSize: 13,
+            cursor: "pointer",
+            transition: "all 0.15s ease",
+            whiteSpace: "nowrap",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = isSelected ? "#FFE88A" : "#f9fafb"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = isSelected ? "#FFF0C2" : "white"; }}
+        >
+          {isSelected ? "Keep pick" : "Pick this"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Week view card — same layout as MenuCard
+function CompactMenuCard({ item, isSelected, onSelect, onViewIngredients }) {
+  return <MenuCard item={item} isSelected={isSelected} onSelect={onSelect} onViewIngredients={onViewIngredients} />;
+}
+
+// Cycle view card — same layout as MenuCard
+function CycleMenuCard({ item, isSelected, onSelect, onViewIngredients }) {
+  return <MenuCard item={item} isSelected={isSelected} onSelect={onSelect} onViewIngredients={onViewIngredients} />;
+}
+
+// This week view - organized by day
+function ThisWeekView({ activeFilters, selectedItem, onSelectItem, onViewIngredients }) {
+  const getItemData = (itemId) => MENU_ITEMS.find((m) => m.id === itemId);
+
+  const shouldShowItem = (item) => {
+    if (activeFilters.length === 0) return true;
+    return activeFilters.every((filterId) => item.diets.includes(filterId));
   };
-  const bg = colorMap[color] || color;
+
   return (
-    <div aria-hidden="true" style={{
-      position: "absolute", top, left,
-      width, height: 22,
-      transform: `translateX(-50%) rotate(${rotate}deg)`,
-      background: `repeating-linear-gradient(90deg, ${bg} 0 4px, rgba(255,255,255,0.10) 4px 5px), ${bg}`,
-      borderRadius: 1,
-      boxShadow: "0 2px 4px -2px rgba(15,23,42,0.18), inset 0 0 0 1px rgba(255,255,255,0.18)",
-      pointerEvents: "none", zIndex: 4,
-      ...style,
-    }}/>
+    <div>
+      {WEEK_MENU.map((day) => {
+        const dayItems = day.items
+          .map((id) => getItemData(id))
+          .filter(shouldShowItem);
+
+        return (
+          <div key={day.date} style={{ marginBottom: 40 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: COLORS.text }}>
+                  {day.day}
+                </div>
+                <div style={{ fontSize: 12, color: COLORS.text + "80" }}>
+                  {day.date}
+                </div>
+              </div>
+              {day.isToday && (
+                <span style={{
+                  padding: "4px 10px",
+                  borderRadius: 8,
+                  background: COLORS.mint,
+                  color: "white",
+                  fontSize: 10,
+                  fontWeight: 600,
+                }}>
+                  Today
+                </span>
+              )}
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: 20,
+              }}
+            >
+              {dayItems.length > 0 ? (
+                dayItems.map((item) => (
+                  <CompactMenuCard
+                    key={item.id}
+                    item={item}
+                    isSelected={selectedItem === item.id}
+                    onSelect={onSelectItem}
+                    onViewIngredients={onViewIngredients}
+                  />
+                ))
+              ) : (
+                <div style={{ gridColumn: "1 / -1", padding: "40px 20px", textAlign: "center", color: COLORS.text + "80" }}>
+                  No items match your dietary filters
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
-// Pushpin (round, with a glint).
-function Pin({ color = "var(--pin-red)", top = -7, left = "50%", style = {} }) {
+// Cycle view - organized by category
+function CycleView({ activeFilters, selectedItem, onSelectItem, onViewIngredients }) {
+  const shouldShowItem = (item) => {
+    if (activeFilters.length === 0) return true;
+    return activeFilters.every((filterId) => item.diets.includes(filterId));
+  };
+
+  const renderCategory = (title, items) => {
+    const visibleItems = items.filter(shouldShowItem);
+
+    return (
+      <div key={title} style={{ marginBottom: 40 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: COLORS.text, marginBottom: 16, textTransform: "uppercase", letterSpacing: 0.5 }}>
+          {title}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
+          {visibleItems.length > 0 ? (
+            visibleItems.map((item) => (
+              <CycleMenuCard
+                key={item.id}
+                item={item}
+                isSelected={selectedItem === item.id}
+                onSelect={onSelectItem}
+                onViewIngredients={onViewIngredients}
+              />
+            ))
+          ) : (
+            <div style={{ gridColumn: "1 / -1", padding: "30px 20px", textAlign: "center", color: COLORS.text + "80", fontSize: 13 }}>
+              No items match your dietary filters
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div aria-hidden="true" style={{
-      position: "absolute", top, left,
-      width: 16, height: 16, borderRadius: 999,
-      background: `radial-gradient(circle at 35% 30%, rgba(255,255,255,0.55), rgba(255,255,255,0) 45%), ${color}`,
-      transform: "translateX(-50%)",
-      boxShadow: "0 0 0 1px rgba(15,23,42,0.18) inset, 0 2px 3px rgba(15,23,42,0.30), 0 0 0 1px rgba(15,23,42,0.06)",
-      zIndex: 5,
-      ...style,
-    }}/>
+    <div>
+      {renderCategory("Rotating Proteins", CYCLE_MENU.proteins)}
+      {renderCategory("Seasonal Vegetables", CYCLE_MENU.vegetables)}
+      {renderCategory("Always Available", CYCLE_MENU.staples)}
+    </div>
   );
 }
 
-// Paper-clip drawn via two stacked rounded outlines.
-function Paperclip({ size = 28, color = "#9CA3AF", style = {} }) {
+function MyMenuPage({ selectedItem, onSelectItem }) {
+  const [viewMode, setViewMode] = React.useState("today");
+  const [activeFilters, setActiveFilters] = React.useState([]);
+  const [showIngredientsModal, setShowIngredientsModal] = React.useState(false);
+  const [modalItem, setModalItem] = React.useState(null);
+  const [localSelectedItem, setLocalSelectedItem] = React.useState(selectedItem);
+
+  const toggleFilter = (filterId) => {
+    setActiveFilters((prev) =>
+      prev.includes(filterId) ? prev.filter((f) => f !== filterId) : [...prev, filterId]
+    );
+  };
+
+  const handleSelectItem = (itemId) => {
+    if (localSelectedItem === itemId) {
+      setLocalSelectedItem(null);
+      onSelectItem(null);
+    } else {
+      setLocalSelectedItem(itemId);
+      onSelectItem(itemId);
+    }
+  };
+
+  const handleViewIngredients = (itemId) => {
+    const item = MENU_ITEMS.find((m) => m.id === itemId);
+    setModalItem(item);
+    setShowIngredientsModal(true);
+  };
+
+  const filteredItems =
+    activeFilters.length === 0
+      ? MENU_ITEMS
+      : MENU_ITEMS.filter((item) =>
+          activeFilters.every((filterId) => item.diets.includes(filterId))
+        );
+
   return (
-    <svg width={size} height={size * 1.1} viewBox="0 0 28 32" aria-hidden="true" style={{ display: "block", ...style }}>
-      <path d="M9 4 q-4 0 -4 5 v15 q0 5 5 5 t5 -5 V8 q0 -3 3 -3 t3 3 V21" fill="none"
-        stroke={color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M9 4 q-4 0 -4 5 v15 q0 5 5 5 t5 -5 V8 q0 -3 3 -3 t3 3 V21" fill="none"
-        stroke="rgba(255,255,255,0.5)" strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round"
-        transform="translate(0.4 0.4)"/>
+    <div>
+      <MenuBanner
+        cycleLabel="Cycle A"
+        cycleDate="May 8, 2026"
+        lunchPeriod="12:00 PM - 1:00 PM"
+        viewToggle={viewMode}
+        onViewChange={setViewMode}
+      />
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 14, color: COLORS.text }}>
+          Filter by dietary needs:
+        </div>
+        <DietaryFilterChips
+          filters={DIETARY_FILTERS}
+          activeFilters={activeFilters}
+          onToggle={toggleFilter}
+        />
+      </div>
+
+      {viewMode === "today" && (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 20,
+          }}
+        >
+          {filteredItems.map((item) => (
+            <MenuCard
+              key={item.id}
+              item={item}
+              isSelected={localSelectedItem === item.id}
+              onSelect={handleSelectItem}
+              onViewIngredients={handleViewIngredients}
+            />
+          ))}
+        </div>
+      )}
+
+      {viewMode === "this week" && (
+        <ThisWeekView
+          activeFilters={activeFilters}
+          selectedItem={localSelectedItem}
+          onSelectItem={handleSelectItem}
+          onViewIngredients={handleViewIngredients}
+        />
+      )}
+
+      {viewMode === "cycle" && (
+        <CycleView
+          activeFilters={activeFilters}
+          selectedItem={localSelectedItem}
+          onSelectItem={handleSelectItem}
+          onViewIngredients={handleViewIngredients}
+        />
+      )}
+
+      {modalItem && (
+        <FullIngredientsModal
+          item={modalItem}
+          isOpen={showIngredientsModal}
+          onClose={() => setShowIngredientsModal(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// MY TOOLS TAB
+// ============================================================
+
+function IconCalc() {
+  return (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="6" width="28" height="28" rx="4" stroke={COLORS.text} strokeWidth="2"/>
+      <circle cx="12" cy="12" r="1.5" fill={COLORS.text}/>
+      <circle cx="20" cy="12" r="1.5" fill={COLORS.text}/>
+      <line x1="10" y1="20" x2="30" y2="20" stroke={COLORS.text} strokeWidth="2"/>
+      <line x1="20" y1="26" x2="20" y2="34" stroke={COLORS.text} strokeWidth="2"/>
     </svg>
   );
 }
 
-// Sticky note — folded corner + slight tilt + soft drop. The "real" sticky.
-function Sticky({ note, onOpen, tilt }) {
-  const t = tilt ?? tiltFor(note.id || note.title);
+function IconDraw() {
   return (
-    <div onClick={onOpen} role="button" tabIndex={0} style={{
-      position: "relative",
-      background: `linear-gradient(135deg, ${shade(note.color, 4)} 0%, ${note.color} 18%, ${note.color} 82%, ${shade(note.color, -8)} 100%)`,
-      padding: "16px 16px 14px",
-      borderRadius: 2,
-      transform: `rotate(${t}deg)`,
-      boxShadow: `0 1px 1px rgba(15,23,42,0.05),
-                  0 12px 18px -10px rgba(15,23,42,0.18),
-                  0 22px 26px -22px rgba(15,23,42,0.22)`,
-      cursor: "pointer",
-      minHeight: 148,
-      display: "flex", flexDirection: "column", gap: 6,
-      transition: "transform 0.18s ease, box-shadow 0.18s ease",
-    }}
-    onMouseEnter={(e) => { e.currentTarget.style.transform = `rotate(${t * 0.4}deg) translateY(-2px)`; }}
-    onMouseLeave={(e) => { e.currentTarget.style.transform = `rotate(${t}deg)`; }}
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 32L28 12M32 8L28 12M28 12L32 16" stroke={COLORS.text} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="24" cy="24" r="12" stroke={COLORS.text} strokeWidth="2"/>
+    </svg>
+  );
+}
+
+function IconNote() {
+  return (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8" y="6" width="18" height="22" rx="2" stroke={COLORS.text} strokeWidth="2"/>
+      <line x1="12" y1="12" x2="22" y2="12" stroke={COLORS.text} strokeWidth="1.5"/>
+      <line x1="12" y1="16" x2="22" y2="16" stroke={COLORS.text} strokeWidth="1.5"/>
+      <line x1="12" y1="20" x2="20" y2="20" stroke={COLORS.text} strokeWidth="1.5"/>
+    </svg>
+  );
+}
+
+function IconWrite() {
+  return (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="8" width="28" height="24" rx="2" stroke={COLORS.text} strokeWidth="2"/>
+      <line x1="10" y1="14" x2="30" y2="14" stroke={COLORS.text} strokeWidth="1.5"/>
+      <line x1="10" y1="18" x2="30" y2="18" stroke={COLORS.text} strokeWidth="1.5"/>
+      <line x1="10" y1="22" x2="24" y2="22" stroke={COLORS.text} strokeWidth="1.5"/>
+    </svg>
+  );
+}
+
+function IconSlides() {
+  return (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="8" width="28" height="20" rx="2" stroke={COLORS.text} strokeWidth="2"/>
+      <rect x="9" y="30" width="8" height="4" rx="1" stroke={COLORS.text} strokeWidth="1.5"/>
+      <rect x="20" y="30" width="8" height="4" rx="1" stroke={COLORS.text} strokeWidth="1.5"/>
+    </svg>
+  );
+}
+
+function IconDesign() {
+  return (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="5" stroke={COLORS.text} strokeWidth="2"/>
+      <circle cx="28" cy="12" r="5" stroke={COLORS.text} strokeWidth="2"/>
+      <circle cx="12" cy="28" r="5" stroke={COLORS.text} strokeWidth="2"/>
+      <circle cx="28" cy="28" r="5" stroke={COLORS.text} strokeWidth="2"/>
+    </svg>
+  );
+}
+
+function IconAudio() {
+  return (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="10" stroke={COLORS.text} strokeWidth="2"/>
+      <circle cx="20" cy="20" r="3" fill={COLORS.text}/>
+      <path d="M26 20C26 23.3137 23.3137 26 20 26" stroke={COLORS.text} strokeWidth="1.5"/>
+    </svg>
+  );
+}
+
+function IconVideo() {
+  return (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="10" width="28" height="18" rx="2" stroke={COLORS.text} strokeWidth="2"/>
+      <polygon points="16,16 16,24 25,20" fill={COLORS.text}/>
+    </svg>
+  );
+}
+
+const ICON_COMPONENTS = {
+  calc: IconCalc,
+  draw: IconDraw,
+  note: IconNote,
+  write: IconWrite,
+  slides: IconSlides,
+  design: IconDesign,
+  audio: IconAudio,
+  video: IconVideo,
+};
+
+const FAV_TOOLS_KEY = "links_fav_tools";
+
+function ToolCard({ tool, isFav, onToggleFav }) {
+  const IconComponent = ICON_COMPONENTS[tool.icon];
+  return (
+    <button
+      style={{
+        padding: 24,
+        borderRadius: 20,
+        border: "none",
+        background: tool.bgColor,
+        cursor: "pointer",
+        textAlign: "center",
+        transition: "all 0.3s ease",
+        boxShadow: SUBTLE_SHADOW,
+        position: "relative",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = SOFT_SHADOW;
+        e.currentTarget.style.transform = "translateY(-2px)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = SUBTLE_SHADOW;
+        e.currentTarget.style.transform = "translateY(0)";
+      }}
     >
-      {/* Folded corner shadow */}
-      <div aria-hidden="true" style={{
-        position: "absolute", right: 0, bottom: 0, width: 28, height: 28,
-        background: `linear-gradient(135deg, transparent 50%, rgba(15,23,42,0.10) 50%, ${shade(note.color, -14)} 52%)`,
-        borderBottomRightRadius: 2,
-      }}/>
-      {note.pinned && <Pin top={-8} left={18} color="var(--pin-red)"/>}
-      <div style={{ fontSize: 10.5, fontWeight: 700, color: "rgba(15,23,42,0.55)", letterSpacing: "0.06em", textTransform: "uppercase" }}>{note.course}</div>
-      <div style={{ fontFamily: HAND_FONT, fontSize: 18, fontWeight: 700, color: "rgba(15,23,42,0.92)", lineHeight: 1.1, letterSpacing: "-0.005em",
-        display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{note.title}</div>
-      <div style={{ fontFamily: SCRIPT_FONT, fontWeight: 400, fontSize: 13.5, color: "rgba(15,23,42,0.78)", lineHeight: 1.35,
-        display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{note.body}</div>
-      <div style={{ marginTop: "auto", fontSize: 10.5, color: "rgba(15,23,42,0.45)", fontWeight: 500 }}>{note.updated}</div>
+      {onToggleFav && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleFav(); }}
+          title={isFav ? "Remove from toolbar" : "Pin to toolbar"}
+          style={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            width: 26,
+            height: 26,
+            borderRadius: "50%",
+            border: "none",
+            background: isFav ? COLORS.gold : "rgba(0,0,0,0.08)",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 13,
+            lineHeight: 1,
+            transition: "all 0.15s ease",
+            padding: 0,
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.15)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+        >
+          {isFav ? "★" : "☆"}
+        </button>
+      )}
+      <div style={{ marginBottom: 12 }}>
+        {IconComponent ? <IconComponent /> : <div>{tool.icon}</div>}
+      </div>
+      <div style={{ fontSize: 14, fontWeight: 700, color: COLORS.text, marginBottom: 4 }}>
+        {tool.name}
+      </div>
+      <div style={{ fontSize: 12, color: COLORS.text + "B3" }}>{tool.description}</div>
+    </button>
+  );
+}
+
+function MyToolsPage({ standalone }) {
+  const [favIds, setFavIds] = React.useState(() => {
+    try { return JSON.parse(localStorage.getItem(FAV_TOOLS_KEY) || "[]"); } catch { return []; }
+  });
+
+  const toggleFav = (id) => {
+    setFavIds((prev) => {
+      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+      try { localStorage.setItem(FAV_TOOLS_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const sorted = [
+    ...TOOLS.filter((t) => favIds.includes(t.id)),
+    ...TOOLS.filter((t) => !favIds.includes(t.id)),
+  ];
+
+  const content = (
+    <div>
+      <div style={{ marginBottom: 36 }}>
+        <div style={{ fontSize: 28, fontWeight: 800, color: COLORS.text, marginBottom: 6 }}>
+          My Tools
+        </div>
+        <div style={{ fontSize: 14, color: COLORS.textMuted, maxWidth: 520 }}>
+          Quick access to your learning apps. Star your favourites to pin them to the toolbar — they'll always be one click away, no matter which page you're on.
+        </div>
+      </div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+          gap: 28,
+        }}
+      >
+        {sorted.map((tool) => (
+          <ToolCard
+            key={tool.id}
+            tool={tool}
+            isFav={favIds.includes(tool.id)}
+            onToggleFav={() => toggleFav(tool.id)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+
+  if (standalone) {
+    return (
+      <div style={{ padding: "32px 40px 80px", maxWidth: 1200, fontFamily: "Nunito, Poppins, 'Segoe UI', sans-serif" }}>
+        {content}
+      </div>
+    );
+  }
+  return content;
+}
+
+// ============================================================
+// FILES TAB
+// ============================================================
+
+function FileToolbar({ selectedSubTab, onSubTabChange, onUploadClick }) {
+  const subTabs = ["All", "Your uploads", "Teacher uploads", "Shared", "Starred"];
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 32,
+      }}
+    >
+      <div style={{ display: "flex", gap: 12 }}>
+        {subTabs.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => onSubTabChange(tab)}
+            style={{
+              padding: "10px 18px",
+              borderRadius: 14,
+              border: "none",
+              background: selectedSubTab === tab ? "white" : "transparent",
+              color: COLORS.text,
+              fontSize: 13,
+              fontWeight: selectedSubTab === tab ? 600 : 500,
+              cursor: "pointer",
+              boxShadow: selectedSubTab === tab ? SUBTLE_SHADOW : "none",
+              transition: "all 0.2s ease",
+            }}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+      <button
+        onClick={onUploadClick}
+        style={{
+          padding: "10px 20px",
+          borderRadius: 14,
+          border: "none",
+          background: COLORS.mint,
+          color: COLORS.text,
+          fontSize: 13,
+          fontWeight: 600,
+          cursor: "pointer",
+          boxShadow: SUBTLE_SHADOW,
+          transition: "all 0.2s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.boxShadow = SOFT_SHADOW;
+          e.currentTarget.style.transform = "translateY(-1px)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.boxShadow = SUBTLE_SHADOW;
+          e.currentTarget.style.transform = "translateY(0)";
+        }}
+      >
+        Upload file
+      </button>
     </div>
   );
 }
 
-// Tiny color-shade utility (hex only).
-function shade(hex, pct) {
-  const h = hex.replace("#", "");
-  if (h.length !== 6) return hex;
-  const num = parseInt(h, 16);
-  let r = (num >> 16) + pct;
-  let g = ((num >> 8) & 0xff) + pct;
-  let b = (num & 0xff) + pct;
-  r = Math.max(0, Math.min(255, r));
-  g = Math.max(0, Math.min(255, g));
-  b = Math.max(0, Math.min(255, b));
-  return "#" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, "0");
-}
+function FileActionMenu({ fileId }) {
+  const [isOpen, setIsOpen] = React.useState(false);
 
-// Cork-board background (subtle grain). For sections that should feel pinned-up.
-const CORK_BG = {
-  background:
-    "radial-gradient(circle at 20% 30%, rgba(180,124,82,0.10) 0 1.5px, transparent 2px)," +
-    "radial-gradient(circle at 70% 80%, rgba(140,90,52,0.08) 0 1px, transparent 2px)," +
-    "radial-gradient(circle at 45% 55%, rgba(160,108,68,0.06) 0 1.2px, transparent 2px)," +
-    "linear-gradient(180deg, #E8D9BF 0%, #DFCDAE 100%)",
-  backgroundSize: "60px 60px, 90px 90px, 40px 40px, 100% 100%",
-};
+  const actions = [
+    { label: "Download", icon: "↓" },
+    { label: "Share", icon: "⬤" },
+    { label: "Rename", icon: "✎" },
+    { label: "Delete", icon: "🗑" },
+  ];
 
-// Ruled-paper background — like a notebook.
-const RULED_BG = {
-  background:
-    "linear-gradient(transparent 0 27px, rgba(120,142,196,0.30) 28px, transparent 28px)," +
-    "linear-gradient(90deg, transparent 0 47px, rgba(217,84,74,0.30) 47px, rgba(217,84,74,0.30) 48px, transparent 48px)," +
-    "var(--paper-warm)",
-  backgroundSize: "100% 28px, 100% 100%",
-};
-
-/* ============================================================
-   Small atoms used across panes
-   ============================================================ */
-function StatusPill({ status }) {
-  const map = {
-    "in-progress": { label: "In progress", tone: "info" },
-    "submitted":   { label: "Submitted",   tone: "neutral" },
-    "returned":    { label: "Feedback",    tone: "warning" },
-    "draft":       { label: "Draft",       tone: "neutral" },
-  };
-  const t = map[status] || map["draft"];
-  return <Tag tone={t.tone}>{t.label}</Tag>;
-}
-
-// Manila-folder file icon — feels like a tab on a hanging folder.
-function FileIcon({ kind }) {
-  const map = {
-    pdf:  { fg: "#7A1F1F", bg: "#F1B7B1", label: "PDF" },
-    docx: { fg: "#1E3A8A", bg: "#B4C9F0", label: "DOC" },
-    xlsx: { fg: "#14532D", bg: "#B5DFC2", label: "XLS" },
-    png:  { fg: "#5B21B6", bg: "#D5C9F2", label: "IMG" },
-    jpg:  { fg: "#5B21B6", bg: "#D5C9F2", label: "IMG" },
-  };
-  const t = map[kind] || { fg: "var(--paper-warm-ink)", bg: "var(--paper-warm-edge)", label: "FILE" };
-  return (
-    <div style={{
-      position: "relative", width: 36, height: 42, flexShrink: 0,
-      filter: "drop-shadow(0 2px 3px rgba(15,23,42,0.10))",
-    }}>
-      {/* Tab */}
-      <div style={{
-        position: "absolute", top: 0, left: 4, width: 14, height: 5,
-        background: t.bg, borderRadius: "2px 2px 0 0",
-      }}/>
-      {/* Body */}
-      <div style={{
-        position: "absolute", top: 4, left: 0, right: 0, bottom: 0,
-        background: t.bg, color: t.fg, borderRadius: "1px 4px 4px 4px",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 9.5, fontWeight: 800, letterSpacing: "0.06em",
-        boxShadow: "inset 0 0 0 1px rgba(15,23,42,0.06), inset 0 -3px 0 rgba(15,23,42,0.04)",
-      }}>{t.label}</div>
-    </div>
-  );
-}
-
-/* ============================================================
-   OVERVIEW — the hub
-   ============================================================ */
-function MyDeskOverview({ segments }) {
-  const inProgress = DESK_WORK.filter((w) => w.status === "in-progress").length;
-  const submitted  = DESK_WORK.filter((w) => w.status === "submitted").length;
-  const returned   = DESK_WORK.filter((w) => w.status === "returned").length;
-
-  return (
-    <Page segments={segments} title="My Desk" emoji=""
-      lede="What you're in the middle of, plus the bits and pieces you keep coming back to."
-      actions={
-        <>
-          <button className="btn btn-sm"><I.Plus size={12} color="var(--stone)"/> New note</button>
-          <button className="btn btn-sm"><I.Upload size={12} color="var(--stone)"/> Upload file</button>
-          <a href="#/my-desk/my-tools" className="btn btn-sm" style={{ textDecoration: "none" }}><I.Tools size={12} color="var(--stone)"/> Open tools</a>
-        </>
-      }
-      rightRail={
-        <>
-          {/* AI nudges — Post-it pad with a torn-off top sheet */}
-          <div style={{ position: "relative", paddingTop: 16 }}>
-            <div style={{
-              position: "relative",
-              background: "#FFF6B8",
-              padding: "20px 18px 16px",
-              borderRadius: "2px 2px 6px 6px",
-              boxShadow:
-                "0 1px 1px rgba(15,23,42,0.06)," +
-                "0 14px 22px -14px rgba(15,23,42,0.20)," +
-                "inset 0 -10px 12px -12px rgba(150,120,40,0.25)",
-              transform: "rotate(-0.6deg)",
-            }}>
-              {/* Glue shadow at top */}
-              <div aria-hidden="true" style={{
-                position: "absolute", top: 0, left: 0, right: 0, height: 14,
-                background: "linear-gradient(180deg, rgba(160,130,40,0.18), transparent)",
-                borderRadius: "2px 2px 0 0",
-              }}/>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                <I.Sparkle size={13} color="#7A5A0F"/>
-                <div style={{ fontFamily: HAND_FONT, fontSize: 22, fontWeight: 700, color: "#3A2D08", letterSpacing: "-0.01em" }}>Nudges</div>
-                <span style={{
-                  fontSize: 9, fontWeight: 700, color: "#7A5A0F",
-                  background: "rgba(255,255,255,0.55)",
-                  padding: "1px 5px", borderRadius: 3, marginLeft: "auto",
-                  letterSpacing: "0.06em", border: "1px solid rgba(122,90,15,0.2)",
-                }}>AI</span>
-              </div>
-              <div style={{ fontFamily: SCRIPT_FONT, fontSize: 13.5, color: "rgba(58,45,8,0.75)", marginBottom: 12, lineHeight: 1.4 }}>
-                Quick wins based on what's open and what's coming up.
-              </div>
-              {[
-                { ic: "📝", t: "You left off mid-paragraph", s: "Cities & Equity essay — about 25 minutes to wrap section 3." },
-                { ic: "🔬", t: "Your hypothesis is still blank", s: "Cell respiration lab — three prompts to fill in." },
-                { ic: "💬", t: "Mr. Greene wrote you back", s: "Four comments on the 1968 paper. Worth reading before tonight." },
-              ].map((s, i) => (
-                <div key={i} style={{
-                  paddingTop: i ? 12 : 0, paddingBottom: i === 2 ? 0 : 12,
-                  borderTop: i ? "1px dashed rgba(122,90,15,0.3)" : "none",
-                }}>
-                  <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                    <div style={{
-                      width: 24, height: 24, borderRadius: 6,
-                      background: "rgba(255,255,255,0.55)",
-                      display: "inline-flex", alignItems: "center", justifyContent: "center",
-                      flexShrink: 0, fontSize: 13,
-                      border: "1px solid rgba(122,90,15,0.18)",
-                    }}>{s.ic}</div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#2A2105" }}>{s.t}</div>
-                      <div style={{ fontSize: 12, color: "rgba(58,45,8,0.7)", lineHeight: 1.4 }}>{s.s}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            {/* Stack illusion — peek of the next sheet */}
-            <div aria-hidden="true" style={{
-              position: "absolute", left: 6, right: 6, bottom: -4, height: 8,
-              background: "#F4E59C", borderRadius: "0 0 6px 6px",
-              boxShadow: "0 6px 10px -8px rgba(15,23,42,0.18)",
-              transform: "rotate(0.3deg)", zIndex: -1,
-            }}/>
-          </div>
-
-          {/* Lunch tile — cafeteria meal ticket */}
-          <a href="#/my-desk/my-menu" style={{
-            position: "relative", display: "block", textDecoration: "none",
-            background: "var(--paper-warm)",
-            border: "1px solid var(--paper-warm-edge)",
-            borderRadius: 10,
-            boxShadow:
-              "0 1px 0 rgba(255,255,255,0.6) inset," +
-              "0 12px 18px -12px rgba(15,23,42,0.18)",
-            padding: 0, overflow: "hidden",
-            transform: "rotate(0.4deg)",
-          }}>
-            {/* Perforation strip */}
-            <div aria-hidden="true" style={{
-              position: "absolute", left: 0, right: 0, top: 56,
-              height: 1,
-              background: "repeating-linear-gradient(90deg, var(--paper-warm-shade) 0 6px, transparent 6px 12px)",
-            }}/>
-            {/* Header — like a stub */}
-            <div style={{ padding: "12px 16px 10px", background: "#FFF6E2" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 2 }}>
-                <span style={{ fontSize: 9.5, fontWeight: 800, color: "#A16207", letterSpacing: "0.14em" }}>LUNCH TICKET · 5TH PD</span>
-                <span style={{ fontSize: 10, color: "#A16207", fontFamily: "ui-monospace, monospace" }}>№ 0512</span>
-              </div>
-              <div style={{ fontFamily: HAND_FONT, fontSize: 18, fontWeight: 700, color: "#3A2D08" }}>Wednesday, May 15</div>
-            </div>
-            <div style={{ padding: "14px 16px 14px" }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)", marginBottom: 4 }}>{DESK_LUNCH.options[0].name}</div>
-              <div style={{ fontSize: 12, color: "var(--stone)", marginBottom: 10, lineHeight: 1.4 }}>{DESK_LUNCH.options[0].desc}</div>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
-                {DESK_LUNCH.options[0].tags.map((t) => <Tag key={t} tone="success">{t}</Tag>)}
-                <Tag tone="neutral">{DESK_LUNCH.options[0].kcal} kcal</Tag>
-              </div>
-              <div style={{ fontSize: 11.5, color: "#A16207", fontWeight: 600 }}>See the rest of the menu →</div>
-            </div>
-            {/* Stamp */}
-            <div aria-hidden="true" style={{
-              position: "absolute", right: 12, bottom: 12,
-              transform: "rotate(-14deg)",
-              border: "2px solid rgba(217,84,74,0.55)",
-              color: "rgba(217,84,74,0.75)",
-              padding: "2px 8px", borderRadius: 4,
-              fontSize: 9, fontWeight: 800, letterSpacing: "0.18em",
-              fontFamily: "ui-monospace, monospace",
-              background: "rgba(255,246,226,0.4)",
-            }}>YOUR PICK</div>
-          </a>
-
-          {/* Storage — kept clinical (it's data) */}
-          <div className="card" style={{ padding: 18 }}>
-            <div className="t-eyebrow" style={{ marginBottom: 12 }}>STORAGE</div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 8 }}>
-              <div style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "var(--ink)" }}>2.4 GB</div>
-              <div style={{ fontSize: 11.5, color: "var(--stone)" }}>of 10 GB used</div>
-            </div>
-            <div style={{ height: 6, background: "var(--bone)", borderRadius: 999, overflow: "hidden", marginBottom: 12 }}>
-              <div style={{ width: "24%", height: "100%", background: "var(--student)" }}/>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {[
-                { label: "Documents", val: "1.2 GB", c: "#3B82F6" },
-                { label: "Images",    val: "640 MB", c: "#A855F7" },
-                { label: "Class files", val: "380 MB", c: "#22C55E" },
-                { label: "Other",     val: "180 MB", c: "var(--silver)" },
-              ].map((r) => (
-                <div key={r.label} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: 2, background: r.c }}/>
-                  <span style={{ color: "var(--slate)", flex: 1 }}>{r.label}</span>
-                  <span style={{ color: "var(--stone)", fontVariantNumeric: "tabular-nums" }}>{r.val}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </>
-      }
-    >
-      <DeskTabs segments={segments}/>
-
-      {/* HERO — handwritten greeting on a notebook page */}
-      <div style={{
-        position: "relative", marginBottom: 22,
-        background: "var(--paper-warm)",
-        border: "1px solid var(--paper-warm-edge)",
-        borderBottomColor: "var(--paper-warm-shade)",
-        borderRadius: 6,
-        boxShadow: "0 1px 0 rgba(255,255,255,0.6) inset, 0 14px 22px -16px rgba(15,23,42,0.18)",
-        padding: "22px 26px 22px 60px",
-        overflow: "hidden",
-        backgroundImage: "linear-gradient(90deg, transparent 0 47px, rgba(217,84,74,0.30) 47px, rgba(217,84,74,0.30) 48px, transparent 48px)",
-      }}>
-        {/* Margin holes */}
-        <div aria-hidden="true" style={{
-          position: "absolute", left: 22, top: 18, bottom: 18, width: 10,
-          display: "flex", flexDirection: "column", justifyContent: "space-between",
-        }}>
-          {[0, 1, 2].map((i) => (
-            <div key={i} style={{
-              width: 10, height: 10, borderRadius: 999,
-              background: "var(--surface)",
-              boxShadow: "inset 0 1px 2px rgba(15,23,42,0.18)",
-            }}/>
-          ))}
-        </div>
-        <Tape color="lavender" rotate={-3} width={90} top={-10} left={"22%"}/>
-        <Tape color="butter" rotate={4} width={70} top={-9} left={"82%"}/>
-
-        <div style={{ display: "grid", gridTemplateColumns: "2fr repeat(3, 1fr)", gap: 24, alignItems: "end" }}>
-          <div>
-            <div style={{
-              fontSize: 10.5, fontWeight: 800, color: "#A16207",
-              letterSpacing: "0.16em", marginBottom: 4,
-            }}>WEDNESDAY · MAY 15</div>
-            <div style={{
-              fontFamily: HAND_FONT, fontSize: 22, fontWeight: 700,
-              color: "var(--paper-warm-ink)", lineHeight: 1.15,
-              letterSpacing: "-0.01em", marginBottom: 20,
-            }}>
-              Two drafts going, one paper back from Mr.&nbsp;Greene.
-            </div>
-            <div style={{ fontFamily: SCRIPT_FONT, fontSize: 15, color: "rgba(58,51,40,0.7)", lineHeight: 1.4 }}>
-              The essay's the closer one. Lab can wait till study hall.
-            </div>
-          </div>
-          {[
-            { label: "Working on", value: inProgress, c: "#3B82F6", sub: "Drafts open right now" },
-            { label: "Turned in",   value: submitted,  c: "#64748B", sub: "Waiting on a grade" },
-            { label: "Heard back",  value: returned,   c: "#D9544A", sub: "Comments to read" },
-          ].map((m) => (
-            <div key={m.label} style={{
-              padding: "10px 0",
-              borderLeft: "1px dashed rgba(58,51,40,0.20)",
-              paddingLeft: 18,
-            }}>
-              <div style={{ fontFamily: HAND_FONT, fontSize: 48, fontWeight: 700, color: m.c, lineHeight: 1, marginBottom: 4 }}>{m.value}</div>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--paper-warm-ink)" }}>{m.label}</div>
-              <div style={{ fontSize: 11.5, color: "rgba(58,51,40,0.65)", marginTop: 2 }}>{m.sub}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Work-in-flight — index cards, color-tabbed */}
-      <div style={{ marginBottom: 26 }}>
-        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 14 }}>
-          <h2 style={{ fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700, margin: 0, color: "var(--ink)" }}>
-            On your desk
-          </h2>
-          <a href="#/my-classes" style={{ fontSize: 12, color: "var(--student-deep)", fontWeight: 600, textDecoration: "none" }}>Every assignment →</a>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-          {DESK_WORK.map((w, i) => (
-            <IndexCard key={w.title} work={w} index={i}/>
-          ))}
-        </div>
-      </div>
-
-      {/* Three-up: Notes / Files / Bookmarks recent */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 18 }}>
-        {/* Notes — sticky strip */}
-        <div>
-          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>Lately written</div>
-            <a href="#/my-desk/notes" style={{ fontSize: 11.5, color: "var(--student-deep)", fontWeight: 600, textDecoration: "none" }}>See all →</a>
-          </div>
-          <div style={{
-            ...CORK_BG, borderRadius: 10, padding: 14,
-            boxShadow: "inset 0 0 0 1px rgba(120,80,40,0.15), inset 0 0 30px rgba(120,80,40,0.10)",
-          }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-              {DESK_NOTES.slice(0, 4).map((n) => (
-                <Sticky key={n.id} note={n}/>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Files — manila folder */}
-        <div>
-          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>Lately opened</div>
-            <a href="#/my-desk/files" style={{ fontSize: 11.5, color: "var(--student-deep)", fontWeight: 600, textDecoration: "none" }}>See all →</a>
-          </div>
-          <ManilaFolder>
-            {DESK_FILES.slice(0, 5).map((f, i) => (
-              <div key={f.name} style={{
-                display: "flex", alignItems: "center", gap: 12,
-                padding: "10px 4px",
-                borderTop: i ? "1px dashed rgba(122,90,15,0.20)" : "none",
-              }}>
-                <FileIcon kind={f.kind}/>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--paper-warm-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</div>
-                  <div style={{ fontSize: 11, color: "rgba(58,51,40,0.6)" }}>{f.course} · {f.updated}</div>
-                </div>
-                <I.MoreH size={14} color="rgba(58,51,40,0.4)"/>
-              </div>
-            ))}
-          </ManilaFolder>
-        </div>
-
-        {/* Bookmarks — taped scraps */}
-        <div>
-          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>Stuff you bookmarked</div>
-            <a href="#/my-desk/bookmarks" style={{ fontSize: 11.5, color: "var(--student-deep)", fontWeight: 600, textDecoration: "none" }}>See all →</a>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingTop: 8 }}>
-            {DESK_BOOKMARKS.slice(0, 5).map((b, i) => (
-              <BookmarkScrap key={b.title} b={b} index={i}/>
-            ))}
-          </div>
-        </div>
-      </div>
-    </Page>
-  );
-}
-
-/* Manila folder — thick paper bottom-edge tab. Wraps a list. */
-function ManilaFolder({ children, label = "Recent" }) {
   return (
     <div style={{ position: "relative" }}>
-      {/* Tab */}
-      <div aria-hidden="true" style={{
-        position: "absolute", top: -10, left: 18,
-        background: "#E9C77B",
-        padding: "4px 14px 6px",
-        fontSize: 10, fontWeight: 800, letterSpacing: "0.12em",
-        color: "#5C4710",
-        borderRadius: "6px 10px 0 0",
-        boxShadow: "0 -1px 0 rgba(255,255,255,0.4) inset",
-      }}>{label.toUpperCase()}</div>
-      {/* Body */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          background: "transparent",
+          border: "none",
+          cursor: "pointer",
+          fontSize: 16,
+          padding: "4px 8px",
+          color: COLORS.text,
+        }}
+      >
+        ···
+      </button>
+      {isOpen && (
+        <div
+          style={{
+            position: "absolute",
+            right: 0,
+            top: 28,
+            background: "white",
+            border: `1px solid ${COLORS.border}`,
+            borderRadius: 14,
+            boxShadow: SOFT_SHADOW,
+            zIndex: 100,
+            minWidth: 140,
+            overflow: "hidden",
+          }}
+        >
+          {actions.map((action, idx) => (
+            <button
+              key={idx}
+              onClick={() => {
+                setIsOpen(false);
+              }}
+              style={{
+                width: "100%",
+                padding: "10px 14px",
+                border: "none",
+                background: "transparent",
+                textAlign: "left",
+                color: COLORS.text,
+                fontSize: 12,
+                fontWeight: 500,
+                cursor: "pointer",
+                borderBottom: idx < actions.length - 1 ? `1px solid ${COLORS.border}` : "none",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = COLORS.bg;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+              }}
+            >
+              {action.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FileTable({ files }) {
+  const getFileColor = (type) => {
+    const colors = {
+      XLS: COLORS.fileXLS,
+      PDF: COLORS.filePDF,
+      PPT: COLORS.filePPT,
+      DOC: COLORS.fileDOC,
+    };
+    return colors[type] || "#ccc";
+  };
+
+  return (
+    <div style={{ overflowX: "auto" }}>
+      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+        <thead>
+          <tr style={{ borderBottom: `1px solid ${COLORS.border}`, background: COLORS.bg }}>
+
+            <th style={{ padding: 16, textAlign: "left", color: COLORS.text, fontWeight: 600, fontSize: 12 }}>
+              Name
+            </th>
+            <th style={{ padding: 16, textAlign: "left", color: COLORS.text, fontWeight: 600, fontSize: 12 }}>
+              Class
+            </th>
+            <th style={{ padding: 16, textAlign: "left", color: COLORS.text, fontWeight: 600, fontSize: 12 }}>
+              Source
+            </th>
+            <th style={{ padding: 16, textAlign: "left", color: COLORS.text, fontWeight: 600, fontSize: 12 }}>
+              Size
+            </th>
+            <th style={{ padding: 16, textAlign: "left", color: COLORS.text, fontWeight: 600, fontSize: 12 }}>
+              Updated
+            </th>
+            <th style={{ padding: 16, textAlign: "center", color: COLORS.text, fontWeight: 600, fontSize: 12 }}>
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {files.map((file) => (
+            <tr key={file.id} style={{ borderBottom: `1px solid ${COLORS.border}`, transition: "background 0.2s ease" }} onMouseEnter={(e) => { e.currentTarget.style.background = COLORS.bg; }} onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
+              <td style={{ padding: 16 }}>
+                <div style={{ fontWeight: 600, color: COLORS.text }}>{file.name}</div>
+                <div style={{ fontSize: 11, color: COLORS.text + "80" }}>{file.subLabel}</div>
+              </td>
+              <td style={{ padding: 16, color: COLORS.text }}>{file.class}</td>
+              <td style={{ padding: 16, color: COLORS.text }}>{file.source}</td>
+              <td style={{ padding: 16, color: COLORS.text }}>{file.size}</td>
+              <td style={{ padding: 16, color: COLORS.text }}>{file.updated}</td>
+              <td style={{ padding: 16, textAlign: "center" }}>
+                <FileActionMenu fileId={file.id} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function UploadModal({ isOpen, onClose, onFileSelect }) {
+  const [selectedFile, setSelectedFile] = React.useState(null);
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: "rgba(0, 0, 0, 0.15)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1000,
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: "white",
+          borderRadius: 24,
+          padding: 32,
+          maxWidth: 500,
+          width: "90%",
+          maxHeight: "80vh",
+          overflowY: "auto",
+          boxShadow: "0 12px 32px rgba(0, 0, 0, 0.08)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 28, color: COLORS.text }}>
+          Upload file
+        </div>
+
+        <div
+          style={{
+            border: `2px dashed ${COLORS.border}`,
+            borderRadius: 16,
+            padding: 40,
+            textAlign: "center",
+            marginBottom: 24,
+            cursor: "pointer",
+            background: COLORS.bg,
+            transition: "all 0.2s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = COLORS.mint;
+            e.currentTarget.style.background = "rgba(184, 223, 209, 0.08)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = COLORS.border;
+            e.currentTarget.style.background = COLORS.bg;
+          }}
+        >
+          <div style={{ fontSize: 32, marginBottom: 12 }}>☁️</div>
+          <div style={{ fontSize: 12, color: COLORS.text, fontWeight: 600 }}>
+            Drag and drop files here
+          </div>
+          <div style={{ fontSize: 11, color: COLORS.text + "B3", marginTop: 4 }}>
+            or click to select
+          </div>
+        </div>
+
+        {selectedFile && (
+          <div
+            style={{
+              background: COLORS.bg,
+              padding: 18,
+              borderRadius: 14,
+              marginBottom: 24,
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <div style={{ fontWeight: 600, color: COLORS.text }}>{selectedFile}</div>
+                <div style={{ fontSize: 11, color: COLORS.text + "B3", marginTop: 4 }}>
+                  250 KB
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedFile(null)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: 18,
+                }}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div style={{ marginBottom: 28 }}>
+          <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.text, display: "block", marginBottom: 10 }}>
+            Class
+          </label>
+          <select
+            style={{
+              width: "100%",
+              padding: "10px 14px",
+              borderRadius: 12,
+              border: `1px solid ${COLORS.border}`,
+              fontSize: 13,
+              background: "white",
+              color: COLORS.text,
+              transition: "border 0.2s ease",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = COLORS.mint;
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = COLORS.border;
+            }}
+          >
+            <option>Select a class</option>
+            <option>Biology</option>
+            <option>History</option>
+            <option>Math</option>
+            <option>Chemistry</option>
+            <option>English</option>
+          </select>
+        </div>
+
+        <div style={{ marginBottom: 28 }}>
+          <label
+            style={{
+              fontSize: 12,
+              fontWeight: 600,
+              color: COLORS.text,
+              display: "block",
+              marginBottom: 10,
+            }}
+          >
+            Note (optional)
+          </label>
+          <textarea
+            placeholder="Add a note about this file..."
+            style={{
+              width: "100%",
+              padding: "10px 14px",
+              borderRadius: 12,
+              border: `1px solid ${COLORS.border}`,
+              fontSize: 13,
+              minHeight: 80,
+              fontFamily: "inherit",
+              color: COLORS.text,
+              transition: "border 0.2s ease",
+              resize: "vertical",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = COLORS.mint;
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = COLORS.border;
+            }}
+          />
+        </div>
+
+        <div style={{ display: "flex", gap: 14, justifyContent: "flex-end" }}>
+          <button
+            onClick={onClose}
+            style={{
+              padding: "12px 24px",
+              borderRadius: 14,
+              border: `1px solid ${COLORS.border}`,
+              background: "transparent",
+              color: COLORS.text,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = COLORS.bg;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              if (selectedFile) {
+                onFileSelect(selectedFile);
+                setSelectedFile(null);
+                onClose();
+              }
+            }}
+            style={{
+              padding: "12px 24px",
+              borderRadius: 14,
+              border: "none",
+              background: selectedFile ? COLORS.mint : "#d9d9d9",
+              color: COLORS.text,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: selectedFile ? "pointer" : "not-allowed",
+              boxShadow: selectedFile ? SUBTLE_SHADOW : "none",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              if (selectedFile) {
+                e.currentTarget.style.boxShadow = SOFT_SHADOW;
+                e.currentTarget.style.transform = "translateY(-1px)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (selectedFile) {
+                e.currentTarget.style.boxShadow = SUBTLE_SHADOW;
+                e.currentTarget.style.transform = "translateY(0)";
+              }
+            }}
+          >
+            Upload
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MyFilesPage() {
+  const [selectedSubTab, setSelectedSubTab] = React.useState("All");
+  const [showUploadModal, setShowUploadModal] = React.useState(false);
+  const [files, setFiles] = React.useState(FILES_MOCK);
+
+  const handleFileUpload = (fileName) => {
+    setFiles([
+      ...files,
+      {
+        id: `f${files.length + 1}`,
+        name: fileName,
+        subLabel: "Just uploaded",
+        class: "General",
+        type: "PDF",
+        source: "You",
+        size: "250 KB",
+        updated: "Now",
+        starred: false,
+        shared: false,
+      },
+    ]);
+  };
+
+  const filteredFiles = React.useMemo(() => {
+    switch (selectedSubTab) {
+      case "Your uploads":
+        return files.filter((f) => f.source === "You");
+      case "Teacher uploads":
+        return files.filter((f) => f.source !== "You");
+      case "Shared":
+        return files.filter((f) => f.shared);
+      case "Starred":
+        return files.filter((f) => f.starred);
+      default:
+        return files;
+    }
+  }, [files, selectedSubTab]);
+
+  return (
+    <div className="desk-card" style={{ borderRadius: 20, overflow: "hidden" }}>
+      <FileToolbar
+        selectedSubTab={selectedSubTab}
+        onSubTabChange={setSelectedSubTab}
+        onUploadClick={() => setShowUploadModal(true)}
+      />
+      <FileTable files={filteredFiles} />
+      <UploadModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        onFileSelect={handleFileUpload}
+      />
+    </div>
+  );
+}
+
+// ============================================================
+// BOOKMARKS TAB
+// ============================================================
+
+function BookmarkInput({ onAdd }) {
+  const [url, setUrl] = React.useState("");
+
+  const handleAdd = () => {
+    if (url.trim()) {
+      const urlObj = new URL(url.startsWith("http") ? url : `https://${url}`);
+      onAdd({
+        url,
+        title: urlObj.hostname.replace("www.", ""),
+      });
+      setUrl("");
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", gap: 14, marginBottom: 28 }}>
+      <input
+        type="text"
+        value={url}
+        onChange={(e) => setUrl(e.target.value)}
+        onKeyPress={(e) => e.key === "Enter" && handleAdd()}
+        placeholder="Paste URL here..."
+        style={{
+          flex: 1,
+          padding: "12px 16px",
+          borderRadius: 14,
+          border: `1px solid ${COLORS.border}`,
+          fontSize: 13,
+          transition: "border 0.2s ease",
+          color: COLORS.text,
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.borderColor = COLORS.mint;
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.borderColor = COLORS.border;
+        }}
+      />
+      <button
+        onClick={handleAdd}
+        style={{
+          padding: "12px 24px",
+          borderRadius: 14,
+          border: "none",
+          background: COLORS.mint,
+          color: COLORS.text,
+          fontWeight: 600,
+          fontSize: 13,
+          cursor: "pointer",
+          boxShadow: SUBTLE_SHADOW,
+          transition: "all 0.2s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.boxShadow = SOFT_SHADOW;
+          e.currentTarget.style.transform = "translateY(-1px)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.boxShadow = SUBTLE_SHADOW;
+          e.currentTarget.style.transform = "translateY(0)";
+        }}
+      >
+        Save
+      </button>
+    </div>
+  );
+}
+
+function BookmarkFilterChips({ tags, activeFilters, onToggle }) {
+  const allTags = [
+    ...new Set(tags.flatMap((b) => b.tags.split(" "))),
+  ];
+
+  return (
+    <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
+      {allTags.map((tag) => {
+        const isActive = activeFilters.includes(tag);
+        return (
+          <button
+            key={tag}
+            onClick={() => onToggle(tag)}
+            style={{
+              padding: "8px 16px",
+              borderRadius: 12,
+              border: isActive ? "none" : `1px solid ${COLORS.border}`,
+              background: isActive ? COLORS.mint : "transparent",
+              color: isActive ? COLORS.text : COLORS.text,
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              boxShadow: isActive ? SUBTLE_SHADOW : "none",
+            }}
+            onMouseEnter={(e) => {
+              if (isActive) {
+                e.currentTarget.style.boxShadow = SOFT_SHADOW;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (isActive) {
+                e.currentTarget.style.boxShadow = SUBTLE_SHADOW;
+              }
+            }}
+          >
+            {tag}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function BookmarkCard({ bookmark, isStarred, onToggleStar, onDelete }) {
+  return (
+    <div
+      className="desk-card"
+      style={{
+        padding: 20,
+        borderRadius: 20,
+        background: isStarred ? "#FFF8F5" : COLORS.surface,
+        borderLeft: isStarred ? `4px solid ${COLORS.coral}` : "none",
+        paddingLeft: isStarred ? 16 : 20,
+        transition: "all 0.2s ease",
+      }}
+    >
+      <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+        <div style={{ fontSize: 20 }}>🔖</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 700, color: COLORS.text, marginBottom: 4 }}>
+            {bookmark.title}
+          </div>
+          <div
+            style={{
+              fontSize: 11,
+              color: COLORS.text + "B3",
+              marginBottom: 12,
+              wordBreak: "break-all",
+            }}
+          >
+            {bookmark.url}
+          </div>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            {bookmark.tags.split(" ").map((tag) => (
+              <span
+                key={tag}
+                style={{
+                  padding: "5px 12px",
+                  borderRadius: 10,
+                  background: COLORS.mint,
+                  color: COLORS.text,
+                  fontSize: 11,
+                  fontWeight: 600,
+                }}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            onClick={() => onToggleStar()}
+            style={{
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              fontSize: 16,
+            }}
+          >
+            {isStarred ? "⭐" : "☆"}
+          </button>
+          <button
+            onClick={() => onDelete()}
+            style={{
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              fontSize: 16,
+            }}
+          >
+            🗑
+          </button>
+          <a
+            href={bookmark.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              fontSize: 16,
+            }}
+          >
+            ↗
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MyBookmarksPage() {
+  const [bookmarks, setBookmarks] = React.useState(BOOKMARKS);
+  const [activeFilters, setActiveFilters] = React.useState([]);
+  const [starredIds, setStarredIds] = React.useState(
+    new Set(bookmarks.filter((b) => b.starred).map((b) => b.id))
+  );
+
+  const toggleFilter = (tag) => {
+    setActiveFilters((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  };
+
+  const toggleStar = (id) => {
+    const newStarred = new Set(starredIds);
+    if (newStarred.has(id)) {
+      newStarred.delete(id);
+    } else {
+      newStarred.add(id);
+    }
+    setStarredIds(newStarred);
+  };
+
+  const deleteBookmark = (id) => {
+    setBookmarks(bookmarks.filter((b) => b.id !== id));
+  };
+
+  const addBookmark = ({ url, title }) => {
+    setBookmarks([
+      {
+        id: `b${bookmarks.length + 1}`,
+        url,
+        title,
+        tags: "New",
+        starred: false,
+      },
+      ...bookmarks,
+    ]);
+  };
+
+  const filteredBookmarks =
+    activeFilters.length === 0
+      ? bookmarks
+      : bookmarks.filter((bookmark) =>
+          activeFilters.some((filter) =>
+            bookmark.tags.split(" ").includes(filter)
+          )
+        );
+
+  return (
+    <div>
+      <BookmarkInput onAdd={addBookmark} />
+      <BookmarkFilterChips
+        tags={bookmarks}
+        activeFilters={activeFilters}
+        onToggle={toggleFilter}
+      />
+      <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+        {filteredBookmarks.map((bookmark) => (
+          <BookmarkCard
+            key={bookmark.id}
+            bookmark={bookmark}
+            isStarred={starredIds.has(bookmark.id)}
+            onToggleStar={() => toggleStar(bookmark.id)}
+            onDelete={() => deleteBookmark(bookmark.id)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// OVERVIEW TAB
+// ============================================================
+
+function HeroIllustration() {
+  return (
+    <svg width="240" height="170" viewBox="0 0 240 170" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      {/* Desk surface */}
+      <rect x="20" y="128" width="200" height="14" rx="7" fill="#D4C5F9" opacity="0.7"/>
+      {/* Monitor body */}
+      <rect x="72" y="62" width="96" height="62" rx="10" fill="#B8D9FF"/>
+      <rect x="79" y="69" width="82" height="46" rx="6" fill="white" opacity="0.85"/>
+      {/* Code lines on screen */}
+      <rect x="85" y="76" width="45" height="4" rx="2" fill="#D4C5F9"/>
+      <rect x="85" y="84" width="30" height="4" rx="2" fill="#A8E6CF"/>
+      <rect x="85" y="92" width="55" height="4" rx="2" fill="#FFB5A7" opacity="0.7"/>
+      <rect x="85" y="100" width="38" height="4" rx="2" fill="#D4C5F9" opacity="0.5"/>
+      {/* Monitor stand */}
+      <rect x="112" y="124" width="16" height="6" rx="3" fill="#B8D9FF"/>
+      <rect x="104" y="129" width="32" height="5" rx="2.5" fill="#B8D9FF" opacity="0.7"/>
+      {/* Character — body */}
+      <ellipse cx="46" cy="112" rx="18" ry="20" fill="#FFB5A7"/>
+      {/* Character — head */}
+      <circle cx="46" cy="87" r="18" fill="#FFCBA4"/>
+      {/* Character — hair */}
+      <path d="M28 83 Q28 66 46 66 Q64 66 64 83 Q60 75 46 73 Q32 75 28 83Z" fill="#5C3D2E"/>
+      {/* Character — eyes */}
+      <circle cx="40" cy="87" r="2.5" fill="#25253A"/>
+      <circle cx="52" cy="87" r="2.5" fill="#25253A"/>
+      {/* Character — smile */}
+      <path d="M40 94 Q46 99 52 94" stroke="#C0785A" strokeWidth="1.8" fill="none" strokeLinecap="round"/>
+      {/* Book stack */}
+      <rect x="170" y="115" width="38" height="9" rx="4" fill="#A8E6CF"/>
+      <rect x="173" y="107" width="32" height="9" rx="4" fill="#FFB5A7"/>
+      <rect x="176" y="99" width="26" height="9" rx="4" fill="#D4C5F9"/>
+      {/* Floating sparkles */}
+      <circle cx="168" cy="52" r="5" fill="#FFE8A3" opacity="0.9"/>
+      <circle cx="22" cy="100" r="4" fill="#A8E6CF" opacity="0.7"/>
+      <circle cx="205" cy="70" r="3.5" fill="#FFB5A7" opacity="0.8"/>
+      <circle cx="190" cy="44" r="6" fill="#D4C5F9" opacity="0.6"/>
+      {/* Small star */}
+      <path d="M155 40 L157 45 L162 45 L158 48 L160 53 L155 50 L150 53 L152 48 L148 45 L153 45Z" fill="#FFE8A3"/>
+    </svg>
+  );
+}
+
+function DeskHeroCard() {
+  return (
+    <div style={{
+      background: "linear-gradient(135deg, #D4C5F9 0%, #A8E6CF 100%)",
+      borderRadius: 24,
+      padding: "36px 48px",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      boxShadow: CARD_SHADOW,
+      position: "relative",
+      overflow: "hidden",
+      marginBottom: 0,
+    }}>
+      {/* Decorative background blob */}
       <div style={{
-        background: "linear-gradient(180deg, #F4DFA8 0%, #ECD18A 100%)",
-        borderRadius: "10px 10px 8px 8px",
-        padding: "14px 16px 16px",
-        boxShadow:
-          "inset 0 1px 0 rgba(255,255,255,0.45)," +
-          "inset 0 -2px 0 rgba(140,100,30,0.18)," +
-          "0 14px 22px -14px rgba(15,23,42,0.18)",
-        color: "var(--paper-warm-ink)",
+        position: "absolute", right: 200, top: -40,
+        width: 200, height: 200, borderRadius: "50%",
+        background: "rgba(255,255,255,0.15)", pointerEvents: "none",
+      }}/>
+      {/* Left: greeting + stats */}
+      <div style={{ position: "relative", zIndex: 1 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: "#5a4a8a", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 10 }}>
+          Wednesday · May 13
+        </div>
+        <div style={{ fontSize: 34, fontWeight: 900, color: "#25253A", lineHeight: 1.2, marginBottom: 8, fontFamily: "Nunito, Poppins, sans-serif" }}>
+          Good morning, Alex! 👋
+        </div>
+        <div style={{ fontSize: 15, color: "#5a5070", marginBottom: 28 }}>
+          Your workspace is all set — let's have a great day.
+        </div>
+        <div style={{ display: "flex", gap: 12 }}>
+          {[
+            { label: "Due this week", value: "3" },
+            { label: "Classes today", value: "4" },
+            { label: "Saved bookmarks", value: "4" },
+          ].map(stat => (
+            <div key={stat.label} style={{
+              background: "rgba(255,255,255,0.55)",
+              backdropFilter: "blur(8px)",
+              borderRadius: 16,
+              padding: "14px 22px",
+            }}>
+              <div style={{ fontSize: 28, fontWeight: 900, color: "#25253A", lineHeight: 1, fontFamily: "Nunito, Poppins, sans-serif" }}>{stat.value}</div>
+              <div style={{ fontSize: 11, color: "#6b6080", marginTop: 4, fontWeight: 500 }}>{stat.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Right: illustration — slightly overflows card bottom */}
+      <div style={{ position: "relative", zIndex: 1, marginRight: -8, marginBottom: -36, alignSelf: "flex-end" }}>
+        <HeroIllustration />
+      </div>
+    </div>
+  );
+}
+
+// Shared card shell used by all four overview cards
+function OverviewCard({ iconBg, iconColor, iconName, title, linkLabel, onLinkClick, children }) {
+  return (
+    <div className="desk-card" style={{
+      background: COLORS.surface,
+      borderRadius: 20,
+      overflow: "hidden",
+      height: "100%",
+      display: "flex",
+      flexDirection: "column",
+    }}>
+      {/* Header */}
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "14px 16px 10px 16px",
+        flexShrink: 0,
       }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{
+            width: 28,
+            height: 28,
+            borderRadius: 8,
+            background: iconBg,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}>
+            <I.Icon name={iconName} size={14} color={iconColor} strokeWidth={2} />
+          </div>
+          <span style={{ fontSize: 13, fontWeight: 500, color: COLORS.text }}>{title}</span>
+        </div>
+        <button
+          onClick={onLinkClick}
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            fontSize: 12,
+            color: "#0c447c",
+            padding: 0,
+            fontWeight: 500,
+          }}
+        >
+          {linkLabel}
+        </button>
+      </div>
+      {/* Divider */}
+      <div style={{ borderTop: "1px solid #f3f4f6", margin: "0 16px", flexShrink: 0 }} />
+      {/* Body — grows to fill remaining card height */}
+      <div style={{ padding: "12px 16px 14px 16px", flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
         {children}
       </div>
     </div>
   );
 }
 
-/* Index-card — a 3x5 with a colored class-tab + handwritten title. */
-function IndexCard({ work, index }) {
-  const tilt = tiltFor(work.title, 1.2);
-  return (
-    <div style={{
-      position: "relative",
-      background: "var(--paper-warm)",
-      border: "1px solid var(--paper-warm-edge)",
-      borderBottomColor: "var(--paper-warm-shade)",
-      borderRadius: 6,
-      padding: "16px 18px 14px 22px",
-      boxShadow:
-        "0 1px 0 rgba(255,255,255,0.6) inset," +
-        "0 14px 22px -14px rgba(15,23,42,0.18)," +
-        "0 2px 4px rgba(15,23,42,0.05)",
-      transform: `rotate(${tilt}deg)`,
-      cursor: "pointer",
-      // Single red margin line — index card vibe
-      backgroundImage:
-        "linear-gradient(90deg, transparent 0 12px, rgba(217,84,74,0.55) 12px 13px, transparent 13px)",
-    }}>
-      {/* Color spine — class identity */}
-      <div style={{
-        position: "absolute", top: 8, bottom: 8, right: 8, width: 4,
-        borderRadius: 999, background: work.color,
-      }}/>
-      {/* Tape on submitted/returned only — feels archived */}
-      {work.status === "submitted" && <Tape color="mint" rotate={-6} width={56} top={-9} left={"24%"}/>}
-      {work.status === "returned"  && <Tape color="peach" rotate={5} width={56} top={-9} left={"76%"}/>}
+// Today's menu card — with Today / This week / Cycle tabs
+function OverviewMenuCard({ selectedItem, onSwitchTab }) {
+  const [menuView, setMenuView] = React.useState("today");
 
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-        <div style={{
-          fontSize: 9.5, fontWeight: 800, letterSpacing: "0.14em",
-          color: work.color, textTransform: "uppercase",
-        }}>{work.kind} · {work.course}</div>
-        <div style={{ flex: 1 }}/>
-        <StatusPill status={work.status}/>
+  const dietAbbr = { veg: "Veg", gf: "GF", halal: "Halal", df: "DF" };
+  const dietColor = { veg: COLORS.veg, gf: COLORS.gf, halal: "#0e7a5c", df: COLORS.df };
+
+  const todayEntry = WEEK_MENU.find((d) => d.isToday) || WEEK_MENU[0];
+  const todayItems = todayEntry.items
+    .map((id) => MENU_ITEMS.find((m) => m.id === id))
+    .filter(Boolean);
+
+  function DietTags({ diets }) {
+    return (
+      <div style={{ display: "flex", gap: 4, alignItems: "center", flexShrink: 0 }}>
+        {diets.split(" ").filter((d) => dietAbbr[d]).map((d) => (
+          <span key={d} style={{
+            padding: "1px 6px", borderRadius: 20,
+            background: dietColor[d] || "#d9d9d9", color: "white",
+            fontSize: 10, fontWeight: 700,
+          }}>{dietAbbr[d]}</span>
+        ))}
       </div>
-      <div style={{
-        fontFamily: HAND_FONT, fontSize: 19, fontWeight: 700,
-        color: "var(--paper-warm-ink)", lineHeight: 1.15, letterSpacing: "-0.005em",
-        marginBottom: 10,
-        display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
-      }}>{work.title}</div>
+    );
+  }
 
-      {work.status === "in-progress" && (
-        <>
-          <div style={{
-            height: 6, background: "rgba(58,51,40,0.10)",
-            borderRadius: 999, overflow: "hidden", marginBottom: 6,
-          }}>
-            <div style={{
-              width: work.progress + "%", height: "100%",
-              background: `linear-gradient(90deg, ${work.color}, ${shade(work.color, -16)})`,
-            }}/>
-          </div>
-          <div style={{
-            display: "flex", justifyContent: "space-between",
-            fontFamily: SCRIPT_FONT, fontSize: 13.5,
-            color: "rgba(58,51,40,0.7)",
-          }}>
-            <span>about {work.progress}% there</span>
-            <span style={{ fontWeight: 700 }}>due {work.due}</span>
-          </div>
-        </>
-      )}
-      {work.status === "submitted" && (
-        <div style={{
-          fontFamily: SCRIPT_FONT, fontSize: 13.5,
-          color: "rgba(58,51,40,0.7)",
-          display: "flex", justifyContent: "space-between",
-        }}>
-          <span>{work.due}</span>
-          <span>waiting on Ms. Chen</span>
-        </div>
-      )}
-      {work.status === "returned" && (
-        <div style={{
-          display: "flex", alignItems: "center", gap: 8,
-          fontFamily: SCRIPT_FONT, fontSize: 14, fontWeight: 700,
-          color: "#A16207",
-        }}>
-          <I.MessageSquare size={13} color="#A16207"/>
-          Mr. Greene left 4 comments — take a look
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* Bookmark scrap — a torn paper strip, pinned. */
-function BookmarkScrap({ b, index }) {
-  const tilt = tiltFor(b.title, 1.6);
-  const tapeColors = ["lavender", "mint", "peach", "butter", "sky"];
-  const tape = tapeColors[index % tapeColors.length];
-  return (
-    <a href="#" style={{ textDecoration: "none", position: "relative", display: "block",
-      transform: `rotate(${tilt}deg)`,
-    }}>
-      <Tape color={tape} rotate={index % 2 === 0 ? -6 : 6} width={50}
-        top={-8} left={index % 2 === 0 ? "20%" : "80%"}/>
+  function ItemRow({ item, isLast }) {
+    const isPicked = selectedItem === item.id;
+    return (
       <div style={{
-        background: "var(--paper-warm)",
-        border: "1px solid var(--paper-warm-edge)",
-        borderBottom: "2px solid var(--paper-warm-shade)",
-        borderRadius: 4,
-        padding: "12px 14px",
-        boxShadow: "0 8px 14px -10px rgba(15,23,42,0.18)",
-        display: "flex", alignItems: "center", gap: 12,
+        display: "flex", alignItems: "center", gap: 8,
+        padding: "7px 0",
+        borderBottom: isLast ? "none" : "0.5px solid #e5e7eb",
       }}>
         <div style={{
-          width: 34, height: 34, borderRadius: 8,
-          background: b.color + "1A",
-          border: `1px solid ${b.color}33`,
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-          flexShrink: 0, fontSize: 17,
-        }}>{b.icon}</div>
-        <div style={{ minWidth: 0, flex: 1 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--paper-warm-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.title}</div>
-          <div style={{ fontSize: 11, color: "rgba(58,51,40,0.6)" }}>{b.url} · {b.tag}</div>
-        </div>
-        <I.External size={12} color="rgba(58,51,40,0.4)"/>
+          width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
+          background: isPicked ? "#d4a847" : "#b4b2a9",
+        }} />
+        <span style={{
+          flex: 1, fontSize: 12, fontWeight: 500, color: COLORS.text,
+          minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+        }}>{item.name}</span>
+        <DietTags diets={item.diets} />
+        {isPicked && (
+          <span style={{ fontSize: 10, fontWeight: 600, color: "#854f0b", marginLeft: 2, whiteSpace: "nowrap" }}>
+            Your pick
+          </span>
+        )}
       </div>
-    </a>
-  );
-}
+    );
+  }
 
-/* ============================================================
-   MY MENU — cafeteria
-   ============================================================ */
-function MyDeskMenu({ segments }) {
+  const menuViews = ["today", "this week", "cycle"];
+
   return (
-    <Page segments={segments} title="My Menu" emoji=""
-      lede="What's on the line today, what's coming next week, and a vote so the cafeteria knows what you actually want."
-      actions={
-        <>
-          <button className="btn btn-sm"><I.Filter size={12} color="var(--stone)"/> Dietary filters</button>
-          <button className="btn btn-primary btn-sm" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-            <I.Check size={12} color="#fff"/> Confirm today's pick
-          </button>
-        </>
-      }
-      rightRail={
-        <>
-          <div className="card" style={{ padding: 18 }}>
-            <div className="t-eyebrow" style={{ marginBottom: 10 }}>YOUR DIET</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {[
-                { label: "Vegetarian", on: true },
-                { label: "Halal",      on: false },
-                { label: "Nut allergy", on: true },
-                { label: "Gluten-free", on: false },
-                { label: "Dairy-free",  on: false },
-              ].map((p) => (
-                <div key={p.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{
-                    width: 30, height: 18, borderRadius: 999, padding: 2,
-                    background: p.on ? "var(--student)" : "var(--mist)",
-                    display: "flex", alignItems: "center",
-                    justifyContent: p.on ? "flex-end" : "flex-start",
-                  }}>
-                    <div style={{ width: 14, height: 14, borderRadius: 999, background: "#fff" }}/>
-                  </div>
-                  <span style={{ fontSize: 12.5, color: "var(--slate)" }}>{p.label}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ marginTop: 12, fontSize: 11.5, color: "var(--stone)", lineHeight: 1.5 }}>
-              We'll only show you food that fits. Cafeteria sees this so they can plan.
-            </div>
-          </div>
+    <OverviewCard
+      iconBg={COLORS.darkGreen}
+      iconColor={COLORS.teal}
+      iconName="Utensils"
+      title="Today's Menu"
+      linkLabel="See full menu →"
+      onLinkClick={() => onSwitchTab("my-menu")}
+    >
+      {/* View tabs */}
+      <div style={{ display: "flex", gap: 4, marginBottom: 12 }}>
+        {menuViews.map((v) => (
+          <button
+            key={v}
+            onClick={() => setMenuView(v)}
+            style={{
+              padding: "4px 12px", borderRadius: 20, border: "none", cursor: "pointer",
+              fontSize: 11, fontWeight: 600,
+              background: menuView === v ? COLORS.darkGreen : "#f3f4f6",
+              color: menuView === v ? "white" : "#6b7280",
+              transition: "all 0.15s",
+              textTransform: "capitalize",
+            }}
+          >{v === "today" ? "Today" : v === "this week" ? "This week" : "Cycle"}</button>
+        ))}
+      </div>
 
-          <div className="card" style={{ padding: 18 }}>
-            <div className="t-eyebrow" style={{ marginBottom: 8 }}>VOTE FOR NEXT FRIDAY</div>
-            <div style={{ fontSize: 12.5, color: "var(--slate)", marginBottom: 12, lineHeight: 1.5 }}>
-              Pick what you actually want to eat next Friday. Polls close <strong>Fri 3 PM</strong>.
+      {/* Scrollable content area — grows to fill card, never resizes on tab switch */}
+      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}>
+
+        {/* TODAY */}
+        {menuView === "today" && (
+          <div>
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 5,
+              background: COLORS.darkGreen, color: COLORS.teal,
+              borderRadius: 20, padding: "3px 10px",
+              fontSize: 11, fontWeight: 600, marginBottom: 10,
+            }}>
+              <I.Icon name="Clock" size={11} color={COLORS.teal} strokeWidth={2} />
+              5th period · 12:25 – 12:55 PM
             </div>
-            {[
-              { name: "BBQ jackfruit sliders", pct: 41, mine: true },
-              { name: "Chicken & rice bowl",    pct: 33 },
-              { name: "Pesto pasta + salad",    pct: 18 },
-              { name: "Surprise me — chef's pick", pct: 8 },
-            ].map((v) => (
-              <div key={v.name} style={{ marginBottom: 10 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: v.mine ? 700 : 500, color: "var(--ink)", marginBottom: 4 }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                    {v.mine && <I.Check size={11} color="var(--student)"/>}
-                    {v.name}
-                  </span>
-                  <span style={{ color: "var(--stone)" }}>{v.pct}%</span>
+            {todayItems.map((item, i) => (
+              <ItemRow key={item.id} item={item} isLast={i === todayItems.length - 1} />
+            ))}
+          </div>
+        )}
+
+        {/* THIS WEEK */}
+        {menuView === "this week" && (
+          <div>
+            {WEEK_MENU.map((day, di) => {
+              const items = day.items.map((id) => MENU_ITEMS.find((m) => m.id === id)).filter(Boolean);
+              return (
+                <div key={day.date} style={{
+                  display: "flex", alignItems: "flex-start", gap: 12,
+                  padding: "7px 0",
+                  borderBottom: di === WEEK_MENU.length - 1 ? "none" : "0.5px solid #e5e7eb",
+                }}>
+                  <div style={{ minWidth: 76, flexShrink: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: COLORS.text, display: "flex", alignItems: "center", gap: 5 }}>
+                      {day.day.slice(0, 3)}
+                      {day.isToday && (
+                        <span style={{
+                          fontSize: 9, fontWeight: 700, background: COLORS.teal,
+                          color: COLORS.darkGreen, borderRadius: 20, padding: "1px 5px",
+                        }}>Today</span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 10, color: "#9ca3af" }}>{day.date.split(",")[0]}</div>
+                  </div>
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 3 }}>
+                    {items.map((item) => (
+                      <div key={item.id} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <div style={{
+                          width: 6, height: 6, borderRadius: "50%", flexShrink: 0,
+                          background: selectedItem === item.id ? "#d4a847" : "#d1d5db",
+                        }} />
+                        <span style={{ fontSize: 11, color: COLORS.text, flex: 1,
+                          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {item.name}
+                        </span>
+                        <DietTags diets={item.diets} />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div style={{ height: 5, background: "var(--bone)", borderRadius: 999, overflow: "hidden" }}>
-                  <div style={{ width: v.pct + "%", height: "100%", background: v.mine ? "var(--student)" : "var(--student-200)" }}/>
+              );
+            })}
+          </div>
+        )}
+
+        {/* CYCLE */}
+        {menuView === "cycle" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {[
+              { label: "Proteins", items: CYCLE_MENU.proteins },
+              { label: "Vegetables", items: CYCLE_MENU.vegetables },
+              { label: "Staples", items: CYCLE_MENU.staples },
+            ].map(({ label, items }) => (
+              <div key={label}>
+                <div style={{
+                  fontSize: 10, fontWeight: 700, color: "#9ca3af",
+                  textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 5,
+                }}>{label}</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  {items.map((item, i) => (
+                    <div key={item.id} style={{
+                      display: "flex", alignItems: "center", gap: 8,
+                      padding: "5px 0",
+                      borderBottom: i === items.length - 1 ? "none" : "0.5px solid #f3f4f6",
+                    }}>
+                      <div style={{
+                        width: 6, height: 6, borderRadius: "50%", flexShrink: 0,
+                        background: selectedItem === item.id ? "#d4a847" : "#d1d5db",
+                      }} />
+                      <span style={{ flex: 1, fontSize: 11, color: COLORS.text,
+                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {item.name}
+                      </span>
+                      <span style={{ fontSize: 10, color: "#9ca3af" }}>{item.calories} kcal</span>
+                      <DietTags diets={item.diets} />
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}
           </div>
+        )}
 
-          <div className="card" style={{ padding: 18 }}>
-            <div className="t-eyebrow" style={{ marginBottom: 8 }}>CAFETERIA HOURS</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 12.5, color: "var(--slate)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between" }}><span>Breakfast</span><span>7:15 – 7:45 AM</span></div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}><span>Lunch · Periods 4–6</span><span>11:25 – 1:00 PM</span></div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}><span>Afterschool snack</span><span>3:10 – 3:45 PM</span></div>
-            </div>
-          </div>
-        </>
-      }
-    >
-      <DeskTabs segments={segments}/>
-
-      {/* Today header — chalkboard menu vibe */}
-      <div style={{
-        position: "relative",
-        background: "linear-gradient(180deg, #2A3F35 0%, #243530 100%)",
-        backgroundImage:
-          "radial-gradient(circle at 20% 40%, rgba(255,255,255,0.04) 0 1px, transparent 1.5px)," +
-          "radial-gradient(circle at 70% 70%, rgba(255,255,255,0.03) 0 1px, transparent 1.5px)," +
-          "linear-gradient(180deg, #2A3F35 0%, #243530 100%)",
-        backgroundSize: "40px 40px, 65px 65px, 100% 100%",
-        borderRadius: 12,
-        padding: "20px 24px",
-        marginBottom: 20,
-        boxShadow:
-          "inset 0 0 0 8px #6B4A28," +
-          "inset 0 0 0 9px rgba(0,0,0,0.4)," +
-          "0 12px 22px -16px rgba(15,23,42,0.5)",
-        color: "#F2F0E6",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div>
-            <div style={{ fontSize: 10, fontWeight: 800, color: "#E5C690", letterSpacing: "0.18em", marginBottom: 4 }}>{DESK_LUNCH.cycle.toUpperCase()} · TODAY</div>
-            <div style={{
-              fontFamily: HAND_FONT, fontSize: 30, fontWeight: 700,
-              color: "#F2F0E6", letterSpacing: "0.005em",
-              textShadow: "0 0 1px rgba(255,255,255,0.4)",
-            }}>
-              {DESK_LUNCH.date}
-            </div>
-          </div>
-          <div style={{ flex: 1 }}/>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 12.5, color: "#E5C690", fontFamily: SCRIPT_FONT }}>
-            <I.Clock size={13} color="#E5C690"/>
-            <span>{DESK_LUNCH.period}</span>
-          </div>
-          <div style={{
-            display: "inline-flex",
-            border: "1px solid rgba(229,198,144,0.35)",
-            borderRadius: 8, overflow: "hidden",
-            background: "rgba(0,0,0,0.18)",
-          }}>
-            <button style={{ padding: "7px 12px", border: "none", background: "rgba(229,198,144,0.95)", color: "#2A3F35", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Today</button>
-            <button style={{ padding: "7px 12px", border: "none", background: "transparent", color: "#E5C690", fontSize: 12, fontWeight: 500, cursor: "pointer" }}>This week</button>
-            <button style={{ padding: "7px 12px", border: "none", background: "transparent", color: "#E5C690", fontSize: 12, fontWeight: 500, cursor: "pointer" }}>Cycle</button>
-          </div>
-        </div>
       </div>
+    </OverviewCard>
+  );
+}
 
-      {/* Options grid — meal-card paper */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 18, marginBottom: 22 }}>
-        {DESK_LUNCH.options.map((o, i) => {
-          const tilt = tiltFor(o.name, 1.0);
+// Tools card — full-width single row of all 8 tools
+function OverviewToolsCard({ onSwitchTab }) {
+  const toolIconMap = {
+    calc: { name: "Calculator", color: "#d97706" },
+    draw: { name: "Pencil", color: "#2563eb" },
+    note: { name: "FileText", color: "#d97706" },
+    write: { name: "AlignLeft", color: "#0284c7" },
+    slides: { name: "Monitor", color: "#7c3aed" },
+    design: { name: "Palette", color: "#0d9488" },
+    audio: { name: "Mic", color: "#db2777" },
+    video: { name: "Video", color: "#6b7280" },
+  };
+
+  return (
+    <OverviewCard
+      iconBg="#e6f1fb"
+      iconColor="#2563eb"
+      iconName="Wrench"
+      title="My Tools"
+      linkLabel="See all tools →"
+      onLinkClick={() => onSwitchTab("my-tools")}
+    >
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(8, 1fr)",
+        gap: 10,
+      }}>
+        {TOOLS.map((tool) => {
+          const ic = toolIconMap[tool.icon] || { name: "Box", color: "#6b7280" };
           return (
-            <div key={o.name} style={{
-              position: "relative",
-              background: o.pick ? "var(--paper-warm)" : "var(--paper)",
-              border: o.pick ? "1px solid #E9C77B" : "1px solid var(--mist)",
+            <div key={tool.id} style={{
+              background: "#f9fafb",
               borderRadius: 10,
-              padding: 18,
-              transform: `rotate(${tilt}deg)`,
-              boxShadow: o.pick
-                ? "0 1px 0 rgba(255,255,255,0.6) inset, 0 16px 26px -16px rgba(15,23,42,0.20)"
-                : "0 8px 14px -10px rgba(15,23,42,0.10)",
+              padding: "12px 8px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 8,
             }}>
-              {o.pick && <Tape color="butter" rotate={-5} width={70} top={-10} left={"22%"}/>}
-              {o.pick && (
-                <div aria-hidden="true" style={{
-                  position: "absolute", top: 14, right: 14,
-                  transform: "rotate(-12deg)",
-                  border: "2px solid rgba(217,84,74,0.55)",
-                  color: "rgba(217,84,74,0.78)",
-                  padding: "2px 8px", borderRadius: 4,
-                  fontSize: 9, fontWeight: 800, letterSpacing: "0.18em",
-                  fontFamily: "ui-monospace, monospace",
-                }}>YOUR PICK</div>
-              )}
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
-                <div style={{
-                  position: "relative", width: 76, height: 76, borderRadius: 6,
-                  flexShrink: 0,
-                  padding: 6, background: "#fff",
-                  border: "1px solid var(--paper-warm-edge)",
-                  boxShadow: "0 4px 8px -4px rgba(15,23,42,0.18)",
-                  transform: `rotate(${tilt * -1.5}deg)`,
-                }}>
-                  <div style={{
-                    width: "100%", height: "100%",
-                    background: "repeating-linear-gradient(135deg, var(--bone) 0 8px, var(--mist) 8px 9px)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontFamily: "ui-monospace, SF Mono, monospace", fontSize: 8,
-                    color: "var(--silver)",
-                  }}>photo</div>
+              <div style={{
+                width: 36,
+                height: 36,
+                borderRadius: 9,
+                background: tool.bgColor,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}>
+                <I.Icon name={ic.name} size={16} color={ic.color} strokeWidth={2} />
+              </div>
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: COLORS.text, lineHeight: 1.2 }}>
+                  {tool.name}
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    fontFamily: HAND_FONT, fontSize: 24, fontWeight: 700,
-                    color: "var(--ink)", lineHeight: 1.05, marginBottom: 4,
-                  }}>{o.name}</div>
-                  <div style={{ fontSize: 12.5, color: "var(--stone)", marginBottom: 10, lineHeight: 1.4 }}>{o.desc}</div>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    {o.tags.map((t) => <Tag key={t} tone="success">{t}</Tag>)}
-                    <Tag tone="neutral">{o.kcal} kcal</Tag>
-                    {o.allergens.map((a) => <Tag key={a} tone="warning">⚠ {a}</Tag>)}
-                  </div>
+                <div style={{ fontSize: 10, color: "#9ca3af", marginTop: 2, lineHeight: 1.3 }}>
+                  {tool.description}
                 </div>
               </div>
+            </div>
+          );
+        })}
+      </div>
+    </OverviewCard>
+  );
+}
+
+// Files card — full-width, all 5 files in a table layout + storage bar
+function OverviewFilesCard({ onSwitchTab }) {
+  const [openMenu, setOpenMenu] = React.useState(null);
+
+  React.useEffect(() => {
+    if (openMenu === null) return;
+    const close = () => setOpenMenu(null);
+    document.addEventListener("click", close);
+    return () => document.removeEventListener("click", close);
+  }, [openMenu]);
+
+  const fileTypeMeta = {
+    XLS: { bg: COLORS.fileXLS, color: "white" },
+    PDF: { bg: "#e8422a", color: "white" },
+    PPT: { bg: COLORS.filePPT, color: "white" },
+    DOC: { bg: COLORS.fileDOC, color: "white" },
+  };
+
+  const classPillColors = {
+    Biology: { bg: "#d1fae5", color: "#065f46" },
+    History: { bg: "#fce7f3", color: "#9d174d" },
+    Math: { bg: "#dbeafe", color: "#1e40af" },
+    Chemistry: { bg: "#ede9fe", color: "#5b21b6" },
+    English: { bg: "#fef9c3", color: "#854d0e" },
+  };
+
+  const storageUsedMB = 190;
+  const storageTotalMB = 500;
+  const storagePct = (storageUsedMB / storageTotalMB) * 100;
+
+  const dropdownItems = [
+    { icon: "Download", label: "Download", red: false },
+    { icon: "Share2", label: "Share", red: false },
+    { icon: "Pencil", label: "Rename", red: false },
+    { icon: "Star", label: "Star", red: false },
+    { divider: true },
+    { icon: "Trash2", label: "Delete", red: true },
+  ];
+
+  // Column header row
+  const colHeader = (label, flex, extra = {}) => (
+    <div style={{ flex, fontSize: 10, fontWeight: 600, color: "#9ca3af",
+      textTransform: "uppercase", letterSpacing: 0.5, ...extra }}>
+      {label}
+    </div>
+  );
+
+  return (
+    <OverviewCard
+      iconBg="#eeedfe"
+      iconColor="#7c3aed"
+      iconName="FolderOpen"
+      title="Files"
+      linkLabel="See all files →"
+      onLinkClick={() => onSwitchTab("files")}
+    >
+      {/* Column headers */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, paddingBottom: 6,
+        borderBottom: "0.5px solid #e5e7eb", marginBottom: 2 }}>
+        {colHeader("Name", 3)}
+        {colHeader("Class", 1.2)}
+        {colHeader("Source", 1)}
+        {colHeader("Size", 0.8)}
+        {colHeader("Updated", 0.8)}
+        <div style={{ width: 56, flexShrink: 0 }} />
+      </div>
+
+      {/* File rows */}
+      {FILES_MOCK.map((file, i) => {
+        const typeMeta = fileTypeMeta[file.type] || { bg: "#9ca3af", color: "white" };
+        const isLast = i === FILES_MOCK.length - 1;
+        const isOpen = openMenu === file.id;
+        const cc = classPillColors[file.class] || { bg: "#f3f4f6", color: "#374151" };
+
+        return (
+          <div
+            key={file.id}
+            style={{
+              display: "flex", alignItems: "center", gap: 12,
+              padding: "8px 0",
+              borderBottom: isLast ? "none" : "0.5px solid #f3f4f6",
+              position: "relative",
+            }}
+          >
+            {/* Name col */}
+            <div style={{ flex: 3, display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
               <div style={{
-                display: "flex", justifyContent: "space-between", alignItems: "center",
-                marginTop: 14, paddingTop: 12,
-                borderTop: "1px dashed rgba(58,51,40,0.20)",
+                width: 28, height: 28, borderRadius: 6,
+                background: typeMeta.bg, color: typeMeta.color,
+                fontSize: 9, fontWeight: 700, flexShrink: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>{file.type}</div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 500, color: COLORS.text,
+                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {file.name}
+                </div>
+                <div style={{ fontSize: 10, color: "#9ca3af", marginTop: 1 }}>{file.subLabel}</div>
+              </div>
+            </div>
+
+            {/* Class */}
+            <div style={{ flex: 1.2 }}>
+              <span style={{ padding: "2px 8px", borderRadius: 20,
+                background: cc.bg, color: cc.color, fontSize: 10, fontWeight: 600 }}>
+                {file.class}
+              </span>
+            </div>
+
+            {/* Source */}
+            <div style={{ flex: 1, fontSize: 12, color: "#6b7280",
+              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {file.source}
+            </div>
+
+            {/* Size */}
+            <div style={{ flex: 0.8, fontSize: 12, color: "#6b7280" }}>{file.size}</div>
+
+            {/* Updated */}
+            <div style={{ flex: 0.8, fontSize: 12, color: "#6b7280" }}>{file.updated}</div>
+
+            {/* Actions */}
+            <div style={{ width: 56, flexShrink: 0, display: "flex", alignItems: "center",
+              justifyContent: "flex-end", gap: 4 }}>
+              {file.starred && (
+                <I.Icon name="Star" size={13} color="#d4a847" strokeWidth={2}
+                  style={{ fill: "#d4a847" }} />
+              )}
+              <button
+                onClick={(e) => { e.stopPropagation(); setOpenMenu(isOpen ? null : file.id); }}
+                style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  color: "#9ca3af", padding: "2px 4px", borderRadius: 4,
+                  fontSize: 15, lineHeight: 1, flexShrink: 0,
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "#f3f4f6"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "none"; }}
+              >···</button>
+            </div>
+
+            {/* Dropdown */}
+            {isOpen && (
+              <div onClick={(e) => e.stopPropagation()} style={{
+                position: "absolute", right: 0, top: "100%", zIndex: 100,
+                background: "white", border: "0.5px solid #d1d5db",
+                borderRadius: 10, boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
+                minWidth: 150, overflow: "hidden",
               }}>
-                <a href="#" style={{ fontSize: 11.5, color: "var(--student-deep)", fontWeight: 600, textDecoration: "none" }}>View full ingredients →</a>
-                <button className="btn btn-sm" style={{ height: 28, padding: "0 14px" }}>{o.pick ? "Keep pick" : "Pick this"}</button>
+                {dropdownItems.map((item, idx) => {
+                  if (item.divider) return <div key={idx} style={{ borderTop: "0.5px solid #e5e7eb", margin: "2px 0" }} />;
+                  return (
+                    <button key={idx} style={{
+                      width: "100%", display: "flex", alignItems: "center", gap: 8,
+                      padding: "7px 10px", background: "none", border: "none", cursor: "pointer",
+                      fontSize: 12, color: item.red ? "#a32d2d" : COLORS.text, textAlign: "left",
+                    }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = item.red ? "#fcebeb" : "#f9fafb"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = "none"; }}
+                    >
+                      <I.Icon name={item.icon} size={13} color={item.red ? "#a32d2d" : "#6b7280"} strokeWidth={2} />
+                      {item.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {/* Storage bar */}
+      <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 16 }}>
+        <div style={{ fontSize: 11, color: "#9ca3af", whiteSpace: "nowrap" }}>Storage used</div>
+        <div style={{ flex: 1, height: 5, borderRadius: 99, background: "#f3f4f6", overflow: "hidden" }}>
+          <div style={{ height: "100%", width: `${storagePct}%`, borderRadius: 99, background: COLORS.darkGreen }} />
+        </div>
+        <div style={{ fontSize: 11, color: "#9ca3af", whiteSpace: "nowrap" }}>
+          {storageUsedMB} MB of {storageTotalMB} MB
+        </div>
+      </div>
+    </OverviewCard>
+  );
+}
+
+// Bookmarks card — 3 recent bookmarks + stats row
+function OverviewBookmarksCard({ onSwitchTab }) {
+  const tagColors = {
+    Biology: { bg: "#d1fae5", color: "#065f46" },
+    Math: { bg: "#dbeafe", color: "#1e40af" },
+    Chemistry: { bg: "#ede9fe", color: "#5b21b6" },
+    English: { bg: "#fce7f3", color: "#9d174d" },
+    Literature: { bg: "#fce7f3", color: "#9d174d" },
+    Science: { bg: "#d1fae5", color: "#065f46" },
+    Study: { bg: "#fef9c3", color: "#854d0e" },
+    "Watch later": { bg: "#fef3c7", color: "#92400e" },
+  };
+
+  const previewBookmarks = BOOKMARKS.slice(0, 3);
+  const totalSaved = BOOKMARKS.length;
+  const totalStarred = BOOKMARKS.filter((b) => b.starred).length;
+  const allTags = BOOKMARKS.flatMap((b) => b.tags.split(" "));
+  const distinctSubjects = new Set(allTags.filter((t) => !["Study", "Watch later"].includes(t))).size;
+
+  const isYouTube = (url) => url.includes("youtube.com") || url.includes("youtu.be");
+
+  return (
+    <OverviewCard
+      iconBg="#faeeda"
+      iconColor="#d97706"
+      iconName="Bookmark"
+      title="Bookmarks"
+      linkLabel="See all →"
+      onLinkClick={() => onSwitchTab("bookmarks")}
+    >
+      <div>
+        {previewBookmarks.map((bm, i) => {
+          const isLast = i === previewBookmarks.length - 1;
+          const tags = bm.tags.split(" ");
+          return (
+            <div
+              key={bm.id}
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 8,
+                padding: "7px 0",
+                borderBottom: isLast ? "none" : "0.5px solid #e5e7eb",
+                borderLeft: bm.starred ? "3px solid #d4a847" : "3px solid transparent",
+                paddingLeft: bm.starred ? 8 : 0,
+                marginLeft: bm.starred ? -3 : 0,
+              }}
+            >
+              {/* Favicon placeholder */}
+              <div style={{
+                width: 24,
+                height: 24,
+                borderRadius: 5,
+                background: "#f3f4f6",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                marginTop: 1,
+              }}>
+                <I.Icon
+                  name={isYouTube(bm.url) ? "Youtube" : "Globe"}
+                  size={12}
+                  color="#9ca3af"
+                  strokeWidth={2}
+                />
+              </div>
+
+              {/* Title + tags */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{
+                  fontSize: 12,
+                  fontWeight: 500,
+                  color: COLORS.text,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  marginBottom: 4,
+                }}>
+                  {bm.title}
+                </div>
+                <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                  {tags.map((tag) => {
+                    const tc = tagColors[tag] || { bg: "#f3f4f6", color: "#6b7280" };
+                    return (
+                      <span key={tag} style={{
+                        padding: "1px 6px",
+                        borderRadius: 20,
+                        background: tc.bg,
+                        color: tc.color,
+                        fontSize: 10,
+                        fontWeight: 600,
+                      }}>
+                        {tag}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Star */}
+              <div style={{ flexShrink: 0, marginTop: 2 }}>
+                <I.Icon
+                  name="Star"
+                  size={14}
+                  color={bm.starred ? "#d4a847" : "#d1d5db"}
+                  strokeWidth={2}
+                  style={{ fill: bm.starred ? "#d4a847" : "none" }}
+                />
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Next week strip — calendar tear-offs */}
-      <div className="card" style={{ padding: 20 }}>
-        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 14 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>Next week — Cycle A</div>
-          <a href="#" style={{ fontSize: 11.5, color: "var(--student-deep)", fontWeight: 600, textDecoration: "none" }}>Full cycle →</a>
+      {/* Stats row */}
+      <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+        {[
+          { value: totalSaved, label: "Saved" },
+          { value: totalStarred, label: "Starred" },
+          { value: distinctSubjects, label: "Subjects" },
+        ].map(({ value, label }) => (
+          <div key={label} style={{
+            flex: 1,
+            background: "#f9fafb",
+            borderRadius: 8,
+            padding: "8px 4px",
+            textAlign: "center",
+          }}>
+            <div style={{ fontSize: 18, fontWeight: 500, color: COLORS.text, lineHeight: 1.2 }}>
+              {value}
+            </div>
+            <div style={{ fontSize: 10, color: "#9ca3af", marginTop: 2 }}>
+              {label}
+            </div>
+          </div>
+        ))}
+      </div>
+    </OverviewCard>
+  );
+}
+
+function MyOverviewPage({ selectedMenuItem, onSwitchTab }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <DeskHeroCard />
+      <div style={{
+        display: "grid",
+        gridTemplateAreas: `
+          "menu bookmarks"
+          "tools tools"
+          "files files"
+        `,
+        gridTemplateColumns: "1.15fr 1fr",
+        gridTemplateRows: "360px auto auto",
+        gap: 14,
+      }}>
+        <div style={{ gridArea: "menu", display: "flex", flexDirection: "column" }}>
+          <OverviewMenuCard selectedItem={selectedMenuItem} onSwitchTab={onSwitchTab} />
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12 }}>
-          {DESK_LUNCH.next.map((d, i) => {
-            const tilt = tiltFor(d.day, 1.3);
+        <div style={{ gridArea: "bookmarks", display: "flex", flexDirection: "column" }}>
+          <OverviewBookmarksCard onSwitchTab={onSwitchTab} />
+        </div>
+        <div style={{ gridArea: "tools" }}>
+          <OverviewToolsCard onSwitchTab={onSwitchTab} />
+        </div>
+        <div style={{ gridArea: "files" }}>
+          <OverviewFilesCard onSwitchTab={onSwitchTab} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// MY MEETINGS
+// ============================================================
+
+const SPACES_DATA = [
+  { id: "sp1", name: "Study Room A",   stype: "study",   iconBg: "#ede9fe", iconColor: "#5b21b6", capacity: 4,  floor: "Floor 2", amenities: ["WiFi", "Whiteboard", "Power outlets"],                        requiresApproval: false, taken: ["9:00","9:30","11:00","11:30","14:00","14:30"] },
+  { id: "sp2", name: "Study Room B",   stype: "study",   iconBg: "#ede9fe", iconColor: "#5b21b6", capacity: 6,  floor: "Floor 2", amenities: ["WiFi", "Whiteboard", "Screen", "Power outlets"],              requiresApproval: false, taken: ["8:00","8:30","10:00","10:30","12:00","12:30","13:00"] },
+  { id: "sp3", name: "Collab Suite 1", stype: "collab",  iconBg: "#fef3c7", iconColor: "#d97706", capacity: 12, floor: "Floor 3", amenities: ["WiFi", "Whiteboard", "Screen", "Video call", "Power outlets"], requiresApproval: true,  taken: ["8:00","8:30","9:00","9:30","10:00","10:30","11:00","11:30","13:00","13:30","14:00","14:30","15:00","15:30"] },
+  { id: "sp4", name: "Library Zone Q", stype: "library", iconBg: "#ede9fe", iconColor: "#5b21b6", capacity: 8,  floor: "Floor 1", amenities: ["WiFi", "Printing", "Power outlets"],                          requiresApproval: false, taken: ["9:00","11:00","12:00","14:00","15:00","15:30"] },
+  { id: "sp5", name: "Maker Space",    stype: "lab",     iconBg: "#d1fae5", iconColor: "#065f46", capacity: 10, floor: "Floor 1", amenities: ["WiFi", "3D printers", "Power outlets", "Whiteboard"],         requiresApproval: true,  taken: ["8:00","8:30","9:00","9:30","10:00","10:30","11:00","11:30","12:00","12:30"] },
+];
+
+const ALL_SLOTS = ["8:00","8:30","9:00","9:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30"];
+
+const SPACE_FILTERS = [
+  { id: "all",     label: "All spaces",    dot: "#9090A8" },
+  { id: "study",   label: "Study rooms",   dot: "#7F77DD" },
+  { id: "collab",  label: "Collab suites", dot: "#d97706" },
+  { id: "lab",     label: "Labs",          dot: "#065f46" },
+  { id: "library", label: "Library zones", dot: "#7F77DD" },
+];
+
+function _addDays(d, n) { const r = new Date(d); r.setDate(r.getDate() + n); return r; }
+function _isSameDay(a, b) { return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+function _isToday(d) { return _isSameDay(d, new Date()); }
+function _fmtISO(d) { return d.toISOString().slice(0,10); }
+function _fmtDow(d) { return ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()]; }
+function _fmtDay(d) { return String(d.getDate()); }
+function _fmtMonth(d) { return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()]; }
+function _fmtFull(d) { return `${_fmtDow(d)} ${_fmtDay(d)} ${_fmtMonth(d)}`; }
+function _getWeekStart() {
+  const t = new Date();
+  const diff = t.getDay() === 0 ? -6 : 1 - t.getDay();
+  return _addDays(t, diff);
+}
+
+function MeetingToast({ message, onDone }) {
+  React.useEffect(() => { const id = setTimeout(onDone, 3000); return () => clearTimeout(id); }, []);
+  return (
+    <div style={{
+      position: "fixed", bottom: 20, left: "50%", transform: "translateX(-50%)",
+      background: "#1a3a2a", color: "#9fe1cb", padding: "10px 22px", borderRadius: 999,
+      fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 8,
+      boxShadow: "0 4px 20px rgba(0,0,0,0.28)", zIndex: 2000, whiteSpace: "nowrap",
+      fontFamily: "Nunito, Poppins, sans-serif",
+    }}>
+      <span style={{ width: 18, height: 18, borderRadius: "50%", border: "2px solid #9fe1cb", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 10, flexShrink: 0 }}>✓</span>
+      {message}
+    </div>
+  );
+}
+
+function SpaceCard({ space, dateKey, dateLabel, bookings, setBookings, openId, setOpenId, setToast }) {
+  const [duration, setDuration] = React.useState("30");
+  const [purpose, setPurpose] = React.useState("");
+
+  const mySlots = ALL_SLOTS.filter(s => bookings[`${space.id}|${dateKey}|${s}`]);
+  const availableSlots = ALL_SLOTS.filter(s => !space.taken.includes(s) && !mySlots.includes(s));
+
+  const badge = (() => {
+    if (availableSlots.length === 0) return { label: "Fully booked", bg: "#fee2e2", color: "#991b1b" };
+    if (availableSlots.length <= 3) return { label: `${availableSlots.length} slots left`, bg: "#fef3c7", color: "#92400e" };
+    if (space.requiresApproval) return { label: "Approval required", bg: "#dbeafe", color: "#1e40af" };
+    return { label: "Available today", bg: "#d1fae5", color: "#065f46" };
+  })();
+
+  const openPopover = (openId && openId.spaceId === space.id) ? openId : null;
+  const isPopoverOpen = !!openPopover;
+  const selectedSlot = openPopover?.slot;
+  const selectedSlotIdx = selectedSlot ? ALL_SLOTS.indexOf(selectedSlot) : -1;
+
+  const extraSlots = duration === "30" ? 0 : duration === "60" ? 1 : duration === "90" ? 2 : 3;
+  const previewSlots = [];
+  let durationBlocked = false;
+  if (openPopover?.mode === "book" && extraSlots > 0) {
+    for (let i = 1; i <= extraSlots; i++) {
+      const ns = ALL_SLOTS[selectedSlotIdx + i];
+      if (!ns) { durationBlocked = true; break; }
+      if (space.taken.includes(ns) || mySlots.includes(ns)) { durationBlocked = true; break; }
+      previewSlots.push(ns);
+    }
+  }
+
+  const handleSlotClick = (slot, isAvail) => {
+    if (!isAvail && !mySlots.includes(slot)) return;
+    if (openPopover && openPopover.slot === slot) {
+      setOpenId(null); setDuration("30"); setPurpose(""); return;
+    }
+    setOpenId({ spaceId: space.id, slot, mode: mySlots.includes(slot) ? "cancel" : "book" });
+    setDuration("30"); setPurpose("");
+  };
+
+  const handleConfirm = () => {
+    const nb = { ...bookings };
+    nb[`${space.id}|${dateKey}|${selectedSlot}`] = true;
+    previewSlots.forEach(s => { nb[`${space.id}|${dateKey}|${s}`] = true; });
+    setBookings(nb); setOpenId(null); setDuration("30"); setPurpose("");
+    setToast(space.requiresApproval ? "Request sent — pending approval." : `Booking confirmed: ${selectedSlot}`);
+  };
+
+  const handleCancelBooking = () => {
+    const nb = { ...bookings };
+    delete nb[`${space.id}|${dateKey}|${selectedSlot}`];
+    setBookings(nb); setOpenId(null);
+    setToast("Reservation cancelled.");
+  };
+
+  const spaceIcon = space.stype === "lab" ? "🔬" : space.stype === "collab" ? "💼" : "📚";
+
+  return (
+    <div style={{ background: COLORS.surface, border: `0.5px solid ${COLORS.border}`, borderRadius: 16, overflow: "hidden", marginBottom: 14 }}>
+      {/* Header */}
+      <div style={{ padding: "12px 14px", display: "flex", gap: 12, alignItems: "flex-start" }}>
+        <div style={{ width: 34, height: 34, borderRadius: 8, background: space.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 16 }}>
+          {spaceIcon}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 4 }}>{space.name}</div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: COLORS.textMuted }}>👥 Up to {space.capacity}</span>
+            <span style={{ fontSize: 11, color: COLORS.textMuted }}>📍 {space.floor}</span>
+            <span style={{ padding: "2px 8px", borderRadius: 20, fontSize: 10, fontWeight: 600, background: badge.bg, color: badge.color }}>{badge.label}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Amenities */}
+      <div style={{ padding: "0 14px 10px", display: "flex", gap: 5, flexWrap: "wrap" }}>
+        {space.amenities.map(a => (
+          <span key={a} style={{ fontSize: 10, padding: "3px 8px", borderRadius: 20, background: "#f3f4f6", color: COLORS.textMuted, fontWeight: 500 }}>{a}</span>
+        ))}
+      </div>
+
+      {/* Slots */}
+      <div style={{ padding: "10px 14px 12px", borderTop: `0.5px solid ${COLORS.border}` }}>
+        <div style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 8 }}>{dateLabel} — available slots</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+          {ALL_SLOTS.map(slot => {
+            const isMine = mySlots.includes(slot);
+            const isTaken = space.taken.includes(slot);
+            const isSelected = openPopover?.slot === slot;
+            const isPreview = previewSlots.includes(slot) && isPopoverOpen && openPopover.mode === "book";
+
+            if (isMine) {
+              return (
+                <button key={slot} onClick={() => handleSlotClick(slot, false)} aria-label={`Your booking at ${slot}`}
+                  style={{ width: 50, height: 30, borderRadius: 6, cursor: "pointer", fontSize: 11, fontWeight: 600,
+                    border: "1.5px solid #d4a847", background: "#F5A623", color: "#412402", fontFamily: "inherit" }}>
+                  {slot}
+                </button>
+              );
+            }
+            if (isTaken) {
+              return (
+                <div key={slot} style={{ width: 50, height: 30, borderRadius: 6, fontSize: 11, background: "#f3f4f6",
+                  color: "#9ca3af", border: "0.5px solid #e5e7eb", display: "flex", alignItems: "center",
+                  justifyContent: "center", cursor: "not-allowed" }}>
+                  {slot}
+                </div>
+              );
+            }
+            let s = { width: 50, height: 30, borderRadius: 6, cursor: "pointer", fontSize: 11, fontWeight: 500,
+              border: "1px solid #e5e7eb", background: COLORS.surface, color: COLORS.text, fontFamily: "inherit" };
+            if (isPreview) s = { ...s, background: "#e6f1fb", border: "1.5px solid #185fa5", color: "#042c53" };
+            if (isSelected) s = { ...s, border: `2px solid ${COLORS.text}` };
             return (
-              <div key={d.day} style={{
-                position: "relative",
-                background: "var(--paper-warm)",
-                border: "1px solid var(--paper-warm-edge)",
-                borderBottom: "2px solid var(--paper-warm-shade)",
-                borderRadius: 6,
-                padding: "30px 12px 12px",
-                transform: `rotate(${tilt}deg)`,
-                boxShadow: "0 8px 14px -10px rgba(15,23,42,0.14)",
-              }}>
-                {/* Top tear/strip */}
-                <div aria-hidden="true" style={{
-                  position: "absolute", top: 0, left: 0, right: 0, height: 22,
-                  background: i === 4 ? "#D9544A" : "#3B82F6",
-                  borderRadius: "5px 5px 0 0",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  color: "#fff", fontSize: 9, fontWeight: 800, letterSpacing: "0.16em",
-                }}>{d.day.toUpperCase()}</div>
-                <div style={{ fontSize: 9.5, color: "var(--silver)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>{d.header}</div>
-                <div style={{
-                  fontFamily: HAND_FONT, fontSize: 18, fontWeight: 700,
-                  color: "var(--paper-warm-ink)", lineHeight: 1.05, marginBottom: 8,
-                }}>{d.main}</div>
-                {d.v && <Tag tone="success">{d.v}</Tag>}
-              </div>
+              <button key={slot} onClick={() => handleSlotClick(slot, true)}
+                aria-label={`Book ${slot}`} aria-pressed={isSelected} style={s}>
+                {slot}
+              </button>
             );
           })}
         </div>
       </div>
-    </Page>
-  );
-}
 
-/* ============================================================
-   NOTES — sticky board on cork
-   ============================================================ */
-function MyDeskNotes({ segments }) {
-  const [filter, setFilter] = React.useState("all");
-  const courses = ["all", ...Array.from(new Set(DESK_NOTES.map((n) => n.course)))];
-  const filtered = filter === "all" ? DESK_NOTES : DESK_NOTES.filter((n) => n.course === filter);
-
-  return (
-    <Page segments={segments} title="Notes" emoji=""
-      lede="Half-thoughts, study tricks, things you don't want to forget. Pinned to the top, searchable across every class."
-      actions={
-        <>
-          <button className="btn btn-sm"><I.Search size={12} color="var(--stone)"/> Search</button>
-          <button className="btn btn-primary btn-sm"><I.Plus size={12} color="#fff"/> New note</button>
-        </>
-      }
-    >
-      <DeskTabs segments={segments}/>
-
-      {/* Filter chips */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 18, flexWrap: "wrap", alignItems: "center" }}>
-        <span className="t-eyebrow" style={{ marginRight: 4 }}>FILTER</span>
-        {courses.map((c) => (
-          <button key={c} onClick={() => setFilter(c)} style={{
-            padding: "5px 12px", borderRadius: 999, fontSize: 12, fontWeight: 600,
-            border: filter === c ? "1px solid var(--student)" : "1px solid var(--mist)",
-            background: filter === c ? "var(--student-soft)" : "var(--paper)",
-            color: filter === c ? "var(--student-deep)" : "var(--slate)",
-            cursor: "pointer",
-          }}>{c === "all" ? "All notes" : c}</button>
-        ))}
-        <div style={{ flex: 1 }}/>
-        <span style={{ fontSize: 12, color: "var(--stone)" }}>{filtered.length} notes</span>
-      </div>
-
-      {/* Cork board surface — everything sits on it */}
-      <div style={{
-        ...CORK_BG, borderRadius: 12, padding: "26px 22px 22px",
-        boxShadow:
-          "inset 0 0 0 1px rgba(120,80,40,0.15)," +
-          "inset 0 0 60px rgba(120,80,40,0.10)," +
-          "0 1px 0 rgba(255,255,255,0.4)",
-      }}>
-        {/* Pinned strip */}
-        {filtered.some((n) => n.pinned) && (
-          <div style={{ marginBottom: 26 }}>
-            <div style={{
-              fontFamily: HAND_FONT, fontSize: 22, fontWeight: 700,
-              color: "rgba(80,50,20,0.75)", marginBottom: 14,
-              display: "inline-flex", alignItems: "center", gap: 8,
-            }}>
-              📌 Pinned
+      {/* Inline popover */}
+      <div style={{ maxHeight: isPopoverOpen ? 500 : 0, overflow: "hidden", transition: "max-height 0.25s ease",
+        borderTop: isPopoverOpen ? `0.5px solid ${COLORS.border}` : "none", background: "#f9fafb" }}>
+        {isPopoverOpen && openPopover.mode === "book" && (
+          <div style={{ padding: "16px 14px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: COLORS.text }}>Reserve {space.name}</div>
+                <div style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 2 }}>{dateLabel} · {selectedSlot}</div>
+              </div>
+              <button onClick={() => { setOpenId(null); setDuration("30"); setPurpose(""); }} aria-label="Close"
+                style={{ width: 28, height: 28, borderRadius: "50%", border: "none", background: "#e5e7eb",
+                  color: COLORS.textMuted, cursor: "pointer", fontSize: 13, display: "flex",
+                  alignItems: "center", justifyContent: "center" }}>✕</button>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 18 }}>
-              {filtered.filter((n) => n.pinned).map((n) => <Sticky key={n.id} note={n}/>)}
+
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em", color: COLORS.textMuted, marginBottom: 6 }}>Duration</div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {[{v:"30",l:"30 min"},{v:"60",l:"1 hour"},{v:"90",l:"1.5 hrs"},{v:"120",l:"2 hours"}].map(({v,l}) => (
+                  <button key={v} onClick={() => setDuration(v)} style={{ padding: "5px 12px", borderRadius: 20, cursor: "pointer", fontSize: 12, fontFamily: "inherit",
+                    border: duration===v ? "none" : "1px solid #e5e7eb",
+                    background: duration===v ? COLORS.text : COLORS.surface,
+                    color: duration===v ? "#fff" : COLORS.text, fontWeight: duration===v ? 600 : 400 }}>{l}</button>
+                ))}
+              </div>
+              {extraSlots > 0 && !durationBlocked && (
+                <div style={{ marginTop: 7, fontSize: 11, color: "#042c53", background: "#e6f1fb", borderRadius: 6, padding: "5px 10px" }}>
+                  Uses the {ALL_SLOTS[selectedSlotIdx + extraSlots]} slot too.
+                </div>
+              )}
+              {extraSlots > 0 && durationBlocked && (
+                <div style={{ marginTop: 7, fontSize: 11, color: "#991b1b", background: "#fee2e2", borderRadius: 6, padding: "5px 10px" }}>
+                  Next slot unavailable for this duration.
+                </div>
+              )}
+            </div>
+
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em", color: COLORS.textMuted, marginBottom: 5 }}>Purpose (optional)</div>
+              <textarea value={purpose} onChange={e => setPurpose(e.target.value)}
+                placeholder="e.g. Biology study group…"
+                style={{ width: "100%", height: 50, boxSizing: "border-box", borderRadius: 8,
+                  border: "1px solid #e5e7eb", padding: "7px 10px", fontSize: 12,
+                  fontFamily: "inherit", resize: "none", outline: "none", background: "#fff" }} />
+            </div>
+
+            {space.requiresApproval && (
+              <div style={{ background: "#dbeafe", borderRadius: 8, padding: "8px 11px", marginBottom: 12,
+                fontSize: 11, color: "#042c53", display: "flex", gap: 6, alignItems: "flex-start" }}>
+                <span style={{ flexShrink: 0 }}>ℹ</span>
+                This space requires teacher approval. Your request will be reviewed within 24 hours.
+              </div>
+            )}
+
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+              <button onClick={() => { setOpenId(null); setDuration("30"); setPurpose(""); }}
+                style={{ padding: "7px 16px", borderRadius: 8, border: "1px solid #e5e7eb",
+                  background: COLORS.surface, color: COLORS.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
+              <button onClick={handleConfirm} disabled={durationBlocked && duration !== "30"}
+                style={{ padding: "7px 16px", borderRadius: 8, border: "none",
+                  background: (durationBlocked && duration !== "30") ? "#9ca3af" : "#1a3a2a",
+                  color: "#9fe1cb", fontSize: 12, fontWeight: 600,
+                  cursor: (durationBlocked && duration !== "30") ? "default" : "pointer", fontFamily: "inherit" }}>
+                {space.requiresApproval ? "Send request" : "Confirm booking"}
+              </button>
             </div>
           </div>
         )}
-
-        <div style={{
-          fontFamily: HAND_FONT, fontSize: 22, fontWeight: 700,
-          color: "rgba(80,50,20,0.75)", marginBottom: 14,
-        }}>
-          Everything else
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 18 }}>
-          {filtered.filter((n) => !n.pinned).map((n) => <Sticky key={n.id} note={n}/>)}
-          {/* New-note placeholder — empty index card */}
-          <button style={{
-            minHeight: 148, borderRadius: 4, border: "2px dashed rgba(80,50,20,0.40)",
-            background: "rgba(255,253,245,0.55)", cursor: "pointer",
-            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-            gap: 6, color: "rgba(80,50,20,0.75)",
-            transform: `rotate(${tiltFor("new-note", 1.5)}deg)`,
-            boxShadow: "0 6px 12px -8px rgba(15,23,42,0.18)",
-          }}>
-            <I.Plus size={20} color="rgba(80,50,20,0.6)"/>
-            <span style={{ fontFamily: HAND_FONT, fontSize: 18, fontWeight: 700 }}>jot something down</span>
-          </button>
-        </div>
-      </div>
-    </Page>
-  );
-}
-
-/* ============================================================
-   FILES — table (humanized header + manila feel for upload zone)
-   ============================================================ */
-function MyDeskFiles({ segments }) {
-  return (
-    <Page segments={segments} title="Files" emoji=""
-      lede="Everything you've uploaded or your teachers handed you — sortable by class, source, or type."
-      actions={
-        <>
-          <button className="btn btn-sm"><I.Filter size={12} color="var(--stone)"/> Filter</button>
-          <button className="btn btn-sm"><I.Search size={12} color="var(--stone)"/> Search</button>
-          <button className="btn btn-primary btn-sm"><I.Upload size={12} color="#fff"/> Upload</button>
-        </>
-      }
-    >
-      <DeskTabs segments={segments}/>
-
-      {/* Source pills */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 18, flexWrap: "wrap" }}>
-        {[
-          { id: "all", label: "All", count: DESK_FILES.length },
-          { id: "you", label: "From you", count: DESK_FILES.filter((f) => f.from === "You").length },
-          { id: "teacher", label: "From teachers", count: DESK_FILES.filter((f) => f.from !== "You").length },
-          { id: "shared", label: "Shared", count: DESK_FILES.filter((f) => f.shared.length).length },
-          { id: "starred", label: "Starred", count: 2 },
-        ].map((c, i) => (
-          <button key={c.id} style={{
-            padding: "6px 14px", borderRadius: 999, fontSize: 12, fontWeight: 600,
-            border: i === 0 ? "1px solid var(--student)" : "1px solid var(--mist)",
-            background: i === 0 ? "var(--student-soft)" : "var(--paper)",
-            color: i === 0 ? "var(--student-deep)" : "var(--slate)",
-            cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6,
-          }}>{c.label} <span style={{ color: "var(--silver)", fontWeight: 500 }}>{c.count}</span></button>
-        ))}
-      </div>
-
-      {/* Drop zone — manila in-tray */}
-      <div style={{
-        position: "relative",
-        background: "linear-gradient(180deg, #F4DFA8 0%, #ECD18A 100%)",
-        border: "1px dashed #B58A3A",
-        borderRadius: 10,
-        padding: "16px 18px 16px 50px",
-        marginBottom: 22,
-        boxShadow:
-          "inset 0 1px 0 rgba(255,255,255,0.45)," +
-          "0 10px 16px -12px rgba(15,23,42,0.18)",
-        display: "flex", alignItems: "center", gap: 14,
-      }}>
-        {/* Folder tab on the left */}
-        <div aria-hidden="true" style={{
-          position: "absolute", top: -8, left: 18,
-          background: "#E9C77B", padding: "4px 12px 6px",
-          fontSize: 9.5, fontWeight: 800, letterSpacing: "0.14em",
-          color: "#5C4710", borderRadius: "6px 10px 0 0",
-        }}>IN-TRAY</div>
-        <div style={{
-          width: 38, height: 38, borderRadius: 8,
-          background: "rgba(255,253,245,0.85)",
-          border: "1px solid rgba(122,90,15,0.28)",
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-        }}><I.Upload size={18} color="#7A5A0F"/></div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: HAND_FONT, fontSize: 22, fontWeight: 700, color: "#3A2D08", lineHeight: 1, marginBottom: 4 }}>
-            Drop files here, or click to browse
-          </div>
-          <div style={{ fontSize: 11.5, color: "rgba(58,45,8,0.7)" }}>Up to 50 MB · PDF, DOCX, XLSX, PNG, JPG, MP3</div>
-        </div>
-        <button className="btn btn-sm">Browse</button>
-      </div>
-
-      {/* Table — kept clinical (it's a working list) but with friendlier file icons */}
-      <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-        <div style={{
-          display: "grid", gridTemplateColumns: "1.6fr 1fr 0.7fr 0.6fr 0.9fr 36px",
-          padding: "12px 16px", background: "var(--surface-quiet)",
-          borderBottom: "1px solid var(--mist)",
-          fontSize: 10.5, fontWeight: 700, color: "var(--stone)", letterSpacing: "0.06em",
-          gap: 12,
-        }}>
-          <div>NAME</div><div>CLASS</div><div>SOURCE</div><div>SIZE</div><div>UPDATED</div><div></div>
-        </div>
-        {DESK_FILES.map((f, i) => (
-          <div key={f.name} style={{
-            display: "grid", gridTemplateColumns: "1.6fr 1fr 0.7fr 0.6fr 0.9fr 36px",
-            padding: "14px 16px", alignItems: "center", gap: 12,
-            borderTop: i ? "1px solid var(--mist)" : "none",
-            cursor: "pointer",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
-              <FileIcon kind={f.kind}/>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</div>
-                {f.shared.length > 0 && (
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10.5, color: "var(--stone)", marginTop: 2 }}>
-                    <I.Share size={9} color="var(--silver)"/>
-                    Shared with {f.shared.join(", ")}
-                  </div>
-                )}
+        {isPopoverOpen && openPopover.mode === "cancel" && (
+          <div style={{ padding: "16px 14px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: COLORS.text }}>{space.name}</div>
+                <div style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 2 }}>{dateLabel} · {selectedSlot}</div>
               </div>
+              <button onClick={() => setOpenId(null)} aria-label="Close"
+                style={{ width: 28, height: 28, borderRadius: "50%", border: "none", background: "#e5e7eb",
+                  color: COLORS.textMuted, cursor: "pointer", fontSize: 13, display: "flex",
+                  alignItems: "center", justifyContent: "center" }}>✕</button>
             </div>
-            <div style={{ fontSize: 12.5, color: "var(--slate)" }}>{f.course}</div>
-            <div style={{ fontSize: 12, color: "var(--stone)" }}>{f.from}</div>
-            <div style={{ fontSize: 12, color: "var(--stone)", fontVariantNumeric: "tabular-nums" }}>{f.size}</div>
-            <div style={{ fontSize: 12, color: "var(--stone)" }}>{f.updated}</div>
-            <I.MoreH size={14} color="var(--silver)"/>
+            <div style={{ background: "#faeeda", border: "0.5px solid #d4a847", borderRadius: 8,
+              padding: "10px 12px", marginBottom: 14, fontSize: 12, color: "#412402",
+              display: "flex", gap: 8, alignItems: "flex-start" }}>
+              <span style={{ flexShrink: 0 }}>✦</span>
+              You have {selectedSlot} booked. Cancel below if your plans have changed.
+            </div>
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+              <button onClick={() => setOpenId(null)}
+                style={{ padding: "7px 16px", borderRadius: 8, border: "1px solid #e5e7eb",
+                  background: COLORS.surface, color: COLORS.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>Keep booking</button>
+              <button onClick={handleCancelBooking}
+                style={{ padding: "7px 16px", borderRadius: 8, border: "none", background: "#fef2f2",
+                  color: "#991b1b", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Cancel reservation</button>
+            </div>
           </div>
-        ))}
+        )}
       </div>
-    </Page>
+    </div>
   );
 }
 
-/* ============================================================
-   BOOKMARKS — taped scraps, clipped slips
-   ============================================================ */
-function MyDeskBookmarks({ segments }) {
-  const groups = DESK_BOOKMARKS.reduce((acc, b) => {
-    (acc[b.tag] = acc[b.tag] || []).push(b);
-    return acc;
-  }, {});
+// ─── WORKING SPACES MAP ─────────────────────────────────────────────
+
+const MAP_ROOM_STYLES = {
+  classroom: { fill: "#daeaf8", stroke: "#185fa5", numCol: "#0c447c", lblCol: "#185fa5" },
+  lab:       { fill: "#d5f0e6", stroke: "#0f6e56", numCol: "#085041", lblCol: "#0f6e56" },
+  library:   { fill: "#e6e4fa", stroke: "#534ab7", numCol: "#26215c", lblCol: "#534ab7" },
+  collab:    { fill: "#faeeda", stroke: "#854f0b", numCol: "#412402", lblCol: "#854f0b" },
+  quiet:     { fill: "#fbeaf0", stroke: "#993556", numCol: "#4b1528", lblCol: "#993556" },
+};
+const MAP_YOURS = { fill: "#fff3d0", stroke: "#d4a847", numCol: "#633806", lblCol: "#854f0b" };
+const MAP_DOT   = { available: "#3b6d11", busy: "#993c1d", yours: "#d4a847", restricted: "#9ca3af" };
+
+const MAP_ROOMS = [
+  // Ground (floorIdx 0, viewH 230)
+  { id:"g-lib",   name:"Main Library",    short:"Library",  type:"library",   bldg:"main",    floor:"Ground",  floorIdx:0, avail:"available", cap:40, x:30,  y:4,   w:216, h:100 },
+  { id:"g-hall",  name:"Common Hall",     short:"C.Hall",   type:"collab",    bldg:"main",    floor:"Ground",  floorIdx:0, avail:"available", cap:50, x:268, y:4,   w:108, h:100 },
+  { id:"g-music", name:"Music Room",      short:"Music",    type:"collab",    bldg:"arts",    floor:"Ground",  floorIdx:0, avail:"busy",      cap:20, x:380, y:4,   w:112, h:100 },
+  { id:"g-media", name:"Media Lab",       short:"Media",    type:"lab",       bldg:"science", floor:"Ground",  floorIdx:0, avail:"busy",      cap:20, x:268, y:132, w:108, h:90  },
+  { id:"g-conf",  name:"Conference Room", short:"Conf.",    type:"collab",    bldg:"main",    floor:"Ground",  floorIdx:0, avail:"available", cap:16, x:380, y:132, w:112, h:90  },
+  // Floor 1 (floorIdx 1, viewH 200)
+  { id:"f1-101",  name:"Room 101",        short:"101",      type:"classroom", bldg:"main",    floor:"Floor 1", floorIdx:1, avail:"available", cap:28, x:30,  y:4,   w:106, h:83  },
+  { id:"f1-102",  name:"Room 102",        short:"102",      type:"classroom", bldg:"main",    floor:"Floor 1", floorIdx:1, avail:"busy",      cap:28, x:140, y:4,   w:106, h:83  },
+  { id:"f1-sl1",  name:"Science Lab 1",   short:"Sci 1",    type:"lab",       bldg:"science", floor:"Floor 1", floorIdx:1, avail:"available", cap:24, x:268, y:4,   w:108, h:83  },
+  { id:"f1-sl2",  name:"Science Lab 2",   short:"Sci 2",    type:"lab",       bldg:"science", floor:"Floor 1", floorIdx:1, avail:"busy",      cap:24, x:380, y:4,   w:112, h:83  },
+  { id:"f1-libq", name:"Library Zone Q",  short:"Lib Q",    type:"library",   bldg:"main",    floor:"Floor 1", floorIdx:1, avail:"available", cap:30, x:30,  y:113, w:216, h:83  },
+  { id:"f1-itl",  name:"IT Lab",          short:"IT Lab",   type:"lab",       bldg:"main",    floor:"Floor 1", floorIdx:1, avail:"available", cap:20, x:268, y:113, w:108, h:83  },
+  { id:"f1-qs1",  name:"Quiet Study 1",   short:"QS 1",     type:"quiet",     bldg:"main",    floor:"Floor 1", floorIdx:1, avail:"available", cap:12, x:380, y:113, w:112, h:83  },
+  // Floor 2 (floorIdx 2, viewH 200) — Room 204 = student's next class
+  { id:"f2-201",  name:"Room 201",        short:"201",      type:"classroom", bldg:"main",    floor:"Floor 2", floorIdx:2, avail:"available", cap:28, x:30,  y:4,   w:106, h:83  },
+  { id:"f2-202",  name:"Room 202",        short:"202",      type:"classroom", bldg:"main",    floor:"Floor 2", floorIdx:2, avail:"busy",      cap:28, x:140, y:4,   w:106, h:83  },
+  { id:"f2-203",  name:"Room 203",        short:"203",      type:"classroom", bldg:"main",    floor:"Floor 2", floorIdx:2, avail:"available", cap:28, x:268, y:4,   w:108, h:83  },
+  { id:"f2-dsgn", name:"Design Studio",   short:"Design",   type:"collab",    bldg:"arts",    floor:"Floor 2", floorIdx:2, avail:"available", cap:18, x:380, y:4,   w:112, h:83  },
+  { id:"f2-204",  name:"Room 204",        short:"204",      type:"classroom", bldg:"main",    floor:"Floor 2", floorIdx:2, avail:"yours",     cap:28, x:30,  y:113, w:106, h:83, isYours:true },
+  { id:"f2-bio",  name:"Bio Lab",         short:"Bio Lab",  type:"lab",       bldg:"science", floor:"Floor 2", floorIdx:2, avail:"available", cap:22, x:140, y:113, w:106, h:83  },
+  { id:"f2-col1", name:"Collab Suite 1",  short:"C.Ste 1",  type:"collab",    bldg:"main",    floor:"Floor 2", floorIdx:2, avail:"available", cap:12, x:268, y:113, w:108, h:83  },
+  { id:"f2-qs2",  name:"Quiet Study 2",   short:"QS 2",     type:"quiet",     bldg:"main",    floor:"Floor 2", floorIdx:2, avail:"available", cap:10, x:380, y:113, w:112, h:83  },
+  // Floor 3 (floorIdx 3, viewH 200)
+  { id:"f3-301",  name:"Room 301",        short:"301",      type:"classroom", bldg:"main",    floor:"Floor 3", floorIdx:3, avail:"busy",      cap:28, x:30,  y:4,   w:106, h:83  },
+  { id:"f3-302",  name:"Room 302",        short:"302",      type:"classroom", bldg:"main",    floor:"Floor 3", floorIdx:3, avail:"available", cap:28, x:140, y:4,   w:106, h:83  },
+  { id:"f3-phys", name:"Physics Lab",     short:"Physics",  type:"lab",       bldg:"science", floor:"Floor 3", floorIdx:3, avail:"available", cap:22, x:268, y:4,   w:108, h:83  },
+  { id:"f3-303",  name:"Room 303",        short:"303",      type:"classroom", bldg:"main",    floor:"Floor 3", floorIdx:3, avail:"busy",      cap:28, x:380, y:4,   w:112, h:83  },
+  { id:"f3-304",  name:"Room 304",        short:"304",      type:"classroom", bldg:"main",    floor:"Floor 3", floorIdx:3, avail:"available", cap:28, x:30,  y:113, w:106, h:83  },
+  { id:"f3-chem", name:"Chemistry Lab",   short:"Chem",     type:"lab",       bldg:"science", floor:"Floor 3", floorIdx:3, avail:"busy",      cap:22, x:140, y:113, w:106, h:83  },
+  { id:"f3-qs3",  name:"Quiet Study 3",   short:"QS 3",     type:"quiet",     bldg:"main",    floor:"Floor 3", floorIdx:3, avail:"available", cap:10, x:268, y:113, w:108, h:83  },
+];
+
+const MAP_TYPE_FILTERS = [
+  { id:"all",       label:"All",          dot:"#9090A8" },
+  { id:"classroom", label:"Classrooms",   dot:"#185fa5" },
+  { id:"lab",       label:"Labs",         dot:"#0f6e56" },
+  { id:"library",   label:"Library",      dot:"#534ab7" },
+  { id:"collab",    label:"Collab areas", dot:"#854f0b" },
+  { id:"quiet",     label:"Quiet study",  dot:"#993556" },
+];
+const MAP_BLDG_FILTERS = [
+  { id:"all",     label:"All buildings", icon:"🏫" },
+  { id:"main",    label:"Main block",    icon:"🏛" },
+  { id:"science", label:"Science block", icon:"🔬" },
+  { id:"arts",    label:"Arts block",    icon:"🎨" },
+];
+
+const MAP_FLOORS = [
+  { name:"Floor 3",     floorIdx:3, viewH:200, renderIdx:0 },
+  { name:"Floor 2",     floorIdx:2, viewH:200, renderIdx:1 },
+  { name:"Floor 1",     floorIdx:1, viewH:200, renderIdx:2 },
+  { name:"Ground floor",floorIdx:0, viewH:230, renderIdx:3 },
+];
+
+function WorkingSpacesMap() {
+  const [activeTypes, setActiveTypes] = React.useState(new Set());
+  const [activeBldgs, setActiveBldgs] = React.useState(new Set());
+  const [searchQ, setSearchQ] = React.useState("");
+  const [detailRoom, setDetailRoom] = React.useState(null);
+  const [pulseId, setPulseId] = React.useState(null);
+  const [hlFloor, setHlFloor] = React.useState(null);
+  const floorRefs = React.useRef([null, null, null, null]);
+
+  const toggleType = (id) => {
+    setActiveTypes(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const toggleBldg = (id) => {
+    setActiveBldgs(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const clearAllFilters = () => { setActiveTypes(new Set()); setActiveBldgs(new Set()); setSearchQ(""); };
+
+  const matchRoom = (r) => {
+    if (activeTypes.size > 0 && !activeTypes.has(r.type)) return false;
+    if (activeBldgs.size > 0 && !activeBldgs.has(r.bldg)) return false;
+    if (searchQ) {
+      const q = searchQ.toLowerCase();
+      if (!r.name.toLowerCase().includes(q) && !r.type.includes(q) && !r.short.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  };
+
+  const totalRooms   = MAP_ROOMS.length;
+  const visibleRooms = MAP_ROOMS.filter(matchRoom).length;
+  const hasFilters   = activeTypes.size > 0 || activeBldgs.size > 0 || searchQ !== "";
+  const availCount   = MAP_ROOMS.filter(r => r.avail === "available").length;
+  const busyCount    = MAP_ROOMS.filter(r => r.avail === "busy").length;
+  const yoursRoom    = MAP_ROOMS.find(r => r.isYours);
+
+  const locateMyClass = () => {
+    if (!yoursRoom) return;
+    const ri = 3 - yoursRoom.floorIdx;
+    floorRefs.current[ri]?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setPulseId(yoursRoom.id);
+    setHlFloor(ri);
+    setDetailRoom(yoursRoom);
+    setTimeout(() => { setPulseId(null); setHlFloor(null); }, 2400);
+  };
+
+  const handleRoomClick = (room, e) => {
+    e.stopPropagation();
+    setDetailRoom(dr => dr?.id === room.id ? null : room);
+  };
+
+  const roomTypeIcon = (type) =>
+    type === "lab" ? "🔬" : type === "library" ? "📚" : type === "collab" ? "💼" : type === "quiet" ? "🔇" : "🏫";
+
+  const renderFloorSVG = (floor, highlighted) => {
+    const isGround = floor.floorIdx === 0;
+    const vH = floor.viewH;
+    const corrY = isGround ? 108 : 89;
+    const corrH = 22;
+    const bWCy  = isGround ? 186 : 158;
+    const floorRooms = MAP_ROOMS.filter(r => r.floorIdx === floor.floorIdx);
+
+    return (
+      <svg viewBox={`0 0 520 ${vH}`} width="100%" height={isGround ? 262 : 231} style={{ display:"block" }} role="img"
+        onClick={() => setDetailRoom(null)}>
+        <title>{floor.name} floor plan</title>
+
+        {/* Shell */}
+        <rect x={2} y={2} width={516} height={vH-4} rx={4} fill="#f5f4f0" stroke="#c8c5bb" strokeWidth={1.5} />
+
+        {/* Corridor */}
+        <rect x={2} y={corrY} width={516} height={corrH} fill="#e8e6e0" />
+        <text x={260} y={corrY+corrH/2+3} textAnchor="middle" fontSize={7} fill="#a09e96" fontStyle="italic">main corridor</text>
+
+        {/* Wing dividers */}
+        <rect x={252} y={2}          width={16} height={corrY-2}              fill="#e8e6e0" />
+        <rect x={252} y={corrY+corrH} width={16} height={vH-4-corrY-corrH}    fill="#e8e6e0" />
+
+        {/* Stairwells */}
+        <rect x={2}   y={corrY} width={26} height={corrH} fill="#d3d1c7" />
+        <text x={15}  y={corrY+corrH/2+3} textAnchor="middle" fontSize={7} fill="#7a7870">↑↓</text>
+        <rect x={492} y={corrY} width={26} height={corrH} fill="#d3d1c7" />
+        <text x={505} y={corrY+corrH/2+3} textAnchor="middle" fontSize={7} fill="#7a7870">↑↓</text>
+
+        {/* Lift (all floors except Floor 3) */}
+        {floor.floorIdx !== 3 && (
+          <>
+            <rect x={244} y={corrY} width={20} height={corrH} fill="#c8c5bc" />
+            <text x={254} y={corrY+corrH/2+3} textAnchor="middle" fontSize={6} fill="#5a5850">LIFT</text>
+          </>
+        )}
+
+        {/* WC top-left */}
+        <rect x={2} y={2} width={26} height={38} fill="#d3d1c7" />
+        <line x1={15} y1={2} x2={15} y2={40} stroke="#bbb9af" strokeWidth={0.5} />
+        <text x={8}  y={9}  textAnchor="middle" fontSize={5} fill="#7a7870">WC</text>
+        <text x={8}  y={24} textAnchor="middle" fontSize={6} fill="#7a7870">♂</text>
+        <text x={22} y={24} textAnchor="middle" fontSize={6} fill="#7a7870">♀</text>
+
+        {/* WC bottom-left */}
+        <rect x={2} y={bWCy} width={26} height={38} fill="#d3d1c7" />
+        <line x1={15} y1={bWCy} x2={15} y2={bWCy+38} stroke="#bbb9af" strokeWidth={0.5} />
+        <text x={8}  y={bWCy+8}  textAnchor="middle" fontSize={5} fill="#7a7870">WC</text>
+        <text x={8}  y={bWCy+24} textAnchor="middle" fontSize={6} fill="#7a7870">♂</text>
+        <text x={22} y={bWCy+24} textAnchor="middle" fontSize={6} fill="#7a7870">♀</text>
+
+        {/* Ground-floor extras */}
+        {isGround && (
+          <>
+            <rect x={30} y={132} width={216} height={90} fill="#e0ded8" stroke="#c0bdb3" strokeWidth={1} rx={2} />
+            <text x={138} y={174} textAnchor="middle" fontSize={8} fill="#7a7870">Reception &amp; admin</text>
+            <rect x={210} y={224} width={100} height={4} fill="#c8c5bb" />
+            <line x1={225} y1={224} x2={235} y2={228} stroke="#aaa8a0" strokeWidth={1} />
+            <line x1={295} y1={224} x2={285} y2={228} stroke="#aaa8a0" strokeWidth={1} />
+            <text x={260} y={222} textAnchor="middle" fontSize={7} fill="#9a9890">main entrance</text>
+          </>
+        )}
+
+        {/* Interactive rooms */}
+        {floorRooms.map(room => {
+          const ts      = room.isYours ? MAP_YOURS : (MAP_ROOM_STYLES[room.type] || MAP_ROOM_STYLES.classroom);
+          const dotCol  = MAP_DOT[room.avail] || MAP_DOT.available;
+          const visible = matchRoom(room);
+          const isSelected = detailRoom?.id === room.id;
+          const isPulsing  = pulseId === room.id;
+          const cx = room.x + room.w / 2;
+          const cy = room.y + room.h / 2;
+          return (
+            <g key={room.id}
+              onClick={(e) => handleRoomClick(room, e)}
+              className={isPulsing ? "fp-pulse" : ""}
+              style={{ cursor:"pointer", opacity: visible ? 1 : 0.08, transition:"opacity 0.2s", pointerEvents: visible ? "auto" : "none" }}>
+              <rect x={room.x} y={room.y} width={room.w} height={room.h}
+                fill={ts.fill} stroke={isSelected ? "#1a3a2a" : ts.stroke}
+                strokeWidth={isSelected ? 2.5 : 1.5} rx={3} />
+              {/* Availability dot */}
+              <circle cx={room.x+9} cy={room.y+9} r={4.5} fill={dotCol} />
+              {/* Your class label */}
+              {room.isYours && <text x={cx} y={cy-13} textAnchor="middle" fontSize={7} fill={ts.numCol} fontWeight={700}>★ Your class</text>}
+              {/* Room name */}
+              <text x={cx} y={room.isYours ? cy : cy-6} textAnchor="middle" fontSize={9} fill={ts.numCol} fontWeight={600}>{room.short}</text>
+              {/* Type */}
+              <text x={cx} y={room.isYours ? cy+11 : cy+5} textAnchor="middle" fontSize={7} fill={ts.lblCol}>{room.type}</text>
+              {/* Capacity */}
+              <text x={cx} y={room.isYours ? cy+21 : cy+15} textAnchor="middle" fontSize={7} fill={ts.lblCol}>{room.cap} seats</text>
+            </g>
+          );
+        })}
+      </svg>
+    );
+  };
+
+  const detailBadge = !detailRoom ? null :
+    detailRoom.avail === "yours"     ? { label:"Your next class", bg:"#faeeda", color:"#412402" } :
+    detailRoom.avail === "available" ? { label:"Available now",   bg:"#d1fae5", color:"#065f46" } :
+                                       { label:"In use",          bg:"#fee2e2", color:"#991b1b" };
 
   return (
-    <Page segments={segments} title="Bookmarks" emoji=""
-      lede="Links worth keeping. Grouped by class so you can find that one Khan video again."
-      actions={
-        <>
-          <button className="btn btn-sm"><I.Search size={12} color="var(--stone)"/> Search</button>
-          <button className="btn btn-primary btn-sm"><I.Plus size={12} color="#fff"/> Add bookmark</button>
-        </>
-      }
-    >
-      <DeskTabs segments={segments}/>
+    <div>
+      <style>{`@keyframes fp-pulse{0%,100%{opacity:1;}50%{opacity:0.3;}} .fp-pulse{animation:fp-pulse 0.55s ease-in-out 4;}`}</style>
 
-      {/* Add-link strip */}
-      <div className="card" style={{ padding: 14, marginBottom: 22, display: "flex", alignItems: "center", gap: 10 }}>
-        <I.Link size={14} color="var(--silver)"/>
-        <input placeholder="Paste a link — we'll grab the title and guess which class it belongs to"
-          style={{
-            flex: 1, border: "none", outline: "none", background: "transparent",
-            fontSize: 13, color: "var(--ink)",
-          }}/>
-        <span className="t-eyebrow" style={{ fontSize: 9.5, color: "var(--silver)" }}>⌘K from anywhere</span>
-        <button className="btn btn-sm"><I.Plus size={12} color="var(--stone)"/> Save</button>
-      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"180px 1fr", gap:20, alignItems:"start" }}>
 
-      {Object.entries(groups).map(([tag, items], gi) => (
-        <div key={tag} style={{ marginBottom: 26 }}>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 14 }}>
-            <div style={{
-              fontFamily: HAND_FONT, fontSize: 24, fontWeight: 700,
-              color: "var(--ink)", letterSpacing: "-0.005em",
-            }}>{tag}</div>
-            <div style={{ fontSize: 11.5, color: "var(--silver)" }}>· {items.length} {items.length === 1 ? "link" : "links"}</div>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 18, paddingTop: 8 }}>
-            {items.map((b, i) => {
-              const tilt = tiltFor(b.title + tag, 1.8);
-              const tapeColors = ["lavender", "mint", "peach", "butter", "sky"];
-              const tape = tapeColors[(gi + i) % tapeColors.length];
+        {/* ── Sidebar ── */}
+        <div style={{ position:"sticky", top:0, display:"flex", flexDirection:"column", gap:14 }}>
+
+          {/* Card 1 — Your next class */}
+          <button onClick={locateMyClass}
+            style={{ background:"#1a3a2a", border:"none", borderRadius:16, padding:"14px", cursor:"pointer", textAlign:"left", width:"100%", fontFamily:"inherit" }}>
+            <div style={{ fontSize:10, textTransform:"uppercase", letterSpacing:"0.07em", color:"#7fc4a0", fontWeight:600, marginBottom:6 }}>Your next class</div>
+            <div style={{ fontSize:12, color:"#fff", fontWeight:500, marginBottom:3 }}>Mr Rivera · Biology</div>
+            <div style={{ fontSize:11, color:"#9fe1cb", marginBottom:8 }}>Room 204 · Floor 2</div>
+            <div style={{ fontSize:10, color:"#7fc4a0", marginBottom:10 }}>Starting in 18 min</div>
+            <div tabIndex={-1} aria-hidden="true"
+              style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:999,
+                border:"1px solid #3d6e57", background:"rgba(255,255,255,0.07)",
+                fontSize:11, color:"#9fe1cb", fontWeight:600, fontFamily:"inherit" }}>📍 Find on map</div>
+          </button>
+
+          {/* Card 2 — Type filter */}
+          <div style={{ background:COLORS.surface, border:`0.5px solid ${COLORS.border}`, borderRadius:16, padding:"14px" }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+              <div style={{ fontSize:10, fontWeight:700, color:COLORS.text, textTransform:"uppercase", letterSpacing:"0.07em" }}>Space type</div>
+              {activeTypes.size > 0 && (
+                <button onClick={() => setActiveTypes(new Set())}
+                  style={{ fontSize:10, color:COLORS.textMuted, background:"none", border:"none", cursor:"pointer", padding:0, fontFamily:"inherit", textDecoration:"underline" }}>
+                  Clear
+                </button>
+              )}
+            </div>
+            {MAP_TYPE_FILTERS.map(f => {
+              const isAll = f.id === "all";
+              const active = isAll ? activeTypes.size === 0 : activeTypes.has(f.id);
               return (
-                <a key={b.title} href="#" style={{
-                  textDecoration: "none", display: "block", position: "relative",
-                  transform: `rotate(${tilt}deg)`,
-                }}>
-                  {i % 3 === 0 && <Tape color={tape} rotate={-7} width={70} top={-10} left={"22%"}/>}
-                  {i % 3 === 1 && (
-                    <Paperclip size={26} color="#9CA3AF" style={{
-                      position: "absolute", top: -10, right: 14, zIndex: 4,
-                      transform: "rotate(8deg)",
-                      filter: "drop-shadow(0 2px 2px rgba(15,23,42,0.18))",
-                    }}/>
-                  )}
-                  {i % 3 === 2 && <Pin top={-8} left={"50%"} color="var(--pin-amber)"/>}
-                  <div style={{
-                    background: "var(--paper-warm)",
-                    border: "1px solid var(--paper-warm-edge)",
-                    borderBottom: "2px solid var(--paper-warm-shade)",
-                    borderRadius: 4,
-                    padding: 16,
-                    minHeight: 130,
-                    boxShadow:
-                      "0 1px 0 rgba(255,255,255,0.6) inset," +
-                      "0 12px 18px -12px rgba(15,23,42,0.18)",
-                    display: "flex", flexDirection: "column", gap: 10,
-                  }}>
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                      <div style={{
-                        width: 38, height: 38, borderRadius: 8,
-                        background: b.color + "1F",
-                        border: `1px solid ${b.color}3A`,
-                        display: "inline-flex", alignItems: "center", justifyContent: "center",
-                        flexShrink: 0, fontSize: 19,
-                      }}>{b.icon}</div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--paper-warm-ink)", lineHeight: 1.3 }}>{b.title}</div>
-                        <div style={{ fontSize: 11.5, color: "rgba(58,51,40,0.6)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.url}</div>
-                      </div>
-                      <I.External size={12} color="rgba(58,51,40,0.4)"/>
-                    </div>
-                    <div style={{
-                      marginTop: "auto",
-                      display: "flex", justifyContent: "space-between", alignItems: "center",
-                      paddingTop: 10,
-                      borderTop: "1px dashed rgba(58,51,40,0.18)",
-                    }}>
-                      <span style={{
-                        fontFamily: SCRIPT_FONT, fontSize: 13, fontWeight: 700,
-                        color: b.color,
-                      }}>{b.tag}</span>
-                      <span style={{ fontSize: 11, color: "rgba(58,51,40,0.5)" }}>Saved {b.saved}</span>
-                    </div>
-                  </div>
-                </a>
+                <button key={f.id}
+                  onClick={() => isAll ? setActiveTypes(new Set()) : toggleType(f.id)}
+                  style={{ width:"100%", display:"flex", alignItems:"center", gap:8, padding:"6px 8px", borderRadius:8, border:"none", cursor:"pointer", background: active ? "#f3f4f6" : "transparent", marginBottom:2, fontFamily:"inherit" }}>
+                  <div style={{ width:8, height:8, borderRadius:"50%", background:f.dot, flexShrink:0 }} />
+                  <span style={{ fontSize:12, fontWeight: active ? 600 : 400, color:COLORS.text, flex:1, textAlign:"left" }}>{f.label}</span>
+                  {!isAll && active && <span style={{ fontSize:10, color:"#27500A" }}>✓</span>}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Card 3 — Availability legend */}
+          <div style={{ background:COLORS.surface, border:`0.5px solid ${COLORS.border}`, borderRadius:16, padding:"14px" }}>
+            <div style={{ fontSize:10, fontWeight:700, color:COLORS.text, marginBottom:10, textTransform:"uppercase", letterSpacing:"0.07em" }}>Availability</div>
+            {[
+              { dot:"#3b6d11", label:"Available now" },
+              { dot:"#993c1d", label:"In use" },
+              { dot:"#d4a847", label:"Your class" },
+              { dot:"#9ca3af", label:"Restricted" },
+            ].map(l => (
+              <div key={l.label} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:7 }}>
+                <div style={{ width:8, height:8, borderRadius:"50%", background:l.dot, flexShrink:0 }} />
+                <span style={{ fontSize:11, color:COLORS.text }}>{l.label}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Card 4 — Building filter */}
+          <div style={{ background:COLORS.surface, border:`0.5px solid ${COLORS.border}`, borderRadius:16, padding:"14px" }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+              <div style={{ fontSize:10, fontWeight:700, color:COLORS.text, textTransform:"uppercase", letterSpacing:"0.07em" }}>Building</div>
+              {activeBldgs.size > 0 && (
+                <button onClick={() => setActiveBldgs(new Set())}
+                  style={{ fontSize:10, color:COLORS.textMuted, background:"none", border:"none", cursor:"pointer", padding:0, fontFamily:"inherit", textDecoration:"underline" }}>
+                  Clear
+                </button>
+              )}
+            </div>
+            {MAP_BLDG_FILTERS.map(f => {
+              const isAll = f.id === "all";
+              const active = isAll ? activeBldgs.size === 0 : activeBldgs.has(f.id);
+              return (
+                <button key={f.id}
+                  onClick={() => isAll ? setActiveBldgs(new Set()) : toggleBldg(f.id)}
+                  style={{ width:"100%", display:"flex", alignItems:"center", gap:7, padding:"6px 8px", borderRadius:8, border:"none", cursor:"pointer", background: active ? "#f3f4f6" : "transparent", marginBottom:2, fontFamily:"inherit" }}>
+                  <span style={{ fontSize:13 }}>{f.icon}</span>
+                  <span style={{ fontSize:12, fontWeight: active ? 600 : 400, color:COLORS.text, flex:1, textAlign:"left" }}>{f.label}</span>
+                  {!isAll && active && <span style={{ fontSize:10, color:"#27500A" }}>✓</span>}
+                </button>
               );
             })}
           </div>
         </div>
-      ))}
-    </Page>
+
+        {/* ── Map panel ── */}
+        <div>
+          {/* Toolbar */}
+          <div style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:COLORS.surface, border:`0.5px solid ${COLORS.border}`, borderRadius:12, marginBottom:20 }}>
+            <span style={{ fontSize:16, flexShrink:0 }}>🗺️</span>
+            <input type="text" placeholder="Search rooms or types…" value={searchQ}
+              onChange={e => setSearchQ(e.target.value)}
+              style={{ flex:1, border:"none", outline:"none", fontSize:13, background:"transparent", color:COLORS.text, fontFamily:"inherit" }} />
+            <span style={{ fontSize:11, color:COLORS.textMuted, whiteSpace:"nowrap" }}>
+              {hasFilters ? `${visibleRooms} of ${totalRooms}` : totalRooms} spaces
+            </span>
+          </div>
+
+          {/* Floors (Floor 3 → Floor 2 → Floor 1 → Ground) */}
+          {MAP_FLOORS.map((floor) => (
+            <div key={floor.name}>
+              <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:10 }}>
+                <span style={{ fontSize:12, fontWeight:700, color:COLORS.text, whiteSpace:"nowrap" }}>{floor.name}</span>
+                <div style={{ flex:1, height:1, background:COLORS.border }} />
+              </div>
+              <div
+                ref={(el) => { floorRefs.current[floor.renderIdx] = el; }}
+                style={{
+                  marginBottom:24, borderRadius:12, overflow:"hidden",
+                  boxShadow: hlFloor === floor.renderIdx ? "0 0 0 2px #d4a847" : "none",
+                  transition:"box-shadow 0.2s",
+                }}>
+                {renderFloorSVG(floor, hlFloor === floor.renderIdx)}
+              </div>
+            </div>
+          ))}
+
+          {/* Detail strip */}
+          <div role="status" aria-live="polite"
+            style={{ maxHeight: detailRoom ? 72 : 0, overflow:"hidden", transition:"max-height 0.25s ease",
+              background:COLORS.surface, border: detailRoom ? `0.5px solid ${COLORS.border}` : "none",
+              borderRadius:12, marginTop: detailRoom ? 8 : 0 }}>
+            {detailRoom && (
+              <div style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 16px" }}>
+                <div style={{ width:36, height:36, borderRadius:8, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18,
+                  background: (detailRoom.isYours ? MAP_YOURS : MAP_ROOM_STYLES[detailRoom.type] || MAP_ROOM_STYLES.classroom).fill,
+                  border: `1.5px solid ${(detailRoom.isYours ? MAP_YOURS : MAP_ROOM_STYLES[detailRoom.type] || MAP_ROOM_STYLES.classroom).stroke}` }}>
+                  {roomTypeIcon(detailRoom.type)}
+                </div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:13, fontWeight:600, color:COLORS.text }}>{detailRoom.name}</div>
+                  <div style={{ fontSize:11, color:COLORS.textMuted, textTransform:"capitalize" }}>{detailRoom.type}</div>
+                </div>
+                <div style={{ display:"flex", gap:6, flexWrap:"wrap", alignItems:"center" }}>
+                  <span style={{ fontSize:11, padding:"3px 9px", borderRadius:20, background:"#f3f4f6", color:COLORS.text }}>👥 {detailRoom.cap}</span>
+                  <span style={{ fontSize:11, padding:"3px 9px", borderRadius:20, background:"#f3f4f6", color:COLORS.text }}>📍 {detailRoom.floor}</span>
+                  {detailBadge && <span style={{ fontSize:11, padding:"3px 9px", borderRadius:20, fontWeight:600, background:detailBadge.bg, color:detailBadge.color }}>{detailBadge.label}</span>}
+                </div>
+                <button onClick={() => setDetailRoom(null)} aria-label="Close detail"
+                  style={{ width:26, height:26, borderRadius:"50%", border:"none", background:"#f3f4f6", color:COLORS.textMuted, cursor:"pointer", fontSize:12, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>✕</button>
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"12px 0", borderTop:`0.5px solid ${COLORS.border}`, marginTop:12 }}>
+            <div style={{ display:"flex", gap:16 }}>
+              {[{ dot:"#3b6d11", label:`${availCount} available` }, { dot:"#993c1d", label:`${busyCount} in use` }, { dot:"#d4a847", label:"1 your class" }].map(s => (
+                <div key={s.label} style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, color:COLORS.text }}>
+                  <div style={{ width:8, height:8, borderRadius:"50%", background:s.dot, flexShrink:0 }} />
+                  {s.label}
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize:12, color:COLORS.textMuted }}>
+              {hasFilters ? `${visibleRooms} of ${totalRooms} spaces` : `All ${totalRooms} spaces`}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
-/* ============================================================
-   Route handler — wired into app.jsx
-   ============================================================ */
-window["renderRoute_my-desk"] = ({ segments, navigate }) => {
-  const sub = segments[1] || "overview";
-  if (sub === "overview")  return <MyDeskOverview segments={segments}/>;
-  if (sub === "my-menu")   return <MyDeskMenu segments={segments}/>;
-  if (sub === "notes")     return <MyDeskNotes segments={segments}/>;
-  if (sub === "files")     return <MyDeskFiles segments={segments}/>;
-  if (sub === "bookmarks") return <MyDeskBookmarks segments={segments}/>;
-  if (sub === "my-tools")  return <MyToolsPage segments={segments}/>;
-  return <StubRoute segments={segments}/>;
-};
+function MyMeetingsPage() {
+  const todayRef = React.useRef(new Date());
+  const today = todayRef.current;
+  const [weekStart, setWeekStart] = React.useState(_getWeekStart);
+  const [selectedDate, setSelectedDate] = React.useState(today);
+  const [subTab, setSubTab] = React.useState("reserve");
+  const [spaceFilter, setSpaceFilter] = React.useState("all");
+  const [bookings, setBookings] = React.useState({});
+  const [openId, setOpenId] = React.useState(null);
+  const [toast, setToast] = React.useState(null);
 
-window.MyDeskOverview = MyDeskOverview;
-window.MyDeskMenu = MyDeskMenu;
-window.MyDeskNotes = MyDeskNotes;
-window.MyDeskFiles = MyDeskFiles;
-window.MyDeskBookmarks = MyDeskBookmarks;
+  const days = Array.from({ length: 7 }, (_, i) => _addDays(weekStart, i));
+  const dateKey = _fmtISO(selectedDate);
+  const dateLabel = _fmtFull(selectedDate);
+  const monthLabel = _fmtMonth(days[3]);
+  const isSelectedToday  = _isSameDay(selectedDate, today);
+  const weekHasToday     = days.some(d => _isToday(d));
+  const todayBtnActive   = !isSelectedToday || !weekHasToday;
+  const bookedDates = new Set(Object.keys(bookings).map(k => k.split("|")[1]));
+
+  const myBookingsList = Object.keys(bookings).map(k => {
+    const [spaceId, dk, slot] = k.split("|");
+    const sp = SPACES_DATA.find(s => s.id === spaceId);
+    return { key: k, spaceName: sp?.name || spaceId, dateKey: dk, slot };
+  }).sort((a, b) => a.dateKey.localeCompare(b.dateKey) || a.slot.localeCompare(b.slot));
+
+  const filteredSpaces = spaceFilter === "all" ? SPACES_DATA : SPACES_DATA.filter(s => s.stype === spaceFilter);
+
+  return (
+    <div>
+      {/* L2 pill tabs */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
+        {[{ id: "map", label: "Working Spaces Map" }, { id: "reserve", label: "Reserve a Space" }].map(t => (
+          <button key={t.id} onClick={() => setSubTab(t.id)} style={{
+            padding: "7px 18px", borderRadius: 999, cursor: "pointer", fontFamily: "inherit",
+            border: `1.5px solid ${subTab === t.id ? COLORS.text : COLORS.border}`,
+            background: subTab === t.id ? COLORS.text : "transparent",
+            color: subTab === t.id ? "#fff" : COLORS.textMuted,
+            fontSize: 13, fontWeight: 600, transition: "all 150ms",
+          }}>{t.label}</button>
+        ))}
+      </div>
+
+      {/* Working Spaces Map */}
+      {subTab === "map" && <WorkingSpacesMap />}
+
+      {/* Reserve a Space */}
+      {subTab === "reserve" && (
+        <div>
+          {/* Date bar */}
+          <div style={{ background: COLORS.surface, border: `0.5px solid ${COLORS.border}`, borderRadius: 16, padding: "14px 18px", marginBottom: 20 }}>
+            <div role="group" aria-label="Select day" style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+              <span style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.07em", color: COLORS.textMuted, fontWeight: 600 }}>Select date</span>
+              <button aria-label="Previous week"
+                onClick={() => setWeekStart(d => _addDays(d, -7))}
+                style={{ width: 28, height: 28, borderRadius: 8, border: `1px solid ${COLORS.border}`, background: COLORS.surface, cursor: "pointer", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit", color: COLORS.text }}>‹</button>
+              <span style={{ fontSize: 13, fontWeight: 500, minWidth: 72 }}>{monthLabel}</span>
+              <button aria-label="Next week"
+                onClick={() => setWeekStart(d => _addDays(d, 7))}
+                style={{ width: 28, height: 28, borderRadius: 8, border: `1px solid ${COLORS.border}`, background: COLORS.surface, cursor: "pointer", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit", color: COLORS.text }}>›</button>
+              <button
+                onClick={todayBtnActive ? () => { setSelectedDate(today); setWeekStart(_getWeekStart()); } : undefined}
+                style={{ marginLeft: "auto", padding: "4px 13px", borderRadius: 999, fontSize: 11, fontWeight: 600,
+                  border: `1px solid ${COLORS.border}`, background: COLORS.surface,
+                  cursor: todayBtnActive ? "pointer" : "default", color: COLORS.text,
+                  opacity: todayBtnActive ? 1 : 0.35, pointerEvents: todayBtnActive ? "auto" : "none", fontFamily: "inherit" }}>Today</button>
+            </div>
+            <div style={{ display: "flex", gap: 6 }}>
+              {days.map(d => {
+                const k = _fmtISO(d);
+                const isTod = _isToday(d);
+                const isSel = _isSameDay(d, selectedDate);
+                const hasDot = bookedDates.has(k);
+                return (
+                  <button key={k} aria-pressed={isSel} onClick={() => setSelectedDate(d)}
+                    style={{ flex: 1, padding: "7px 0 10px", borderRadius: 10, cursor: "pointer", fontFamily: "inherit",
+                      border: isSel ? `2px solid ${COLORS.text}` : `1.5px solid ${COLORS.border}`,
+                      background: isTod ? "#e8e6e0" : COLORS.surface,
+                      display: "flex", flexDirection: "column", alignItems: "center", gap: 2, position: "relative" }}>
+                    <span style={{ fontSize: 10, color: COLORS.textMuted, fontWeight: 500 }}>{_fmtDow(d)}</span>
+                    <span style={{ fontSize: 14, fontWeight: isSel ? 700 : 500, color: COLORS.text }}>{_fmtDay(d)}</span>
+                    {hasDot && <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#d4a847", position: "absolute", bottom: 4, left: "50%", transform: "translateX(-50%)" }} />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Two-column layout */}
+          <div style={{ display: "grid", gridTemplateColumns: "200px minmax(0,1fr)", gap: 20, alignItems: "start" }}>
+            {/* Sidebar */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {/* Filter */}
+              <div style={{ background: COLORS.surface, border: `0.5px solid ${COLORS.border}`, borderRadius: 16, padding: "14px" }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: COLORS.text, marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.07em" }}>Space type</div>
+                {SPACE_FILTERS.map(f => {
+                  const count = f.id === "all" ? SPACES_DATA.length : SPACES_DATA.filter(s => s.stype === f.id).length;
+                  const active = spaceFilter === f.id;
+                  return (
+                    <button key={f.id} onClick={() => setSpaceFilter(f.id)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "none", cursor: "pointer", background: active ? "#f3f4f6" : "transparent", marginBottom: 2, fontFamily: "inherit" }}>
+                      <div style={{ width: 8, height: 8, borderRadius: "50%", background: f.dot, flexShrink: 0 }} />
+                      <span style={{ flex: 1, fontSize: 12, fontWeight: active ? 600 : 400, color: COLORS.text, textAlign: "left" }}>{f.label}</span>
+                      <span style={{ fontSize: 11, color: COLORS.textMuted }}>{count}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* My bookings */}
+              <div style={{ background: COLORS.surface, border: `0.5px solid ${COLORS.border}`, borderRadius: 16, padding: "14px" }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: COLORS.text, marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.07em" }}>My bookings</div>
+                {myBookingsList.length === 0 ? (
+                  <div style={{ fontSize: 12, color: COLORS.textMuted, lineHeight: 1.5 }}>No upcoming bookings.</div>
+                ) : myBookingsList.map(b => (
+                  <div key={b.key} style={{ borderLeft: "3px solid #d4a847", paddingLeft: 10, marginBottom: 12 }}>
+                    <div style={{ fontSize: 12, fontWeight: 500, color: COLORS.text }}>{b.spaceName}</div>
+                    <div style={{ fontSize: 11, color: COLORS.textMuted, marginTop: 2 }}>{b.dateKey} · {b.slot}</div>
+                    <button onClick={() => { const nb = {...bookings}; delete nb[b.key]; setBookings(nb); setToast("Reservation cancelled."); }}
+                      style={{ marginTop: 4, fontSize: 11, color: "#991b1b", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "inherit" }}>Cancel</button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Legend */}
+              <div style={{ background: COLORS.surface, border: `0.5px solid ${COLORS.border}`, borderRadius: 16, padding: "14px" }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: COLORS.text, marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.07em" }}>Legend</div>
+                {[
+                  { label: "Available",    bg: COLORS.surface, border: "#e5e7eb", color: COLORS.text },
+                  { label: "Taken",        bg: "#f3f4f6",      border: "#e5e7eb", color: "#9ca3af" },
+                  { label: "Your booking", bg: "#F5A623",      border: "#d4a847", color: "#412402" },
+                ].map(l => (
+                  <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}>
+                    <div style={{ width: 38, height: 22, borderRadius: 5, background: l.bg, border: `1px solid ${l.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 9, color: l.color, fontWeight: 600 }}>slot</div>
+                    <span style={{ fontSize: 11, color: COLORS.text }}>{l.label}</span>
+                  </div>
+                ))}
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
+                  <div style={{ width: 38, height: 22, borderRadius: 5, background: COLORS.surface, border: `1.5px solid ${COLORS.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, position: "relative" }}>
+                    <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#d4a847", position: "absolute", bottom: 3 }} />
+                  </div>
+                  <span style={{ fontSize: 11, color: COLORS.text }}>Day has booking</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Space cards */}
+            <div style={{ minWidth: 0 }}>
+              {filteredSpaces.map(space => (
+                <SpaceCard key={space.id} space={space} dateKey={dateKey} dateLabel={dateLabel}
+                  bookings={bookings} setBookings={setBookings}
+                  openId={openId} setOpenId={setOpenId} setToast={setToast} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toast && <MeetingToast message={toast} onDone={() => setToast(null)} />}
+    </div>
+  );
+}
+
+// ============================================================
+// MAIN CONTAINER
+// ============================================================
+
+function MyDeskApp() {
+  const [activeTab, setActiveTab] = React.useState("overview");
+  const [selectedMenuItem, setSelectedMenuItem] = React.useState(null);
+
+  const tabs = [
+    { id: "overview",    label: "Overview" },
+    { id: "my-menu",     label: "My Menu" },
+    { id: "my-tools",    label: "My Tools" },
+    { id: "files",       label: "Files" },
+    { id: "bookmarks",   label: "Bookmarks" },
+    { id: "my-meetings", label: "My Meetings" },
+  ];
+
+  return (
+    <div className="desk-page" style={{ background: COLORS.bg, minHeight: "100vh", fontFamily: "Nunito, Poppins, 'Segoe UI', sans-serif" }}>
+
+      {/* Persistent page header */}
+      <div style={{ padding: "32px 60px 0 60px", background: "#fff" }}>
+        <div style={{ fontSize: 28, fontWeight: 800, color: COLORS.text, marginBottom: 4, fontFamily: "Nunito, Poppins, sans-serif" }}>
+          My Desk
+        </div>
+        <div style={{ fontSize: 14, color: COLORS.textMuted, marginBottom: 20 }}>
+          Your personal workspace — lunch menu, tools, files, and bookmarks.
+        </div>
+      </div>
+
+      {/* Tab bar */}
+      <div style={{ padding: "0 60px", background: "#fff", borderBottom: `1px solid ${COLORS.border}` }}>
+        <div style={{ display: "flex", gap: 24 }}>
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                padding: "12px 0",
+                border: "none",
+                background: "transparent",
+                color: activeTab === tab.id ? COLORS.text : COLORS.textMuted,
+                fontSize: 14,
+                fontWeight: activeTab === tab.id ? 700 : 500,
+                cursor: "pointer",
+                borderBottom: activeTab === tab.id ? `3px solid ${COLORS.darkGreen}` : "3px solid transparent",
+                transition: "color 0.15s, border-color 0.15s",
+                fontFamily: "inherit",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = COLORS.text; }}
+              onMouseLeave={(e) => { if (activeTab !== tab.id) e.currentTarget.style.color = COLORS.textMuted; }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Content area */}
+      <div style={{ padding: "48px 60px" }}>
+        {activeTab === "overview" && (
+          <MyOverviewPage selectedMenuItem={selectedMenuItem} onSwitchTab={setActiveTab} />
+        )}
+        {activeTab === "my-menu" && (
+          <MyMenuPage selectedItem={selectedMenuItem} onSelectItem={setSelectedMenuItem} />
+        )}
+        {activeTab === "my-tools" && <MyToolsPage />}
+        {activeTab === "files" && <MyFilesPage />}
+        {activeTab === "bookmarks" && <MyBookmarksPage />}
+        {activeTab === "my-meetings" && <MyMeetingsPage />}
+      </div>
+    </div>
+  );
+}
+
+/* ─── EXPORTS ──────────────────────────────────────────────────────── */
+
+window.MyDeskApp = MyDeskApp;
+window.MyMenuPage = MyMenuPage;
+window.MyToolsPage = MyToolsPage;
+window.MyFilesPage = MyFilesPage;
+window.MyBookmarksPage = MyBookmarksPage;
+window.renderRoute_my_desk = ({ segments, navigate, tweaks }) => <MyDeskApp />;
+
+window.LINKS_TOOLS = TOOLS;
+window.LINKS_TOOL_ICONS = ICON_COMPONENTS;
+window.LINKS_FAV_TOOLS_KEY = FAV_TOOLS_KEY;

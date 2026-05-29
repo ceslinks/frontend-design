@@ -124,7 +124,7 @@ function NavTree({ items, segments, onNav, depth = 0, expandedSet, collapsedSet,
           // pure navigate (used when clicking the row itself)
           const newSegs = segments.slice(0, depth);
           newSegs[depth] = item.id;
-          if (hasChildren && depth === 0 && !item.hasLanding) {
+          if (hasChildren && depth === 0) {
             const firstChild = item.children[0];
             if (firstChild) newSegs.push(firstChild.id);
           }
@@ -559,6 +559,265 @@ function PageHeader({ segments, title, emoji, lede, actions, extraCrumbs }) {
     </div>
   );
 }
+
+// ============================================================
+// FLOATING TOOLS BAR
+// ============================================================
+
+const FAB_TOOLS_FALLBACK = [
+  { id: "calc",    name: "Calculator",    bgColor: "#FFD4B4", icon: "calc"    },
+  { id: "draw",    name: "Drawing",       bgColor: "#E8D5F2", icon: "draw"    },
+  { id: "sticky",  name: "Sticky Notes",  bgColor: "#FFF4D4", icon: "note"    },
+  { id: "write",   name: "Writing",       bgColor: "#D4E8FF", icon: "write"   },
+  { id: "present", name: "Presentation",  bgColor: "#A8D5BA", icon: "slides"  },
+  { id: "graphic", name: "Graphic Design",bgColor: "#FFD4B4", icon: "design"  },
+  { id: "audio",   name: "Audio",         bgColor: "#E8D5F2", icon: "audio"   },
+  { id: "video",   name: "Video",         bgColor: "#D4E8FF", icon: "video"   },
+];
+
+function FabToolIcon({ icon, size = 22 }) {
+  const s = size;
+  const c = "#25253A";
+  if (icon === "calc") return (
+    <svg width={s} height={s} viewBox="0 0 40 40" fill="none">
+      <rect x="6" y="6" width="28" height="28" rx="4" stroke={c} strokeWidth="2.2"/>
+      <circle cx="12" cy="12" r="1.8" fill={c}/>
+      <circle cx="20" cy="12" r="1.8" fill={c}/>
+      <circle cx="28" cy="12" r="1.8" fill={c}/>
+      <line x1="10" y1="21" x2="30" y2="21" stroke={c} strokeWidth="2"/>
+      <line x1="12" y1="28" x2="12" y2="34" stroke={c} strokeWidth="2"/>
+      <line x1="9"  y1="31" x2="15" y2="31" stroke={c} strokeWidth="2"/>
+    </svg>
+  );
+  if (icon === "draw") return (
+    <svg width={s} height={s} viewBox="0 0 40 40" fill="none">
+      <path d="M8 32L28 12" stroke={c} strokeWidth="2.2" strokeLinecap="round"/>
+      <path d="M28 12L32 8L36 16L28 12Z" stroke={c} strokeWidth="2" strokeLinejoin="round"/>
+      <circle cx="10" cy="32" r="3" stroke={c} strokeWidth="2"/>
+    </svg>
+  );
+  if (icon === "note") return (
+    <svg width={s} height={s} viewBox="0 0 40 40" fill="none">
+      <rect x="7" y="5" width="20" height="26" rx="2" stroke={c} strokeWidth="2.2"/>
+      <line x1="11" y1="12" x2="23" y2="12" stroke={c} strokeWidth="1.8"/>
+      <line x1="11" y1="17" x2="23" y2="17" stroke={c} strokeWidth="1.8"/>
+      <line x1="11" y1="22" x2="19" y2="22" stroke={c} strokeWidth="1.8"/>
+    </svg>
+  );
+  if (icon === "write") return (
+    <svg width={s} height={s} viewBox="0 0 40 40" fill="none">
+      <rect x="5" y="7" width="30" height="26" rx="2" stroke={c} strokeWidth="2.2"/>
+      <line x1="10" y1="14" x2="30" y2="14" stroke={c} strokeWidth="1.8"/>
+      <line x1="10" y1="19" x2="30" y2="19" stroke={c} strokeWidth="1.8"/>
+      <line x1="10" y1="24" x2="22" y2="24" stroke={c} strokeWidth="1.8"/>
+    </svg>
+  );
+  if (icon === "slides") return (
+    <svg width={s} height={s} viewBox="0 0 40 40" fill="none">
+      <rect x="5" y="7" width="30" height="22" rx="2" stroke={c} strokeWidth="2.2"/>
+      <line x1="20" y1="29" x2="20" y2="35" stroke={c} strokeWidth="2"/>
+      <line x1="13" y1="35" x2="27" y2="35" stroke={c} strokeWidth="2"/>
+    </svg>
+  );
+  if (icon === "design") return (
+    <svg width={s} height={s} viewBox="0 0 40 40" fill="none">
+      <circle cx="13" cy="13" r="5" stroke={c} strokeWidth="2.2"/>
+      <circle cx="27" cy="13" r="5" stroke={c} strokeWidth="2.2"/>
+      <circle cx="13" cy="27" r="5" stroke={c} strokeWidth="2.2"/>
+      <circle cx="27" cy="27" r="5" stroke={c} strokeWidth="2.2"/>
+    </svg>
+  );
+  if (icon === "audio") return (
+    <svg width={s} height={s} viewBox="0 0 40 40" fill="none">
+      <rect x="14" y="5" width="12" height="20" rx="6" stroke={c} strokeWidth="2.2"/>
+      <path d="M8 22C8 29.7 14.3 36 20 36C25.7 36 32 29.7 32 22" stroke={c} strokeWidth="2" strokeLinecap="round"/>
+      <line x1="20" y1="36" x2="20" y2="40" stroke={c} strokeWidth="2"/>
+    </svg>
+  );
+  if (icon === "video") return (
+    <svg width={s} height={s} viewBox="0 0 40 40" fill="none">
+      <rect x="4" y="10" width="24" height="18" rx="2" stroke={c} strokeWidth="2.2"/>
+      <path d="M28 17L36 13V27L28 23V17Z" stroke={c} strokeWidth="2" strokeLinejoin="round"/>
+    </svg>
+  );
+  return <span style={{ fontSize: s * 0.55, fontWeight: 700, color: c }}>{(icon || "?")[0].toUpperCase()}</span>;
+}
+
+function FloatingToolsBar() {
+  const [open, setOpen] = React.useState(false);
+  const [favIds, setFavIds] = React.useState(() => {
+    try {
+      const key = window.LINKS_FAV_TOOLS_KEY || "links_fav_tools";
+      return JSON.parse(localStorage.getItem(key) || "[]");
+    } catch { return []; }
+  });
+  const [tooltipId, setTooltipId] = React.useState(null);
+
+  const refreshFavs = () => {
+    try {
+      const key = window.LINKS_FAV_TOOLS_KEY || "links_fav_tools";
+      setFavIds(JSON.parse(localStorage.getItem(key) || "[]"));
+    } catch {}
+  };
+
+  React.useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key === (window.LINKS_FAV_TOOLS_KEY || "links_fav_tools")) refreshFavs();
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  const handleToggle = () => {
+    if (!open) refreshFavs();
+    setOpen((v) => !v);
+  };
+
+  const tools = window.LINKS_TOOLS || FAB_TOOLS_FALLBACK;
+
+  const sorted = [
+    ...tools.filter((t) => favIds.includes(t.id)),
+    ...tools.filter((t) => !favIds.includes(t.id)),
+  ].slice(0, 6);
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        bottom: 20,
+        left: 18,
+        zIndex: 9999,
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        pointerEvents: "none",
+      }}
+    >
+      {/* Expanded tool pills */}
+      {open && (
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          background: "rgba(255,255,255,0.95)",
+          backdropFilter: "blur(12px)",
+          borderRadius: 32,
+          padding: "6px 10px 6px 8px",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08)",
+          border: "1px solid rgba(255,255,255,0.8)",
+          pointerEvents: "all",
+        }}>
+          {sorted.map((tool, i) => (
+            <div
+              key={tool.id}
+              title={tool.name}
+              style={{
+                position: "relative",
+                animation: `fabIn 180ms ${i * 25}ms both`,
+              }}
+              onMouseEnter={() => setTooltipId(tool.id)}
+              onMouseLeave={() => setTooltipId(null)}
+            >
+              <button
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: "50%",
+                  border: "none",
+                  background: tool.bgColor,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+                  transition: "transform 0.15s ease, box-shadow 0.15s ease",
+                  padding: 0,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-3px) scale(1.08)";
+                  e.currentTarget.style.boxShadow = "0 6px 16px rgba(0,0,0,0.18)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0) scale(1)";
+                  e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.12)";
+                }}
+              >
+                <FabToolIcon icon={tool.icon} size={22} />
+              </button>
+              {tooltipId === tool.id && (
+                <div style={{
+                  position: "absolute",
+                  bottom: "calc(100% + 8px)",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  background: "#25253A",
+                  color: "#fff",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: "4px 10px",
+                  borderRadius: 8,
+                  whiteSpace: "nowrap",
+                  pointerEvents: "none",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                }}>
+                  {tool.name}
+                  {favIds.includes(tool.id) && <span style={{ marginLeft: 4, color: "#FFD700" }}>★</span>}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Toggle button */}
+      <button
+        onClick={handleToggle}
+        title={open ? "Close toolbar" : "Quick tools"}
+        style={{
+          width: 46,
+          height: 46,
+          borderRadius: "50%",
+          background: open
+            ? "#25253A"
+            : "linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)",
+          border: "none",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: open
+            ? "0 4px 20px rgba(37,37,58,0.35)"
+            : "0 4px 20px rgba(91,33,182,0.45)",
+          transition: "all 0.2s ease",
+          pointerEvents: "all",
+          flexShrink: 0,
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.08)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+      >
+        {open ? (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        ) : (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>
+          </svg>
+        )}
+      </button>
+
+      <style>{`
+        @keyframes fabIn {
+          from { opacity: 0; transform: scale(0.7) translateX(-8px); }
+          to   { opacity: 1; transform: scale(1) translateX(0); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+window.FloatingToolsBar = FloatingToolsBar;
 
 window.Sidebar = Sidebar;
 window.TopBar = TopBar;
