@@ -43,10 +43,98 @@ const KindMeta = {
   csv:   { icon: "PieChart",   color: "#22C55E", label: "Data" },
 };
 
+const UNCATEGORIZED_FILES = [
+  { id: 101, name: "Personal Statement — Draft 1.docx", kind: "doc",   source: "you", size: "44 KB",  modified: "Oct 14", from: "You", starred: false },
+  { id: 102, name: "Screenshot 2024-10-10.png",          kind: "image", source: "you", size: "2.1 MB", modified: "Oct 10", from: "You", starred: false },
+  { id: 103, name: "practice_problems.pdf",              kind: "pdf",   source: "you", size: "890 KB", modified: "Oct 8",  from: "You", starred: false },
+];
+
 const initClassExp = () => Object.fromEntries(GROUPS.map(g => [g.className, true]));
 const initUnitExp  = () => Object.fromEntries(
   GROUPS.flatMap(g => g.units.map(u => [`${g.className}|${u}`, true]))
 );
+
+/* ─── Create Document modal ─── */
+
+function CreateDocumentModal({ onClose }) {
+  const [docName,  setDocName]  = React.useState("");
+  const [docClass, setDocClass] = React.useState("");
+  const [docType,  setDocType]  = React.useState("");
+  const canCreate = docName.trim().length > 0;
+
+  const inputStyle = {
+    width: "100%", padding: "9px 12px",
+    border: "1px solid var(--mist)", borderRadius: 8,
+    fontSize: 13, color: "var(--ink)", outline: "none",
+    background: "var(--paper)", boxSizing: "border-box",
+  };
+  const labelStyle = { fontSize: 12, fontWeight: 600, color: "var(--ink)", display: "block", marginBottom: 6 };
+
+  return (
+    <>
+      <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.38)", zIndex: 300 }} onClick={onClose}/>
+      <div
+        style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 460, background: "var(--paper)", borderRadius: 16, boxShadow: "var(--shadow-card)", zIndex: 301 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid var(--mist)", position: "relative" }}>
+          <div style={{ fontSize: 18, fontWeight: 600, color: "var(--ink)" }}>Create a new document</div>
+          <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", cursor: "pointer", borderRadius: 6 }}>
+            <I.X size={16} color="var(--stone)"/>
+          </button>
+        </div>
+        {/* Body */}
+        <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
+          <div>
+            <label style={labelStyle}>Document name</label>
+            <input
+              value={docName}
+              onChange={(e) => setDocName(e.target.value)}
+              placeholder="Untitled document"
+              style={inputStyle}
+              autoFocus
+            />
+          </div>
+          <div>
+            <label style={labelStyle}>Class</label>
+            <select value={docClass} onChange={(e) => setDocClass(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
+              <option value="">No class</option>
+              <option value="Biology">Biology</option>
+              <option value="Algebra II">Algebra II</option>
+              <option value="English 10">English 10</option>
+              <option value="US History">US History</option>
+              <option value="Spanish II">Spanish II</option>
+            </select>
+          </div>
+          <div>
+            <label style={labelStyle}>Document type</label>
+            <select value={docType} onChange={(e) => setDocType(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
+              <option value="">Select type</option>
+              <option value="Essay">Essay</option>
+              <option value="Notes">Notes</option>
+              <option value="Lab Report">Lab Report</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        {/* Footer */}
+        <div style={{ padding: "4px 24px 22px", display: "flex", gap: 10, justifyContent: "flex-end" }}>
+          <button onClick={onClose} className="btn btn-secondary btn-md">Cancel</button>
+          <button
+            disabled={!canCreate}
+            onClick={onClose}
+            className="btn btn-primary btn-md"
+            style={{ opacity: canCreate ? 1 : 0.5, cursor: canCreate ? "pointer" : "not-allowed", display: "inline-flex", alignItems: "center", gap: 6 }}
+          >
+            <I.Document size={13} color="#fff"/>
+            Create
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
 
 function MyMaterialsPage() {
   const [filter,       setFilter]       = React.useState("all");
@@ -55,6 +143,7 @@ function MyMaterialsPage() {
   const [search,       setSearch]       = React.useState("");
   const [classExpanded, setClassExpanded] = React.useState(initClassExp);
   const [unitExpanded,  setUnitExpanded]  = React.useState(initUnitExp);
+  const [createDocOpen, setCreateDocOpen] = React.useState(false);
 
   // Read URL params on mount
   React.useEffect(() => {
@@ -112,8 +201,10 @@ function MyMaterialsPage() {
           <div className="t-body" style={{ color: "var(--stone)" }}>All your files in one place — class resources, your work, and AI-generated study aids.</div>
         </div>
         <button className="btn btn-secondary btn-md"><I.Wand size={13} color="var(--student)"/> Generate with AI</button>
+        <button onClick={() => setCreateDocOpen(true)} className="btn btn-secondary btn-md" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><I.Document size={13} color="var(--ink)"/> Create document</button>
         <button className="btn btn-primary btn-md"><I.Upload size={13} color="#fff"/> Upload</button>
       </div>
+      {createDocOpen && <CreateDocumentModal onClose={() => setCreateDocOpen(false)}/>}
 
       {/* Stats row */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
@@ -197,6 +288,7 @@ window.MyMaterialsPage = MyMaterialsPage;
 
 function GroupedFilesList({ applyFilters, classExpanded, toggleClass, unitExpanded, toggleUnit }) {
   const colGrid = "32px minmax(0,2.4fr) 1fr 1fr 100px 120px 90px";
+  const [uncatExpanded, setUncatExpanded] = React.useState(true);
 
   return (
     <div style={{ background: "var(--paper)", borderRadius: 12, boxShadow: "var(--shadow-card)" }}>
@@ -275,6 +367,34 @@ function GroupedFilesList({ applyFilters, classExpanded, toggleClass, unitExpand
           </div>
         );
       })}
+
+      {/* Uncategorized section */}
+      {(() => {
+        const uncatFiles = applyFilters(UNCATEGORIZED_FILES);
+        if (uncatFiles.length === 0) return null;
+        return (
+          <div>
+            <button
+              onClick={() => setUncatExpanded(v => !v)}
+              style={{
+                width: "100%", display: "flex", alignItems: "center", gap: 10,
+                height: 40, padding: "0 18px",
+                background: "var(--bone)",
+                border: "none", borderBottom: "1px solid var(--mist)",
+                cursor: "pointer",
+              }}
+            >
+              <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#9CA3AF", flexShrink: 0 }}/>
+              <span style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)", flex: 1, textAlign: "left" }}>Uncategorized</span>
+              <span style={{ fontSize: 11.5, color: "var(--stone)", marginRight: 8 }}>{uncatFiles.length} file{uncatFiles.length !== 1 ? "s" : ""}</span>
+              <I.ChevronRight size={14} color="var(--stone)" style={{ transform: uncatExpanded ? "rotate(90deg)" : "none", transition: "transform 150ms" }}/>
+            </button>
+            {uncatExpanded && uncatFiles.map((f, i) => (
+              <FileRow key={f.id} f={f} last={i === uncatFiles.length - 1} indent={0}/>
+            ))}
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -293,6 +413,8 @@ function FileRow({ f, last, indent = 0 }) {
   const [modalOpen,        setModalOpen]        = React.useState(false);
   const [selectedSection,  setSelectedSection]  = React.useState(null);
   const [toast,            setToast]            = React.useState(null);
+  const [aiPopover,        setAiPopover]        = React.useState(false);
+  const [labelKept,        setLabelKept]        = React.useState(false);
 
   React.useEffect(() => {
     if (!toast) return;
@@ -334,11 +456,51 @@ function FileRow({ f, last, indent = 0 }) {
           <div style={{ fontSize: 10.5, color: "var(--stone)" }}>{meta.label} · {f.from}</div>
         </div>
       </div>
-      <div>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "2px 8px", background: `${f.classColor}14`, color: f.classColor, borderRadius: 999, fontSize: 11, fontWeight: 600 }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: f.classColor }}/>
-          {f.className}
-        </span>
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        {f.className && (
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "2px 8px", background: `${f.classColor}14`, color: f.classColor, borderRadius: 999, fontSize: 11, fontWeight: 600, flexShrink: 0 }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: f.classColor }}/>
+            {f.className}
+          </span>
+        )}
+        {f.id === 5 && !labelKept && (
+          <div style={{ position: "relative" }}>
+            <button
+              onClick={(e) => { e.stopPropagation(); setAiPopover(v => !v); }}
+              title="AI label suggestion"
+              style={{ width: 20, height: 20, borderRadius: "50%", background: "#F5F3FF", border: "1.5px solid #8B5CF6", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, flexShrink: 0 }}
+            >
+              <I.Sparkle size={11} color="#8B5CF6"/>
+            </button>
+            {aiPopover && (
+              <>
+                <div style={{ position: "fixed", inset: 0, zIndex: 150 }} onClick={(e) => { e.stopPropagation(); setAiPopover(false); }}/>
+                <div
+                  style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, zIndex: 151, width: 264, background: "var(--paper)", borderRadius: 10, boxShadow: "0 4px 20px rgba(0,0,0,0.14)", border: "1px solid var(--mist)", padding: "12px 14px" }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                    <I.Sparkle size={13} color="#8B5CF6"/>
+                    <span style={{ fontSize: 11.5, fontWeight: 700, color: "#8B5CF6" }}>AI Coach</span>
+                  </div>
+                  <div style={{ fontSize: 12.5, color: "var(--ink)", lineHeight: 1.5, marginBottom: 12 }}>
+                    This looks like it might be a History essay — is the <strong>Biology</strong> label correct?
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setLabelKept(true); setAiPopover(false); }}
+                      style={{ flex: 1, height: 30, borderRadius: 7, border: "1px solid var(--mist)", background: "var(--bone)", color: "var(--ink)", fontSize: 12, fontWeight: 500, cursor: "pointer" }}
+                    >Keep label</button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setAiPopover(false); }}
+                      style={{ flex: 1, height: 30, borderRadius: 7, border: "none", background: "#8B5CF6", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                    >Change label</button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
       <div style={{ fontSize: 11.5, fontWeight: 600, color: sourceLabel.color }}>{sourceLabel.label}</div>
       <div style={{ fontSize: 11.5, color: "var(--stone)" }}>{f.size}</div>

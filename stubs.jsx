@@ -2,6 +2,7 @@
 
 const ROUTE_META = {
   // home is rendered separately
+  "my-time":                   { title: "My Time",         emoji: "⏰", lede: "Plan smarter. Stay ahead." },
   "my-time/my-schedule":      { title: "My Schedule",     emoji: "🗓️", lede: "Your school day at a glance." },
   "my-time/my-calendar":      { title: "My Calendar",     emoji: "📅", lede: "Plan smarter. Stay ahead." },
   "my-time/study-planner":    { title: "Study Planner",   emoji: "✨", lede: "AI builds personalized plans so you complete work on time." },

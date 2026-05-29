@@ -31,17 +31,17 @@ function PanelTeacher({ id, onClose }) {
         <Row icon="MapPin" label="Room" value="Room 204"/>
       </Section>
 
-      <Section title="Shared Classes">
+      <Section title="Shared Classes" collapsible>
         <ClassRow icon="Book" color="#8B5CF6" name="English 10 — Period 2" sub="Argument Essay due Fri"/>
       </Section>
 
-      <Section title="Shared Files" cta="View All (12)">
+      <Section title="Shared Files" cta="View All (12)" collapsible>
         <MsgFileRow icon="Document" name="Argument Essay Rubric.pdf" sub="Shared 3 days ago"/>
         <MsgFileRow icon="Image" name="Class_Notes_Feb24.png" sub="Shared 5 days ago"/>
         <MsgFileRow icon="Document" name="Reading_List.docx" sub="Shared 1 week ago"/>
       </Section>
 
-      <Section title="Quick Links">
+      <Section title="Quick Links" collapsible>
         <LinkRow icon="LinkOut" label="Class syllabus"/>
         <LinkRow icon="LinkOut" label="Office hours signup"/>
       </Section>
@@ -84,13 +84,13 @@ function PanelClassmate({ id, onClose }) {
         <ClassRow icon="Team" color="#F59E0B" name="History Project Team" sub="Group project, due Mar 15"/>
       </Section>
 
-      <Section title="Recent Files Shared" cta="View All (8)">
+      <Section title="Recent Files Shared" cta="View All (8)" collapsible>
         <MsgFileRow icon="Image" name="Social Media Regulation Article" sub="Shared 5 minutes ago" subColor="#22C55E"/>
         <MsgFileRow icon="Document" name="Argument Essay Outline.docx" sub="Shared yesterday"/>
         <MsgFileRow icon="Document" name="Bio_Lab_Notes.pdf" sub="Shared 2 days ago"/>
       </Section>
 
-      <Section title="Suggested Actions">
+      <Section title="Suggested Actions" collapsible>
         <ActionRow icon="Calendar" label="Schedule study session" sub="Jordan suggested 7 PM tonight"/>
         <ActionRow icon="Document" label="Open Argument Essay" sub="Continue working together"/>
         <ActionRow icon="Sparkle" label="AI: Summarize this chat"/>
@@ -133,7 +133,7 @@ function PanelClass({ id, onClose }) {
         <AssignmentRow color="#22C55E" name="Persuasive Speech Outline" due="Due Mar 12"/>
       </Section>
 
-      <Section title="Members (24)" cta="View All">
+      <Section title="Members (24)" cta="View All" collapsible>
         <PeopleRow name="Ms. Carter" role="Teacher" hue={350} online/>
         <PeopleRow name="Jordan Lee" hue={200} online/>
         <PeopleRow name="Taylor Kim" hue={280}/>
@@ -141,7 +141,7 @@ function PanelClass({ id, onClose }) {
         <PeopleRow name="Avery Johnson" hue={100} online/>
       </Section>
 
-      <Section title="Class Resources">
+      <Section title="Class Resources" collapsible>
         <MsgFileRow icon="Document" name="Class Syllabus" sub="PDF · 320 KB"/>
         <MsgFileRow icon="Document" name="Reading List 2026" sub="PDF · 145 KB"/>
         <MsgFileRow icon="Image" name="Argument Essay Examples" sub="Folder · 8 files"/>
@@ -235,14 +235,27 @@ function RightPanel({ children, onClose }) {
   );
 }
 
-function Section({ title, children, cta }) {
+function Section({ title, children, cta, collapsible, defaultCollapsed }) {
+  const [collapsed, setCollapsed] = React.useState(collapsible ? (defaultCollapsed !== false) : false);
   return (
-    <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--mist)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <span className="t-eyebrow" style={{ fontSize: 10.5, color: "var(--silver)" }}>{title}</span>
-        {cta && <button style={{ background: "transparent", border: "none", color: "var(--student)", fontSize: 11.5, fontWeight: 600, cursor: "pointer", padding: 0 }}>{cta}</button>}
+    <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--mist)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: collapsed ? 0 : 10 }}>
+        <button
+          onClick={() => collapsible && setCollapsed((v) => !v)}
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 5,
+            background: "transparent", border: "none", padding: 0,
+            cursor: collapsible ? "pointer" : "default",
+          }}
+        >
+          <span className="t-eyebrow" style={{ fontSize: 10.5, color: "var(--silver)" }}>{title}</span>
+          {collapsible && (
+            <I.ChevronRight size={10} color="var(--silver)" style={{ transform: collapsed ? "rotate(0deg)" : "rotate(90deg)", transition: "transform 150ms" }}/>
+          )}
+        </button>
+        {cta && !collapsed && <button style={{ background: "transparent", border: "none", color: "var(--student)", fontSize: 11.5, fontWeight: 600, cursor: "pointer", padding: 0 }}>{cta}</button>}
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{children}</div>
+      {!collapsed && <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{children}</div>}
     </div>
   );
 }

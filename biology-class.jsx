@@ -41,13 +41,14 @@ function BiologyClassPage({ c }) {
       {/* Sub-tabs */}
       <div style={{ display: "flex", gap: 4, padding: 4, background: "var(--bone)", borderRadius: 10, alignSelf: "flex-start", flexWrap: "wrap" }}>
         {[
-          { id: "today",       label: "Today's Class",    icon: "Sparkle" },
-          { id: "curriculum",  label: "Curriculum",       icon: "Folder" },
-          { id: "virtual",     label: "Virtual Classroom", icon: "Video" },
-          { id: "documents", label: "Documents",        icon: "Folder" },
-          { id: "tools",     label: "Class Tools",    icon: "Tools" },
-          { id: "assign",    label: "Assignments",    icon: "Document" },
-          { id: "grades",    label: "Growth",         icon: "Trophy" },
+          { id: "today",      label: "Today's Class",     icon: "Sparkle"       },
+          { id: "curriculum", label: "Curriculum",        icon: "Folder"        },
+          { id: "virtual",    label: "Virtual Classroom", icon: "Video"         },
+          { id: "work",       label: "Work",              icon: "Document"      },
+          { id: "tools",      label: "Tools",             icon: "Tools"         },
+          { id: "grades",     label: "Support & Growth",  icon: "Trophy"        },
+          { id: "comms",      label: "Communication",     icon: "MessageSquare" },
+          { id: "maps",       label: "Maps & Spaces",     icon: "MapPin"        },
         ].map((t) => {
           const Icon = I[t.icon];
           const active = t.id === tab;
@@ -68,13 +69,14 @@ function BiologyClassPage({ c }) {
         })}
       </div>
 
-      {tab === "today"       && <BioTodayView course={course} onSwitchTab={setTab}/>}
-      {tab === "curriculum"  && <BioCurriculumView course={course} onSwitchTab={setTab}/>}
-      {tab === "virtual"     && <BioVirtualClassroomView course={course}/>}
-      {tab === "documents" && <BioDocumentsView course={course}/>}
-      {tab === "tools"     && <BioToolsView course={course}/>}
-      {tab === "assign"    && <BioAssignmentsView course={course}/>}
-      {tab === "grades"    && <BioGradesView course={course}/>}
+      {tab === "today"      && <BioTodayView course={course} onSwitchTab={setTab}/>}
+      {tab === "curriculum" && <BioCurriculumView course={course} onSwitchTab={setTab}/>}
+      {tab === "virtual"    && <BioVirtualClassroomView course={course}/>}
+      {tab === "work"       && <BioWorkView course={course}/>}
+      {tab === "tools"      && <BioToolsView course={course}/>}
+      {tab === "grades"     && <BioSupportGrowthView course={course}/>}
+      {tab === "comms"      && <BioCommunicationView course={course} onSwitchTab={setTab}/>}
+      {tab === "maps"       && <BioMapsSpacesView course={course}/>}
     </div>
   );
 }
@@ -313,7 +315,7 @@ function BioVirtualRoomMap({ course }) {
 
   return (
     <div style={{ background: "var(--bone)", borderRadius: 12, border: "1px solid var(--mist)", overflow: "hidden", lineHeight: 0 }}>
-      <svg width="660" height="380" style={{ display: "block" }} aria-label="Virtual Room 302 map">
+      <svg width="100%" viewBox="0 0 660 380" style={{ display: "block" }} aria-label="Virtual Room 302 map">
         <defs>
           {/* Soft two-tone floor — nearly the same shade */}
           <pattern id="vcFloor" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
@@ -491,7 +493,7 @@ function BioVirtualRoomMap({ course }) {
 }
 
 /* ─────────── Wide Class Chat panel (only on Today tab, full-width below content) ─────────── */
-function BioChatPanelWide({ course }) {
+function BioChatPanelWide({ course, onSwitchTab }) {
   return (
     <div style={{
       background: "var(--paper)", borderRadius: 14,
@@ -502,7 +504,7 @@ function BioChatPanelWide({ course }) {
       height: "100%",
       minHeight: 0,
     }}>
-      <BioRightRail course={course}/>
+      <BioRightRail course={course} onSwitchTab={onSwitchTab}/>
     </div>
   );
 }
@@ -558,7 +560,7 @@ function BioTodayView({ course, onSwitchTab }) {
         <BioLessonAndMaterials course={course} onSwitchTab={onSwitchTab}/>
       </div>
       <div style={{ width: 380, flexShrink: 0, position: "sticky", top: 70, height: "calc(100vh - 70px)", display: "flex", flexDirection: "column" }}>
-        <BioChatPanelWide course={course}/>
+        <BioChatPanelWide course={course} onSwitchTab={onSwitchTab}/>
       </div>
     </div>
   );
@@ -1850,8 +1852,393 @@ function BioRoomMap({ color }) {
   );
 }
 
+/* ─────────── Projects view ─────────── */
+const BIO_PERSONAL_PROJECTS = [
+  {
+    id: "cell-lab-report",
+    title: "Cell Respiration Lab Report",
+    type: "teacher",
+    assigner: "Mr. Evans",
+    due: "June 2",
+    status: "In Progress",
+    progress: 55,
+    description: "Write a formal lab report covering your yeast fermentation experiment.",
+  },
+  {
+    id: "study-guide-unit4",
+    title: "Study Guide: Unit 4 Cells & Energy",
+    type: "student",
+    assigner: "Alex",
+    supervisor: "Mr. Evans",
+    due: "May 28",
+    status: "In Progress",
+    progress: 40,
+    description: "Personal study guide covering ATP synthesis, cellular respiration, and photosynthesis.",
+  },
+];
+
+const BIO_GROUP_PROJECTS = [
+  {
+    id: "photosynthesis-poster",
+    title: "Photosynthesis vs. Respiration Poster",
+    type: "teacher",
+    assigner: "Mr. Evans",
+    due: "June 5",
+    status: "In Progress",
+    progress: 30,
+    members: [
+      { name: "Maya P.",   hue: 280 },
+      { name: "Jordan T.", hue: 195 },
+      { name: "Alex",      hue: 220, you: true },
+    ],
+  },
+  {
+    id: "lab-data-study",
+    title: "Lab Data Analysis Study Group",
+    type: "student",
+    assigner: "Alex",
+    supervisor: "Mr. Evans",
+    due: null,
+    status: "Pending Approval",
+    progress: 0,
+    members: [
+      { name: "Sam K.",    hue: 160 },
+      { name: "Priya N.",  hue: 30  },
+      { name: "Alex",      hue: 220, you: true },
+    ],
+  },
+];
+
+function BioNewProjectModal({ course, onClose }) {
+  const [kind,     setKind]     = React.useState("personal"); // personal | group
+  const [title,    setTitle]    = React.useState("");
+  const [dueDate,  setDueDate]  = React.useState("");
+  const [desc,     setDesc]     = React.useState("");
+  const [members,  setMembers]  = React.useState("");
+
+  const canCreate = title.trim().length > 0;
+
+  const inputStyle = {
+    width: "100%", boxSizing: "border-box",
+    border: "1.5px solid var(--mist)", borderRadius: 10,
+    padding: "9px 12px", fontSize: 13, color: "var(--ink)",
+    background: "var(--bone)", outline: "none",
+    fontFamily: "inherit",
+  };
+  const labelStyle = { fontSize: 12, fontWeight: 600, color: "var(--stone)", marginBottom: 4, display: "block" };
+
+  return (
+    <div
+      style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.38)", display: "flex",
+        alignItems: "center", justifyContent: "center", zIndex: 400, backdropFilter: "blur(2px)" }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div style={{ background: "var(--paper)", borderRadius: 24, padding: "26px 28px 22px",
+        width: 460, maxWidth: "calc(100vw - 48px)", boxShadow: "var(--shadow-card-lg)",
+        display: "flex", flexDirection: "column", gap: 18, maxHeight: "calc(100vh - 80px)", overflowY: "auto" }}>
+
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: "var(--ink)" }}>New Project</h2>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex" }}>
+            <I.X size={18} color="var(--stone)" />
+          </button>
+        </div>
+
+        {/* Personal / Group toggle */}
+        <div style={{ display: "flex", gap: 0, background: "var(--bone)", borderRadius: 10, padding: 3, alignSelf: "flex-start" }}>
+          {[
+            { id: "personal", label: "Personal" },
+            { id: "group",    label: "Group" },
+          ].map((opt) => (
+            <button key={opt.id} onClick={() => setKind(opt.id)} style={{
+              padding: "6px 18px", fontSize: 12.5, fontWeight: kind === opt.id ? 600 : 500,
+              background: kind === opt.id ? "var(--paper)" : "transparent",
+              color: kind === opt.id ? course.color : "var(--stone)",
+              border: "none", borderRadius: 8, cursor: "pointer",
+              boxShadow: kind === opt.id ? "0 1px 3px rgba(0,0,0,0.06)" : "none",
+              transition: "all 100ms",
+            }}>{opt.label}</button>
+          ))}
+        </div>
+
+        {/* Title */}
+        <div>
+          <label style={labelStyle}>Project title <span style={{ color: "#EF4444" }}>*</span></label>
+          <input
+            value={title} onChange={(e) => setTitle(e.target.value)}
+            placeholder="e.g. Unit 4 Study Guide"
+            style={inputStyle}
+          />
+        </div>
+
+        {/* Due date */}
+        <div>
+          <label style={labelStyle}>Due date <span style={{ color: "var(--stone)", fontWeight: 400 }}>(optional)</span></label>
+          <input
+            type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)}
+            style={inputStyle}
+          />
+        </div>
+
+        {/* Description */}
+        <div>
+          <label style={labelStyle}>Description <span style={{ color: "var(--stone)", fontWeight: 400 }}>(optional)</span></label>
+          <textarea
+            value={desc} onChange={(e) => setDesc(e.target.value)}
+            placeholder="What is this project about?"
+            rows={3}
+            style={{ ...inputStyle, resize: "vertical", lineHeight: 1.5 }}
+          />
+        </div>
+
+        {/* Group members (only when group) */}
+        {kind === "group" && (
+          <div>
+            <label style={labelStyle}>Add group members <span style={{ color: "var(--stone)", fontWeight: 400 }}>(optional)</span></label>
+            <input
+              value={members} onChange={(e) => setMembers(e.target.value)}
+              placeholder="e.g. Maya P., Jordan T."
+              style={inputStyle}
+            />
+          </div>
+        )}
+
+        {/* Supervisor note */}
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-start",
+          background: `${course.color}0F`, border: `1px solid ${course.color}25`,
+          borderRadius: 10, padding: "10px 12px" }}>
+          <I.Info size={14} color={course.color} style={{ flexShrink: 0, marginTop: 1 }} />
+          <span style={{ fontSize: 12, color: "var(--stone)", lineHeight: 1.5 }}>
+            {course.teacher} will be notified and will supervise this project.
+          </span>
+        </div>
+
+        {/* Actions */}
+        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+          <button onClick={onClose} style={{
+            padding: "9px 20px", fontSize: 13, fontWeight: 600, cursor: "pointer",
+            background: "var(--bone)", border: "1.5px solid var(--mist)", borderRadius: 10, color: "var(--stone)",
+          }}>Cancel</button>
+          <button
+            disabled={!canCreate}
+            onClick={onClose}
+            style={{
+              padding: "9px 22px", fontSize: 13, fontWeight: 700, cursor: canCreate ? "pointer" : "not-allowed",
+              background: canCreate ? course.color : "var(--mist)",
+              border: "none", borderRadius: 10, color: "#fff",
+              opacity: canCreate ? 1 : 0.7, transition: "background 120ms",
+            }}
+          >Create project</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BioProjectCard({ project, course, isGroup }) {
+  const [hovered, setHovered] = React.useState(false);
+  const isPending = project.status === "Pending Approval";
+
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: "var(--paper)", borderRadius: 14,
+        border: `1.5px solid ${hovered ? course.color + "40" : "var(--mist)"}`,
+        padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10,
+        transition: "border-color 150ms, box-shadow 150ms",
+        boxShadow: hovered ? `0 4px 16px ${course.color}18` : "var(--shadow-card)",
+      }}
+    >
+      {/* Top row: icon + title + status chip */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+        <div style={{ width: 38, height: 38, borderRadius: 10, flexShrink: 0,
+          background: project.type === "teacher" ? `${course.color}18` : "#8B5CF618",
+          display: "flex", alignItems: "center", justifyContent: "center" }}>
+          {project.type === "teacher"
+            ? <I.Layers size={17} color={course.color} />
+            : <I.User   size={17} color="#8B5CF6" />}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink)", lineHeight: 1.3 }}>{project.title}</div>
+          <div style={{ fontSize: 11.5, color: "var(--stone)", marginTop: 2 }}>
+            {project.type === "teacher"
+              ? <>Assigned by {project.assigner}</>
+              : <>Created by {project.assigner}</>}
+            {project.due && <> · Due {project.due}</>}
+          </div>
+        </div>
+        {/* Status chip */}
+        <div style={{
+          flexShrink: 0, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.03em",
+          padding: "3px 9px", borderRadius: 6,
+          background: isPending ? "#F1F5F9" : `${course.color}18`,
+          color: isPending ? "#64748B" : course.color,
+          border: isPending ? "1px solid #E2E8F0" : `1px solid ${course.color}30`,
+        }}>{project.status}</div>
+      </div>
+
+      {/* Supervisor chip (student projects only) */}
+      {project.supervisor && (
+        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          <I.GraduationCap size={12} color="var(--stone)" />
+          <span style={{ fontSize: 11.5, color: "var(--stone)" }}>Supervised by {project.supervisor}</span>
+        </div>
+      )}
+
+      {/* Awaiting approval banner (pending student group projects) */}
+      {isPending && (
+        <div style={{ display: "flex", alignItems: "center", gap: 6,
+          background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 8, padding: "7px 10px" }}>
+          <I.Clock size={12} color="#94A3B8" />
+          <span style={{ fontSize: 11.5, color: "#64748B" }}>Awaiting {project.supervisor} approval</span>
+        </div>
+      )}
+
+      {/* Group member avatars */}
+      {isGroup && project.members && (
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <div style={{ display: "flex", marginRight: 4 }}>
+            {project.members.map((m, idx) => (
+              <div key={idx} style={{
+                width: 26, height: 26, borderRadius: "50%", border: "2px solid var(--paper)",
+                background: `hsl(${m.hue}, 55%, 52%)`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 9.5, fontWeight: 700, color: "#fff",
+                marginLeft: idx === 0 ? 0 : -7,
+                position: "relative", zIndex: project.members.length - idx,
+              }}>{m.name.split(" ")[0][0]}{m.name.split(" ")[1] ? m.name.split(" ")[1][0] : ""}</div>
+            ))}
+          </div>
+          <span style={{ fontSize: 11.5, color: "var(--stone)" }}>
+            {project.members.map((m) => m.you ? "You" : m.name.split(" ")[0]).join(", ")}
+          </span>
+        </div>
+      )}
+
+      {/* Progress bar (non-pending) */}
+      {!isPending && (
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+            <span style={{ fontSize: 11, color: "var(--stone)" }}>Progress</span>
+            <span style={{ fontSize: 11, fontWeight: 600, color: course.color }}>{project.progress}%</span>
+          </div>
+          <div style={{ height: 6, background: "var(--mist)", borderRadius: 4, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${project.progress}%`,
+              background: course.color, borderRadius: 4, transition: "width 400ms" }} />
+          </div>
+        </div>
+      )}
+
+      {/* View project button */}
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <button style={{
+          padding: "7px 16px", fontSize: 12, fontWeight: 600,
+          background: "transparent", border: `1.5px solid ${course.color}`,
+          borderRadius: 8, color: course.color, cursor: "pointer",
+          transition: "background 120ms",
+        }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = `${course.color}12`; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+        >View project</button>
+      </div>
+    </div>
+  );
+}
+
+function BioProjectsView({ course }) {
+  const [modalOpen, setModalOpen] = React.useState(false);
+
+  return (
+    <>
+      {modalOpen && <BioNewProjectModal course={course} onClose={() => setModalOpen(false)} />}
+      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+        {/* Page header row */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: "var(--ink)" }}>Projects</h2>
+            <div style={{ fontSize: 12.5, color: "var(--stone)", marginTop: 2 }}>
+              {course.name} · {course.teacher}
+            </div>
+          </div>
+          <button
+            onClick={() => setModalOpen(true)}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "9px 16px", fontSize: 13, fontWeight: 600,
+              background: course.color, color: "#fff",
+              border: "none", borderRadius: 10, cursor: "pointer",
+              boxShadow: `0 2px 8px ${course.color}40`, transition: "background 120ms",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.filter = "brightness(0.93)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.filter = "none"; }}
+          >
+            <I.Plus size={14} color="#fff" />
+            New project
+          </button>
+        </div>
+
+        {/* Personal Projects */}
+        <div style={{ background: "var(--paper)", borderRadius: 16, padding: "18px 20px", boxShadow: "var(--shadow-card)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+            <I.User size={15} color={course.color} />
+            <span style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>Personal Projects</span>
+            <span style={{ fontSize: 11.5, color: "var(--stone)", marginLeft: 2 }}>— just you</span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            {BIO_PERSONAL_PROJECTS.map((p) => (
+              <BioProjectCard key={p.id} project={p} course={course} isGroup={false} />
+            ))}
+          </div>
+        </div>
+
+        {/* Group Projects */}
+        <div style={{ background: "var(--paper)", borderRadius: 16, padding: "18px 20px", boxShadow: "var(--shadow-card)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+            <I.Users size={15} color={course.color} />
+            <span style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>Group Projects</span>
+            <span style={{ fontSize: 11.5, color: "var(--stone)", marginLeft: 2 }}>— with classmates</span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            {BIO_GROUP_PROJECTS.map((p) => (
+              <BioProjectCard key={p.id} project={p} course={course} isGroup={true} />
+            ))}
+          </div>
+        </div>
+
+      </div>
+    </>
+  );
+}
+
+/* ─────────── Work tab — Assignments + Projects ─────────── */
+function BioWorkView({ course }) {
+  const C = course.color;
+  const SectionDivider = ({ label }) => (
+    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "2px 0" }}>
+      <div style={{ flex: 1, height: 1, background: "var(--mist)" }}/>
+      <span style={{ fontSize: 11, fontWeight: 700, color: "var(--silver)", letterSpacing: "0.07em", textTransform: "uppercase", whiteSpace: "nowrap" }}>{label}</span>
+      <div style={{ flex: 1, height: 1, background: "var(--mist)" }}/>
+    </div>
+  );
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <SectionDivider label="Assignments"/>
+      <BioAssignmentsView course={course}/>
+      <SectionDivider label="Projects"/>
+      <BioProjectsView course={course}/>
+    </div>
+  );
+}
+
 /* ─────────── Documents view ─────────── */
 function BioDocumentsView({ course }) {
+  const [searchQuery,     setSearchQuery]     = React.useState("");
+  const [searchAllActive, setSearchAllActive] = React.useState(false);
+
   const cats = [
     {
       title: "For Today's Class",
@@ -1897,38 +2284,164 @@ function BioDocumentsView({ course }) {
     },
   ];
 
+  // Flat pool used when "Search all" is active
+  const bioFiles = cats.flatMap((cat) =>
+    cat.items.map((it) => ({ ...it, classTag: "Biology", classColor: "#10B981" }))
+  );
+  const otherFiles = [
+    { name: "Quadratic Functions — Study Guide.pdf",  sub: "Unit 3 test review · 8 pages",       kind: "pdf",   from: "Ms. Chen",     date: "Oct 11", classTag: "Algebra II",  classColor: "#F59E0B" },
+    { name: "Polynomial Long Division — Practice.docx", sub: "With step-by-step worked examples", kind: "doc",   from: "You",          date: "Oct 8",  classTag: "Algebra II",  classColor: "#F59E0B" },
+    { name: "The Great Gatsby — Essay Outline.docx",  sub: "Draft 2 · Due Oct 20",               kind: "doc",   from: "You",          date: "Oct 13", classTag: "English 10",  classColor: "#0EA5E9" },
+    { name: "Romeo & Juliet — Act 3 Close Reading.pdf", sub: "Annotated packet",                 kind: "pdf",   from: "You",          date: "Oct 7",  classTag: "English 10",  classColor: "#0EA5E9" },
+    { name: "Spanish Vocabulary — Unit 5.pdf",        sub: "Flashcard set · 40 words",           kind: "pdf",   from: "Sra. Morales", date: "Oct 10", classTag: "Spanish II",  classColor: "#EC4899" },
+    { name: "WWII Primary Sources Packet.pdf",        sub: "Annotated · Chapters 12–14",         kind: "pdf",   from: "Mr. Kim",      date: "Oct 9",  classTag: "US History",  classColor: "#8B5CF6" },
+    { name: "Cold War Timeline — Notes.docx",         sub: "Your notes from Oct 6 class",        kind: "doc",   from: "You",          date: "Oct 6",  classTag: "US History",  classColor: "#8B5CF6" },
+  ];
+  const allPool = [...bioFiles, ...otherFiles];
+
+  const q = searchQuery.trim().toLowerCase();
+  const filteredAll = q
+    ? allPool.filter((f) => f.name.toLowerCase().includes(q) || f.sub.toLowerCase().includes(q))
+    : allPool;
+
+  // Per-category filtered list for normal (Biology-only) mode
+  const filteredCats = cats.map((cat) => ({
+    ...cat,
+    items: q ? cat.items.filter((it) => it.name.toLowerCase().includes(q) || it.sub.toLowerCase().includes(q)) : cat.items,
+  })).filter((cat) => cat.items.length > 0);
+
   return (
     <div style={{ background: "var(--paper)", borderRadius: 14, padding: "16px 20px", boxShadow: "var(--shadow-card)" }}>
+
       {/* Search + filters */}
-      <div style={{ display: "flex", gap: 10, marginBottom: 14, alignItems: "center" }}>
+      <div style={{ display: "flex", gap: 10, marginBottom: 10, alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, padding: "0 12px", height: 34, background: "var(--bone)", borderRadius: 10 }}>
           <I.Search size={14} color="var(--stone)"/>
-          <input placeholder="Search Biology documents…" style={{ flex: 1, border: "none", background: "transparent", outline: "none", fontSize: 12.5, color: "var(--ink)" }}/>
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={searchAllActive ? "Search all your files…" : "Search Biology documents…"}
+            style={{ flex: 1, border: "none", background: "transparent", outline: "none", fontSize: 12.5, color: "var(--ink)" }}
+          />
         </div>
         <button className="btn btn-secondary btn-sm" style={{ height: 34 }}><I.Filter size={12} color="var(--slate)"/> All types</button>
         <button className="btn btn-secondary btn-sm" style={{ height: 34 }}><I.Calendar size={12} color="var(--slate)"/> Newest</button>
         <button className="btn btn-primary btn-sm" style={{ height: 34, background: course.color, borderColor: "#059669" }}><I.Upload size={12} color="#fff"/> Upload</button>
       </div>
 
-      {cats.map((cat, i) => (
-        <div key={i} style={{ marginBottom: i === cats.length - 1 ? 0 : 18 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-            <div style={{ width: 22, height: 22, borderRadius: 6, background: `${cat.tint}1F`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              {React.createElement(I[cat.icon], { size: 12, color: cat.tint })}
-            </div>
-            <h3 style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)", margin: 0 }}>{cat.title}</h3>
-            <span style={{ fontSize: 11, color: "var(--silver)" }}>{cat.items.length}</span>
-          </div>
-          <div className="bio-doc-grid">
-            {cat.items.map((it, j) => <BioDocCard key={j} {...it} courseColor={course.color}/>)}
-          </div>
+      {/* Scope toggle — Biology only / All my files */}
+      <div style={{ display: "flex", marginBottom: searchAllActive ? 10 : 16 }}>
+        <div style={{ display: "flex", gap: 3, padding: 3, background: "var(--bone)", borderRadius: 10, border: "1px solid var(--mist)" }}>
+          {[
+            { id: false, label: "Biology only" },
+            { id: true,  label: "All my files" },
+          ].map(({ id, label }) => {
+            const active = searchAllActive === id;
+            return (
+              <button
+                key={String(id)}
+                onClick={() => setSearchAllActive(id)}
+                style={{
+                  padding: "5px 16px",
+                  borderRadius: 7,
+                  border: "none",
+                  background: active ? "var(--paper)" : "transparent",
+                  color: active ? course.color : "var(--stone)",
+                  fontSize: 12.5,
+                  fontWeight: active ? 600 : 500,
+                  cursor: "pointer",
+                  boxShadow: active ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                  transition: "background 120ms, color 120ms, box-shadow 120ms",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
-      ))}
+      </div>
+
+      {/* "Searching all files" banner */}
+      {searchAllActive && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, padding: "7px 12px", background: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: 8 }}>
+          <I.Globe size={13} color="#3B82F6"/>
+          <span style={{ flex: 1, fontSize: 12, color: "#1D4ED8", fontWeight: 500 }}>
+            Searching across all your files — not just Biology
+          </span>
+          <button
+            onClick={() => { setSearchAllActive(false); setSearchQuery(""); }}
+            style={{ padding: 0, background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center" }}
+            title="Return to Biology documents"
+          >
+            <I.X size={13} color="#3B82F6"/>
+          </button>
+        </div>
+      )}
+
+      {/* Search-all results */}
+      {searchAllActive && (
+        <div>
+          {!q ? (
+            <div style={{ textAlign: "center", padding: "32px 0", color: "var(--stone)", fontSize: 13 }}>
+              <I.Search size={22} color="var(--silver)" style={{ marginBottom: 8, display: "block", margin: "0 auto 8px" }}/>
+              Start typing to search across all your files
+            </div>
+          ) : filteredAll.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "32px 0", color: "var(--stone)", fontSize: 13 }}>
+              No files matched <strong>"{searchQuery}"</strong>
+            </div>
+          ) : (
+            <div>
+              <div style={{ fontSize: 11.5, color: "var(--stone)", fontWeight: 500, marginBottom: 10 }}>
+                {filteredAll.length} result{filteredAll.length !== 1 ? "s" : ""} across all classes
+              </div>
+              <div className="bio-doc-grid">
+                {filteredAll.map((it, i) => (
+                  <BioDocCard key={i} {...it} courseColor={it.classColor || course.color} classTag={it.classTag} classColor={it.classColor}/>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Normal Biology-only view */}
+      {!searchAllActive && (
+        filteredCats.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "32px 0", color: "var(--stone)", fontSize: 13 }}>
+            No Biology documents matched <strong>"{searchQuery}"</strong>
+            <div style={{ marginTop: 10 }}>
+              <button
+                onClick={() => setSearchAllActive(true)}
+                style={{ fontSize: 12, color: "#3B82F6", background: "transparent", border: "none", cursor: "pointer", textDecoration: "underline", fontWeight: 500 }}
+              >
+                Search all your files instead
+              </button>
+            </div>
+          </div>
+        ) : (
+          filteredCats.map((cat, i) => (
+            <div key={i} style={{ marginBottom: i === filteredCats.length - 1 ? 0 : 18 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <div style={{ width: 22, height: 22, borderRadius: 6, background: `${cat.tint}1F`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {React.createElement(I[cat.icon], { size: 12, color: cat.tint })}
+                </div>
+                <h3 style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)", margin: 0 }}>{cat.title}</h3>
+                <span style={{ fontSize: 11, color: "var(--silver)" }}>{cat.items.length}</span>
+              </div>
+              <div className="bio-doc-grid">
+                {cat.items.map((it, j) => <BioDocCard key={j} {...it} courseColor={course.color}/>)}
+              </div>
+            </div>
+          ))
+        )
+      )}
     </div>
   );
 }
 
-function BioDocCard({ name, sub, kind, from, date, urgent, courseColor }) {
+function BioDocCard({ name, sub, kind, from, date, urgent, courseColor, classTag, classColor }) {
   const KIND = {
     pdf:   { icon: "Document", color: "#EF4444" },
     doc:   { icon: "Document", color: "#0EA5E9" },
@@ -1949,9 +2462,17 @@ function BioDocCard({ name, sub, kind, from, date, urgent, courseColor }) {
         {React.createElement(I[k.icon], { size: 15, color: k.color })}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {name}
-          {urgent && <span style={{ marginLeft: 6, fontSize: 9, padding: "1px 5px", background: courseColor, color: "#fff", borderRadius: 3, fontWeight: 700, letterSpacing: "0.04em" }}>NEEDED NOW</span>}
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {name}
+          </span>
+          {urgent && <span style={{ fontSize: 9, padding: "1px 5px", background: courseColor, color: "#fff", borderRadius: 3, fontWeight: 700, letterSpacing: "0.04em", flexShrink: 0 }}>NEEDED NOW</span>}
+          {classTag && (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "1px 7px", background: `${classColor}18`, color: classColor, borderRadius: 999, fontSize: 10.5, fontWeight: 600, flexShrink: 0 }}>
+              <span style={{ width: 5, height: 5, borderRadius: "50%", background: classColor }}/>
+              {classTag}
+            </span>
+          )}
         </div>
         <div style={{ fontSize: 11, color: "var(--stone)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sub}</div>
         <div style={{ fontSize: 10.5, color: "var(--silver)", marginTop: 1 }}>{from} · {date}</div>
@@ -2037,6 +2558,15 @@ function BioToolsView({ course }) {
           </div>
         </div>
       ))}
+
+      {/* ── Documents section ── */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "4px 0" }}>
+        <div style={{ flex: 1, height: 1, background: "var(--mist)" }}/>
+        <span style={{ fontSize: 11, fontWeight: 700, color: "var(--silver)", letterSpacing: "0.07em", textTransform: "uppercase", whiteSpace: "nowrap" }}>Documents</span>
+        <div style={{ flex: 1, height: 1, background: "var(--mist)" }}/>
+      </div>
+      <BioDocumentsView course={course}/>
+
     </div>
   );
 }
@@ -2138,6 +2668,240 @@ function BioAssignmentsView({ course }) {
   );
 }
 
+/* ─────────── Support & Growth tab ─────────── */
+function BioSupportGrowthView({ course }) {
+  const [helpType, setHelpType] = React.useState("");
+  const [helpNote, setHelpNote] = React.useState("");
+  const [sent, setSent] = React.useState(false);
+  const [showForm, setShowForm] = React.useState(false);
+
+  const contacts = [
+    { name: "Ms. Karen Liu",       role: "Special Education Coordinator", hue: 280 },
+    { name: "Mr. Tony Bravo",      role: "Resource Specialist",           hue: 160 },
+    { name: "Dr. Maria Hernandez", role: "Academic Counselor",            hue: 30  },
+  ];
+
+  const prevRequests = [
+    {
+      type: "Understanding the material",
+      date: "May 5, 2026",
+      status: "Resolved",
+      note: "Needed help with photosynthesis light reactions.",
+    },
+    {
+      type: "Accommodation reminder",
+      date: "May 12, 2026",
+      status: "In Progress",
+      note: "Extended time reminder for upcoming Unit 4 quiz.",
+    },
+  ];
+
+  const statusColor = (s) =>
+    s === "Resolved" ? "#10B981" : s === "In Progress" ? "#0EA5E9" : "#94A3B8";
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+
+      {/* ── SECTION DIVIDER ── */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "2px 0" }}>
+        <div style={{ flex: 1, height: 1, background: "var(--mist)" }}/>
+        <span style={{ fontSize: 11, fontWeight: 700, color: "var(--silver)", letterSpacing: "0.07em", textTransform: "uppercase", whiteSpace: "nowrap" }}>Growth</span>
+        <div style={{ flex: 1, height: 1, background: "var(--mist)" }}/>
+      </div>
+
+      {/* ── GRADE METRICS ── */}
+      <BioGradesView course={course}/>
+
+      {/* ── TWO COLUMNS: Extra Help | Teacher Feedback ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, alignItems: "start" }}>
+
+        {/* Extra Help */}
+        <div style={{ background: "var(--paper)", borderRadius: 14, padding: "20px 22px", boxShadow: "var(--shadow-card)" }}>
+
+        {/* Section header */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 9, background: "#EFF6FF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <I.LifeBuoy size={15} color="#3B82F6"/>
+          </div>
+          <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--ink)", margin: 0 }}>Extra Help</h2>
+        </div>
+        <p style={{ fontSize: 13, color: "var(--stone)", margin: "0 0 18px 42px", lineHeight: 1.5 }}>
+          Your support team is here to help you succeed in this class.
+        </p>
+
+        {/* Support contacts — compact horizontal rows */}
+        <div style={{
+          background: "var(--bone)", borderRadius: 10, border: "1px solid var(--mist)",
+          overflow: "hidden", marginBottom: 14,
+        }}>
+          {contacts.map((ct, i) => (
+            <div key={ct.name} style={{
+              display: "flex", alignItems: "center", gap: 10,
+              padding: "9px 14px",
+              borderTop: i > 0 ? "1px solid var(--mist)" : "none",
+            }}>
+              <StockPortrait name={ct.name} hue={ct.hue} size={32}/>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--ink)", lineHeight: 1.3 }}>{ct.name}</div>
+                <div style={{ fontSize: 11, color: "var(--stone)" }}>{ct.role}</div>
+              </div>
+              <button style={{
+                fontSize: 11, padding: "4px 12px", flexShrink: 0,
+                background: "var(--paper)", border: "1px solid var(--mist)",
+                borderRadius: 6, color: "var(--slate)", fontWeight: 600, cursor: "pointer",
+                display: "inline-flex", alignItems: "center", gap: 4,
+              }}>
+                <I.MessageSquare size={10} color="var(--stone)"/> Message
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Toggle link */}
+        <button
+          onClick={() => setShowForm(!showForm)}
+          style={{
+            background: "none", border: "none", padding: 0, cursor: "pointer",
+            fontSize: 12.5, color: "var(--stone)", fontWeight: 600,
+            display: "inline-flex", alignItems: "center", gap: 5,
+            fontFamily: "inherit",
+          }}
+        >
+          {showForm ? (
+            <>
+              <I.ChevronUp size={13} color="var(--silver)"/>
+              <span>Hide</span>
+            </>
+          ) : (
+            <>
+              <span>Request extra help</span>
+              <I.ChevronDown size={13} color="var(--silver)"/>
+            </>
+          )}
+        </button>
+
+        {/* Expandable: request form + previous requests */}
+        {showForm && (
+          <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 14 }}>
+
+            {/* Request form */}
+            {sent ? (
+              <div style={{
+                background: "#F0FDF4", borderRadius: 10, padding: "14px 16px",
+                display: "flex", alignItems: "center", gap: 10,
+                border: "1px solid #BBF7D0",
+              }}>
+                <I.CheckCircle size={16} color="#10B981" style={{ flexShrink: 0 }}/>
+                <span style={{ fontSize: 13, color: "#065F46", fontWeight: 600 }}>
+                  Request sent — your support team will follow up soon.
+                </span>
+              </div>
+            ) : (
+              <div style={{ background: "var(--bone)", borderRadius: 12, padding: "16px 18px", border: "1px solid var(--mist)" }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)", marginBottom: 12 }}>Request Extra Help</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div>
+                    <label style={{ fontSize: 11.5, fontWeight: 600, color: "var(--slate)", display: "block", marginBottom: 4 }}>
+                      Type of help needed
+                    </label>
+                    <select value={helpType} onChange={(e) => setHelpType(e.target.value)} style={{
+                      width: "100%", fontSize: 12.5, padding: "8px 10px",
+                      border: "1px solid var(--mist)", borderRadius: 8,
+                      background: "var(--paper)", color: helpType ? "var(--ink)" : "var(--stone)",
+                      cursor: "pointer",
+                    }}>
+                      <option value="">Select a type…</option>
+                      <option>Understanding the material</option>
+                      <option>Assignment support</option>
+                      <option>Accommodation reminder</option>
+                      <option>Study skills</option>
+                      <option>Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11.5, fontWeight: 600, color: "var(--slate)", display: "block", marginBottom: 4 }}>
+                      Short note <span style={{ fontWeight: 400, color: "var(--silver)" }}>(optional)</span>
+                    </label>
+                    <textarea
+                      value={helpNote}
+                      onChange={(e) => setHelpNote(e.target.value)}
+                      placeholder="Add any details that would help your team…"
+                      rows={3}
+                      style={{
+                        width: "100%", boxSizing: "border-box", resize: "vertical",
+                        fontSize: 12.5, padding: "8px 10px",
+                        border: "1px solid var(--mist)", borderRadius: 8,
+                        background: "var(--paper)", color: "var(--ink)",
+                        fontFamily: "inherit", lineHeight: 1.5,
+                      }}
+                    />
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <button
+                      disabled={!helpType}
+                      onClick={() => setSent(true)}
+                      style={{
+                        fontSize: 12, padding: "7px 18px",
+                        background: helpType ? course.color : "var(--mist)",
+                        border: "none", borderRadius: 8,
+                        color: helpType ? "#fff" : "var(--silver)",
+                        fontWeight: 700, cursor: helpType ? "pointer" : "default",
+                        transition: "background 0.15s",
+                      }}
+                    >Send request</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Previous requests */}
+            <div>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--ink)", marginBottom: 10 }}>Previous requests</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {prevRequests.map((r, i) => (
+                  <div key={i} style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    background: "var(--bone)", borderRadius: 10, padding: "10px 14px",
+                    border: "1px solid var(--mist)",
+                  }}>
+                    <div style={{
+                      width: 8, height: 8, borderRadius: "50%",
+                      background: statusColor(r.status), flexShrink: 0,
+                    }}/>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--ink)" }}>{r.type}</div>
+                      <div style={{ fontSize: 11, color: "var(--stone)", marginTop: 2 }}>{r.note}</div>
+                    </div>
+                    <div style={{ textAlign: "right", flexShrink: 0 }}>
+                      <div style={{ fontSize: 10.5, color: "var(--silver)" }}>{r.date}</div>
+                      <span style={{
+                        display: "inline-block", marginTop: 3,
+                        fontSize: 10, padding: "2px 8px",
+                        background: `${statusColor(r.status)}1A`,
+                        color: statusColor(r.status),
+                        borderRadius: 4, fontWeight: 700, letterSpacing: "0.03em",
+                      }}>{r.status}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+        {/* Teacher Feedback */}
+        <BioTeacherFeedback course={course}/>
+
+      </div>
+
+      {/* ── WAYS TO IMPROVE ── */}
+      <BioWaysToImprove course={course}/>
+
+    </div>
+  );
+}
+
 function BioGradesView({ course }) {
   const cats = [
     { name: "Tests",         weight: 35, score: 88, color: course.color },
@@ -2185,11 +2949,6 @@ function BioGradesView({ course }) {
         </div>
       </div>
 
-      {/* Ways to Improve + Teacher Feedback side by side */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-        <BioWaysToImprove course={course}/>
-        <BioTeacherFeedback course={course}/>
-      </div>
     </div>
   );
 }
@@ -2361,7 +3120,7 @@ function BioTeacherFeedback({ course }) {
 }
 
 /* ─────────── RIGHT RAIL — Class Chat (always docked) ─────────── */
-function BioRightRail({ course }) {
+function BioRightRail({ course, onSwitchTab }) {
   const [tab, setTab] = React.useState("chat"); // chat · channels · people
 
   return (
@@ -2371,7 +3130,7 @@ function BioRightRail({ course }) {
       flex: 1, minHeight: 0,
       display: "flex", flexDirection: "column",
     }}>
-      <div style={{ display: "flex", borderBottom: "1px solid var(--mist)", background: "var(--bone)" }}>
+      <div style={{ display: "flex", borderBottom: "1px solid var(--mist)", background: "var(--bone)", alignItems: "center" }}>
         {[
           { id: "chat",     label: "Class Chat" },
           { id: "channels", label: "Channels" },
@@ -2387,6 +3146,17 @@ function BioRightRail({ course }) {
             cursor: "pointer",
           }}>{t.label}</button>
         ))}
+        {onSwitchTab && (
+          <button
+            onClick={() => onSwitchTab("comms")}
+            title="Open Communication tab"
+            style={{ padding: "8px 10px", background: "transparent", border: "none",
+              cursor: "pointer", display: "flex", alignItems: "center",
+              color: "var(--stone)", flexShrink: 0 }}
+          >
+            <I.Expand size={13} color="var(--stone)" />
+          </button>
+        )}
       </div>
       {tab === "chat" && (
         <div style={{
@@ -2624,6 +3394,592 @@ function BioPersonRow({ name, role, hue, online, group, courseColor }) {
         {!role && group && <div style={{ fontSize: 10.5, color: "var(--stone)" }}>{group}</div>}
       </div>
       <button style={{ padding: 4, background: "transparent", border: "none", cursor: "pointer", display: "flex" }}><I.MessageCircle size={13} color="var(--stone)"/></button>
+    </div>
+  );
+}
+
+/* ─────────── Communication tab ─────────── */
+function BioCommunicationView({ course }) {
+  const C = course.color;
+
+  /* ── sidebar item definitions ── */
+  const SIDEBAR_ITEMS = [
+    { id: "class-chat",       section: "class",    name: "Class Chat",
+      desc: "Whole-class live channel · moderated by " + course.teacher,
+      color: C,    unread: 0 },
+    { id: "ch-general",       section: "channels", name: "#general",
+      sub: "Whole-class chat",              color: C,         unread: 0 },
+    { id: "ch-announcements", section: "channels", name: "#announcements",
+      sub: "Mr. Evans only — read-only",    color: "#0EA5E9", unread: 1, readOnly: true },
+    { id: "ch-lab-bench-4",   section: "channels", name: "#lab-bench-4",
+      sub: "You, Maya, Jordan",             color: "#F59E0B", unread: 3 },
+    { id: "ch-study-group",   section: "channels", name: "#study-group",
+      sub: "8 classmates · student-run",    color: "#8B5CF6", unread: 0 },
+    { id: "ch-questions",     section: "channels", name: "#questions",
+      sub: "Peers + AI Tutor",              color: "#10B981", unread: 2 },
+    { id: "ch-unit-4",        section: "channels", name: "#unit-4",
+      sub: "Cells & Energy thread",         color: "#EF4444", unread: 0 },
+    { id: "dm-evans",  section: "dms", name: "Mr. Evans",  role: "Teacher",   hue: 220, online: true,  unread: 1 },
+    { id: "dm-maya",   section: "dms", name: "Maya P.",    role: "Classmate", hue: 30,  online: true,  unread: 2 },
+    { id: "dm-jordan", section: "dms", name: "Jordan T.",  role: "Classmate", hue: 280, online: true,  unread: 0 },
+    { id: "parent-lab-safety", section: "parent",
+      subject: "Lab Safety Update",
+      preview: "All students handled chemicals safely during today's yeast lab.",
+      from: "Mr. Evans", time: "Today, 10:40 AM", unread: 0 },
+    { id: "parent-progress",   section: "parent",
+      subject: "Mid-Unit Progress Note",
+      preview: "Alex is performing at 86% (B) for Unit 4. Strong quiz scores.",
+      from: "Mr. Evans", time: "Yesterday, 3:15 PM", unread: 1 },
+  ];
+
+  /* ── per-thread message data ── */
+  const INIT_THREADS = {
+    "class-chat": [
+      { who: "Mr. Evans", role: "teacher", msg: "Goggles on, please. We're starting yeast prep at the 10-minute mark.", time: "10:21 AM", hue: 220 },
+      { who: "Maya P.",   msg: "Bench 4 — got the yeast packets from the front 👍", time: "10:23 AM", hue: 30 },
+      { who: "Jordan T.", msg: "Timers running. 5% sugar started.", time: "10:26 AM", hue: 280 },
+      { who: "Mr. Evans", role: "teacher", msg: "Quick check: who can tell me what gas the bubbles are?", time: "10:28 AM", hue: 220 },
+      { who: "You", self: true, msg: "CO₂ — from glycolysis + fermentation.", time: "10:28 AM" },
+      { who: "Mr. Evans", role: "teacher", msg: "Exactly 🎉 — log it on your data sheet.", time: "10:29 AM", hue: 220, reactions: { "🎉": 4, "💯": 2 } },
+      { who: "Aisha B.",  msg: "Our 10% bubbles are way faster than 5% — is that expected?", time: "10:31 AM", hue: 320 },
+      { who: "Bio Tutor", role: "ai", msg: "Yes — more sugar means more substrate for glycolysis, until enzymes saturate. Compare with 20% to see the plateau.", time: "10:31 AM" },
+    ],
+    "ch-general": [
+      { who: "Mr. Evans", role: "teacher", msg: "Welcome back, everyone! Today's lab is going to be a great one.", time: "10:20 AM", hue: 220 },
+      { who: "Connor W.", msg: "Ready! 💪", time: "10:21 AM", hue: 100 },
+      { who: "You", self: true, msg: "Super excited for the yeast lab 🧪", time: "10:22 AM" },
+    ],
+    "ch-announcements": [
+      { who: "Mr. Evans", role: "teacher", msg: "📋 Lab report due FRIDAY by 11:59 PM. Submit via the Assignments tab. No late submissions accepted.", time: "Yesterday, 3:45 PM", hue: 220 },
+      { who: "Mr. Evans", role: "teacher", msg: "📅 Unit 4 Test scheduled for June 10. Study guide posted in #unit-4.", time: "2 days ago, 9:00 AM", hue: 220, reactions: { "👍": 12 } },
+    ],
+    "ch-lab-bench-4": [
+      { who: "Maya P.",   msg: "Hey — what did you get for bubble rate at 10% sugar?", time: "10:33 AM", hue: 30 },
+      { who: "Jordan T.", msg: "I got ~14 bubbles/min. Maybe 15.", time: "10:34 AM", hue: 280 },
+      { who: "You", self: true, msg: "Same. I'll put 14.5 as our average.", time: "10:35 AM" },
+      { who: "Maya P.",   msg: "Perfect. Alex, can you type up the data table?", time: "10:36 AM", hue: 30 },
+      { who: "You", self: true, msg: "On it — I'll share it in the doc.", time: "10:36 AM" },
+    ],
+    "ch-study-group": [
+      { who: "Priya S.",  msg: "Anyone want to do a video review session before the test?", time: "Yesterday, 4:12 PM", hue: 350 },
+      { who: "You", self: true, msg: "Yes! Sunday afternoon works for me.", time: "Yesterday, 4:45 PM" },
+      { who: "Noah B.",   msg: "I'm in. Zoom or in person?", time: "Yesterday, 5:01 PM", hue: 60 },
+    ],
+    "ch-questions": [
+      { who: "Liam G.",   msg: "Does the electron transport chain happen in the mitochondrial matrix or inner membrane?", time: "10:40 AM", hue: 200 },
+      { who: "Bio Tutor", role: "ai", msg: "Great question! The ETC is embedded in the inner mitochondrial membrane — the matrix is where the Krebs cycle happens.", time: "10:41 AM" },
+      { who: "You", self: true, msg: "That's the part I always mix up — thanks!", time: "10:42 AM" },
+    ],
+    "ch-unit-4": [
+      { who: "Mr. Evans", role: "teacher", msg: "Unit 4 study guide is pinned above. Focus on ATP yield differences between aerobic and anaerobic respiration.", time: "2 days ago, 9:05 AM", hue: 220 },
+      { who: "Rachel K.", msg: "Is glycolysis on the test?", time: "Yesterday, 7:22 PM", hue: 0 },
+      { who: "Mr. Evans", role: "teacher", msg: "Yes — know the net ATP, NADH, and pyruvate outputs.", time: "Yesterday, 7:30 PM", hue: 220 },
+    ],
+    "dm-evans": [
+      { who: "Mr. Evans", role: "teacher", msg: "Hey Alex — your class participation today was really strong. Keep it up!", time: "10:45 AM", hue: 220 },
+      { who: "You", self: true, msg: "Thank you, Mr. Evans! I really enjoy the lab discussions.", time: "11:08 AM" },
+      { who: "Mr. Evans", role: "teacher", msg: "Good work on the lab intro. See you tomorrow.", time: "11:10 AM", hue: 220 },
+    ],
+    "dm-maya": [
+      { who: "Maya P.",   msg: "Did you finish the data table? I'm on #3 still 😅", time: "10:37 AM", hue: 30 },
+      { who: "You", self: true, msg: "Almost! I'll send it to you in 5 mins.", time: "10:38 AM" },
+      { who: "Maya P.",   msg: "Also — do you want to share notes after class?", time: "10:39 AM", hue: 30 },
+      { who: "Maya P.",   msg: "We could meet in the library during free period.", time: "10:39 AM", hue: 30 },
+    ],
+    "dm-jordan": [
+      { who: "Jordan T.", msg: "Ready for Friday's quiz?", time: "Yesterday, 3:20 PM", hue: 280 },
+      { who: "You", self: true, msg: "Getting there! Mostly solid on the Krebs cycle now.", time: "Yesterday, 3:45 PM" },
+      { who: "Jordan T.", msg: "Same. The electron transport chain still trips me up.", time: "Yesterday, 3:46 PM", hue: 280 },
+    ],
+  };
+
+  /* ── parent message full bodies ── */
+  const PARENT_BODIES = {
+    "parent-lab-safety":
+      "Dear Johnson Family,\n\nAll students handled chemicals safely during today's yeast fermentation lab. Alex showed excellent lab technique and contributed meaningfully to group discussion during the debrief.\n\nNo action required — this is a positive update.\n\nBest,\nMr. Daniel Evans\nBiology, Period 3",
+    "parent-progress":
+      "Dear Johnson Family,\n\nI wanted to share a mid-unit progress note for Alex in Biology Period 3.\n\nCurrent Grade: 86% (B)\nUnit: Unit 4 — Cells & Energy\n\nStrengths: Strong quiz performance, lab report draft submitted ahead of schedule, active participation in class discussion.\n\nAreas to watch: The upcoming Unit 4 Test on June 10 covers cellular respiration in depth — please encourage Alex to use the study guide posted in #unit-4.\n\nBest,\nMr. Daniel Evans",
+  };
+
+  const [activeId,  setActiveId]  = React.useState("class-chat");
+  const [threads,   setThreads]   = React.useState(INIT_THREADS);
+  const [drafts,    setDrafts]    = React.useState({});
+  const scroller = React.useRef(null);
+
+  const activeItem = SIDEBAR_ITEMS.find((x) => x.id === activeId) || SIDEBAR_ITEMS[0];
+  const activeMsgs = threads[activeId] || [];
+  const isReadOnly = !!activeItem.readOnly;
+  const isParent   = activeItem.section === "parent";
+
+  React.useEffect(() => {
+    if (scroller.current) scroller.current.scrollTop = scroller.current.scrollHeight;
+  }, [activeId, activeMsgs.length]);
+
+  const send = () => {
+    const d = (drafts[activeId] || "").trim();
+    if (!d || isReadOnly || isParent) return;
+    const now  = new Date();
+    const time = now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    setThreads((prev) => ({
+      ...prev,
+      [activeId]: [...(prev[activeId] || []), { who: "You", self: true, msg: d, time }],
+    }));
+    setDrafts((prev) => ({ ...prev, [activeId]: "" }));
+  };
+
+  /* ── header info for right panel ── */
+  const headerIcon = activeItem.section === "class"
+    ? <div style={{ width: 30, height: 30, borderRadius: 8, background: C + "18", display: "flex", alignItems: "center", justifyContent: "center" }}><I.MessageSquare size={15} color={C}/></div>
+    : activeItem.section === "channels"
+    ? <div style={{ width: 30, height: 30, borderRadius: 8, background: activeItem.color + "18", display: "flex", alignItems: "center", justifyContent: "center" }}><div style={{ width: 10, height: 10, borderRadius: "50%", background: activeItem.color }}/></div>
+    : activeItem.section === "dms"
+    ? <StockPortrait name={activeItem.name} hue={activeItem.hue} size={30}/>
+    : <div style={{ width: 30, height: 30, borderRadius: 8, background: "#E0F2FE", display: "flex", alignItems: "center", justifyContent: "center" }}><I.Home size={14} color="#0EA5E9"/></div>;
+
+  const headerTitle = activeItem.section === "parent" ? activeItem.subject : activeItem.name || activeItem.subject;
+  const headerDesc  = activeItem.section === "class"    ? activeItem.desc
+    : activeItem.section === "channels" ? activeItem.sub
+    : activeItem.section === "dms"      ? activeItem.role + (activeItem.online ? " · Online" : " · Offline")
+    : "From " + activeItem.from + " · " + activeItem.time;
+
+  /* ── sidebar section label ── */
+  const SLabel = ({ label }) => (
+    <div style={{ fontSize: 10, color: "var(--silver)", fontWeight: 700,
+      letterSpacing: "0.07em", textTransform: "uppercase", padding: "10px 14px 3px" }}>
+      {label}
+    </div>
+  );
+
+  /* ── sidebar row styles ── */
+  const rowBase = (isActive) => ({
+    display: "flex", alignItems: "center", gap: 8, width: "100%",
+    padding: "7px 14px", background: isActive ? C + "12" : "transparent",
+    border: "none", cursor: "pointer", textAlign: "left",
+    borderLeft: isActive ? "3px solid " + C : "3px solid transparent",
+    transition: "background 80ms",
+  });
+
+  return (
+    <div style={{ display: "flex", height: "calc(100vh - 260px)", minHeight: 520,
+      background: "var(--paper)", borderRadius: 16,
+      overflow: "hidden", boxShadow: "var(--shadow-card)" }}>
+
+      {/* ═══ LEFT SIDEBAR ═══ */}
+      <div style={{ width: 232, flexShrink: 0, borderRight: "1px solid var(--mist)",
+        background: "var(--bone)", display: "flex", flexDirection: "column", overflowY: "auto" }}>
+
+        {/* Sidebar header */}
+        <div style={{ padding: "14px 14px 10px", borderBottom: "1px solid var(--mist)" }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>{course.name} · {course.period}</div>
+          <div style={{ fontSize: 11, color: "var(--stone)" }}>All communications</div>
+        </div>
+
+        {/* ── Class Chat ── */}
+        <button onClick={() => setActiveId("class-chat")} style={{
+          ...rowBase(activeId === "class-chat"),
+          padding: "10px 14px", gap: 10,
+        }}>
+          <div style={{ width: 32, height: 32, borderRadius: 9, background: C + "1A",
+            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <I.MessageSquare size={15} color={C}/>
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--ink)" }}>Class Chat</div>
+            <div style={{ fontSize: 10.5, color: "var(--stone)" }}>24 online · moderated</div>
+          </div>
+          <span style={{ fontSize: 9, fontWeight: 700, color: C,
+            background: C + "1A", padding: "2px 6px", borderRadius: 4, flexShrink: 0 }}>LIVE</span>
+        </button>
+
+        {/* ── Channels ── */}
+        <SLabel label="Channels" />
+        {SIDEBAR_ITEMS.filter((x) => x.section === "channels").map((item) => (
+          <button key={item.id} onClick={() => setActiveId(item.id)} style={rowBase(activeId === item.id)}>
+            <div style={{ width: 7, height: 7, borderRadius: "50%", background: item.color, flexShrink: 0 }}/>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12, fontWeight: item.unread ? 700 : 500,
+                color: item.unread || activeId === item.id ? "var(--ink)" : "var(--stone)",
+                whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {item.name}
+              </div>
+            </div>
+            {item.unread > 0 && (
+              <span style={{ fontSize: 9.5, fontWeight: 700, color: "#fff",
+                background: "#EF4444", padding: "1px 5px", borderRadius: 999, flexShrink: 0 }}>
+                {item.unread}
+              </span>
+            )}
+          </button>
+        ))}
+        <button style={{
+          margin: "4px 14px 6px", padding: "5px 8px",
+          background: "transparent", border: "1px dashed var(--mist)",
+          borderRadius: 7, cursor: "pointer",
+          fontSize: 11.5, color: "var(--stone)", fontWeight: 500,
+          display: "flex", alignItems: "center", gap: 5,
+        }}>
+          <I.Plus size={10} color="var(--stone)"/> New study-group channel
+        </button>
+
+        {/* ── Direct Messages ── */}
+        <SLabel label="Direct Messages" />
+        {SIDEBAR_ITEMS.filter((x) => x.section === "dms").map((item) => (
+          <button key={item.id} onClick={() => setActiveId(item.id)} style={rowBase(activeId === item.id)}>
+            <div style={{ position: "relative", flexShrink: 0 }}>
+              <StockPortrait name={item.name} hue={item.hue} size={26}/>
+              <div style={{ position: "absolute", bottom: 0, right: -1,
+                width: 8, height: 8, borderRadius: "50%",
+                background: item.online ? "#22C55E" : "#94A3B8",
+                border: "2px solid var(--bone)" }}/>
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12, fontWeight: item.unread ? 700 : 500,
+                color: item.unread || activeId === item.id ? "var(--ink)" : "var(--stone)",
+                whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {item.name}
+              </div>
+              <div style={{ fontSize: 10, color: "var(--silver)" }}>{item.role}</div>
+            </div>
+            {item.unread > 0 && (
+              <span style={{ fontSize: 9.5, fontWeight: 700, color: "#fff",
+                background: C, padding: "1px 5px", borderRadius: 999, flexShrink: 0 }}>
+                {item.unread}
+              </span>
+            )}
+          </button>
+        ))}
+
+        {/* ── Parent Communication ── */}
+        <SLabel label="Parent Communication" />
+        {SIDEBAR_ITEMS.filter((x) => x.section === "parent").map((item) => (
+          <button key={item.id} onClick={() => setActiveId(item.id)} style={{
+            ...rowBase(activeId === item.id),
+            alignItems: "flex-start", padding: "8px 14px", gap: 9,
+          }}>
+            <div style={{ width: 26, height: 26, borderRadius: 7, background: "#E0F2FE",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0, marginTop: 1 }}>
+              <I.Home size={12} color="#0EA5E9"/>
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 11.5, fontWeight: item.unread ? 700 : 600,
+                color: "var(--ink)", marginBottom: 1 }}>{item.subject}</div>
+              <div style={{ fontSize: 10.5, color: "var(--stone)", whiteSpace: "nowrap",
+                overflow: "hidden", textOverflow: "ellipsis" }}>{item.preview}</div>
+            </div>
+            {item.unread > 0 && (
+              <div style={{ width: 7, height: 7, borderRadius: "50%",
+                background: C, flexShrink: 0, marginTop: 5 }}/>
+            )}
+          </button>
+        ))}
+        <div style={{ flex: 1 }}/>
+      </div>
+
+      {/* ═══ RIGHT PANEL ═══ */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+
+        {/* Panel header */}
+        <div style={{ padding: "11px 16px", borderBottom: "1px solid var(--mist)",
+          background: "var(--paper)", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+          {headerIcon}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink)",
+              whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{headerTitle}</div>
+            <div style={{ fontSize: 11, color: "var(--stone)" }}>{headerDesc}</div>
+          </div>
+          {activeItem.section === "class" && (
+            <span style={{ fontSize: 11, fontWeight: 600, color: "#22C55E", flexShrink: 0 }}>● 24 online</span>
+          )}
+          {isReadOnly && (
+            <span style={{ fontSize: 10, fontWeight: 700, color: "#0EA5E9",
+              background: "#E0F2FE", padding: "2px 7px", borderRadius: 4, flexShrink: 0 }}>READ-ONLY</span>
+          )}
+        </div>
+
+        {/* Read-only info bar */}
+        {isReadOnly && (
+          <div style={{ padding: "7px 16px", background: "#F0F9FF",
+            borderBottom: "1px solid #BAE6FD", fontSize: 11.5, color: "#0369A1",
+            display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+            <I.Lock size={12} color="#0369A1"/>
+            Only {course.teacher} can post in this channel.
+          </div>
+        )}
+
+        {/* Live banner for class-chat */}
+        {activeItem.section === "class" && (
+          <div style={{ padding: "7px 16px", background: C + "0F",
+            borderBottom: "1px solid var(--mist)", fontSize: 11.5, color: "var(--stone)",
+            display: "flex", alignItems: "center", gap: 7, flexShrink: 0 }}>
+            <I.Pin size={12} color={C}/>
+            Live during class — moderated by <b style={{ color: "var(--ink)", marginLeft: 3 }}>{course.teacher}</b>
+          </div>
+        )}
+
+        {/* ── Parent message view ── */}
+        {isParent ? (
+          <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px" }}>
+            <div style={{ background: "#F0F9FF", border: "1px solid #BAE6FD",
+              borderRadius: 14, padding: "18px 20px", maxWidth: 600 }}>
+              <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 8 }}>
+                <I.Home size={16} color="#0EA5E9"/>
+                <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink)" }}>{activeItem.subject}</span>
+              </div>
+              <div style={{ fontSize: 11.5, color: "var(--stone)", marginBottom: 14,
+                paddingBottom: 10, borderBottom: "1px solid #BAE6FD" }}>
+                From: {activeItem.from} &nbsp;·&nbsp; To: Johnson Family &nbsp;·&nbsp; {activeItem.time}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--slate)", lineHeight: 1.75,
+                whiteSpace: "pre-wrap", fontFamily: "inherit" }}>
+                {PARENT_BODIES[activeItem.id] || ""}
+              </div>
+            </div>
+            <div style={{ fontSize: 11, color: "var(--silver)", textAlign: "center", marginTop: 16 }}>
+              School-to-home communications are automatically shared with your parent/guardian.
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Message list */}
+            <div ref={scroller} style={{ flex: 1, overflowY: "auto",
+              padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ textAlign: "center", fontSize: 10, color: "var(--silver)",
+                fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", margin: "2px 0 6px" }}>
+                ─── {activeItem.section === "dms" ? "Direct Message" : "Today"} ───
+              </div>
+              {activeMsgs.map((m, i) => <BioChatBubble key={i} m={m} course={course}/>)}
+            </div>
+
+            {/* Composer (hidden for read-only) */}
+            {!isReadOnly && (
+              <div style={{ borderTop: "1px solid var(--mist)", padding: "10px 14px",
+                background: "var(--paper)", flexShrink: 0 }}>
+                {(activeItem.section === "class" || activeItem.id === "ch-general") && (
+                  <div style={{ display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap" }}>
+                    <BioChip icon="Atom"    label={"Question for " + course.teacher} color={C}/>
+                    <BioChip icon="Sparkle" label="Ask Bio Tutor"                    color="#8B5CF6"/>
+                    <BioChip icon="Hand"    label="Raise hand"                        color="#F59E0B"/>
+                  </div>
+                )}
+                <div style={{ display: "flex", gap: 6, alignItems: "center",
+                  padding: "6px 8px", background: "var(--bone)", borderRadius: 10 }}>
+                  <button style={{ padding: 4, background: "transparent", border: "none", cursor: "pointer", display: "flex" }}>
+                    <I.Paperclip size={13} color="var(--stone)"/>
+                  </button>
+                  <input
+                    value={drafts[activeId] || ""}
+                    onChange={(e) => setDrafts((prev) => ({ ...prev, [activeId]: e.target.value }))}
+                    onKeyDown={(e) => { if (e.key === "Enter") send(); }}
+                    placeholder={
+                      activeItem.section === "dms"
+                        ? "Message " + activeItem.name.split(" ")[0] + "…"
+                        : "Message " + (activeItem.name || "the class") + "…"
+                    }
+                    style={{ flex: 1, border: "none", background: "transparent",
+                      outline: "none", fontSize: 12.5, color: "var(--ink)", fontFamily: "inherit" }}
+                  />
+                  <button onClick={send} style={{
+                    background: C, border: "none", borderRadius: 7,
+                    padding: "6px 8px", cursor: "pointer",
+                    display: "flex", alignItems: "center",
+                  }}>
+                    <I.Send size={12} color="#fff"/>
+                  </button>
+                </div>
+                <div style={{ fontSize: 10, color: "var(--silver)", marginTop: 5, textAlign: "center" }}>
+                  {activeItem.section === "dms"
+                    ? "Direct message · private between you and " + activeItem.name
+                    : "Class chat is logged. Be respectful."}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────── Campus map illustration ─────────── */
+function BioCampusMap({ course }) {
+  const C = course.color;
+  return (
+    <div style={{ background: "var(--bone)", borderRadius: 12, border: "1px solid var(--mist)", overflow: "hidden", lineHeight: 0 }}>
+      <svg width="100%" viewBox="0 0 660 360" style={{ display: "block" }} aria-label="Campus map illustration">
+
+        {/* ── Background ── */}
+        <rect width="660" height="360" fill="#F5F3EF"/>
+
+        {/* ── Grass / path strips between building columns ── */}
+        <rect x="232" y="14" width="10" height="127" rx="2" fill="#BBF7D0" opacity="0.8"/>
+        <rect x="412" y="14" width="10" height="127" rx="2" fill="#BBF7D0" opacity="0.8"/>
+        <rect x="332" y="153" width="10" height="139" rx="2" fill="#BBF7D0" opacity="0.8"/>
+
+        {/* ════ TOP ROW ════ */}
+
+        {/* Main Building */}
+        <rect x="14" y="14" width="216" height="127" rx="6" fill="#DBEAFE" stroke="#93C5FD" strokeWidth="1.5"/>
+        <text x="122" y="70" textAnchor="middle" fontSize="11" fontWeight="700" fill="#1E40AF" fontFamily="sans-serif">Main Building</text>
+        <text x="122" y="86" textAnchor="middle" fontSize="9" fill="#3B82F6" fontFamily="sans-serif">Administration · Grades 9–12</text>
+
+        {/* Library */}
+        <rect x="244" y="14" width="166" height="127" rx="6" fill="#EDE9FE" stroke="#C4B5FD" strokeWidth="1.5"/>
+        <text x="327" y="70" textAnchor="middle" fontSize="11" fontWeight="700" fill="#6B21A8" fontFamily="sans-serif">Library</text>
+        <text x="327" y="86" textAnchor="middle" fontSize="9" fill="#7C3AED" fontFamily="sans-serif">Media Center · Resources</text>
+
+        {/* Gym & Athletics */}
+        <rect x="422" y="14" width="224" height="127" rx="6" fill="#FEE2E2" stroke="#FCA5A5" strokeWidth="1.5"/>
+        <text x="534" y="70" textAnchor="middle" fontSize="11" fontWeight="700" fill="#991B1B" fontFamily="sans-serif">Gym &amp; Athletics</text>
+        <text x="534" y="86" textAnchor="middle" fontSize="9" fill="#DC2626" fontFamily="sans-serif">Field · Courts · Weight Room</text>
+
+        {/* ── Walkway: top row → middle row ── */}
+        <rect x="0" y="143" width="660" height="9" fill="#D1D5DB"/>
+        <line x1="0" y1="147" x2="660" y2="147" stroke="#9CA3AF" strokeWidth="0.5" strokeDasharray="10,8"/>
+
+        {/* ════ MIDDLE ROW ════ */}
+
+        {/* Main Office */}
+        <rect x="14" y="154" width="100" height="56" rx="5" fill="#F1F5F9" stroke="#CBD5E1" strokeWidth="1.5"/>
+        <text x="64" y="179" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#334155" fontFamily="sans-serif">Main Office</text>
+        <text x="64" y="195" textAnchor="middle" fontSize="8" fill="#64748B" fontFamily="sans-serif">Room 101</text>
+
+        {/* Counseling Office */}
+        <rect x="124" y="154" width="100" height="56" rx="5" fill="#F1F5F9" stroke="#CBD5E1" strokeWidth="1.5"/>
+        <text x="174" y="179" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#334155" fontFamily="sans-serif">Counseling</text>
+        <text x="174" y="195" textAnchor="middle" fontSize="8" fill="#64748B" fontFamily="sans-serif">Room 103</text>
+
+        {/* Health Office */}
+        <rect x="234" y="154" width="96" height="56" rx="5" fill="#F1F5F9" stroke="#CBD5E1" strokeWidth="1.5"/>
+        <text x="282" y="179" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#334155" fontFamily="sans-serif">Health Office</text>
+        <text x="282" y="195" textAnchor="middle" fontSize="8" fill="#64748B" fontFamily="sans-serif">Room 105</text>
+
+        {/* Cafeteria */}
+        <rect x="14" y="221" width="316" height="71" rx="5" fill="#FEF9C3" stroke="#FDE68A" strokeWidth="1.5"/>
+        <text x="172" y="253" textAnchor="middle" fontSize="11" fontWeight="700" fill="#92400E" fontFamily="sans-serif">Cafeteria</text>
+        <text x="172" y="268" textAnchor="middle" fontSize="9" fill="#B45309" fontFamily="sans-serif">Lunch 11:30 – 12:15</text>
+
+        {/* Science Wing — highlighted */}
+        <rect x="344" y="152" width="302" height="140" rx="6" fill="#D1FAE5" stroke={C} strokeWidth="2.5"/>
+        <rect x="348" y="156" width="294" height="132" rx="4" fill="none" stroke={C} strokeWidth="1" opacity="0.3"/>
+
+        {/* Science Wing labels */}
+        <text x="495" y="172" textAnchor="middle" fontSize="11" fontWeight="700" fill="#065F46" fontFamily="sans-serif">Science Wing</text>
+        <text x="495" y="186" textAnchor="middle" fontSize="8.5" fill="#059669" fontFamily="sans-serif">Rooms 301–310 · Biology · Chemistry · Physics</text>
+
+        {/* YOU ARE HERE map pin */}
+        <path d="M495 198 C483 198 474 208 474 220 C474 235 495 250 495 250 C495 250 516 235 516 220 C516 208 507 198 495 198Z" fill={C}/>
+        <circle cx="495" cy="219" r="6.5" fill="#fff"/>
+        <circle cx="495" cy="219" r="2.5" fill={C}/>
+
+        {/* YOU ARE HERE badge */}
+        <rect x="461" y="254" width="68" height="16" rx="4" fill={C}/>
+        <text x="495" y="266" textAnchor="middle" fontSize="7.5" fontWeight="700" fill="#fff" fontFamily="sans-serif">YOU ARE HERE</text>
+
+        {/* Room 302 callout */}
+        <text x="495" y="283" textAnchor="middle" fontSize="8.5" fill="#065F46" fontFamily="sans-serif">Room 302</text>
+
+        {/* ── Walkway: middle row → parking ── */}
+        <rect x="0" y="295" width="660" height="9" fill="#D1D5DB"/>
+        <line x1="0" y1="299" x2="660" y2="299" stroke="#9CA3AF" strokeWidth="0.5" strokeDasharray="10,8"/>
+
+        {/* ── Parking / Main Entrance ── */}
+        <rect x="0" y="306" width="660" height="46" fill="#CBD5E1"/>
+        {[8,46,84,122,160,198,236,274,312,350,388,426,464,502,540,578,616].map((px, i) => (
+          <rect key={"pk"+i} x={px} y="312" width="34" height="30" rx="1" fill="none" stroke="#9CA3AF" strokeWidth="0.7"/>
+        ))}
+        <text x="330" y="331" textAnchor="middle" fontSize="10.5" fontWeight="600" fill="#475569" fontFamily="sans-serif" letterSpacing="0.5">PARKING · MAIN ENTRANCE</text>
+
+      </svg>
+    </div>
+  );
+}
+
+/* ─────────── Maps & Spaces tab ─────────── */
+function BioMapsSpacesView({ course }) {
+  const C = course.color;
+  const [searchVal, setSearchVal] = React.useState("");
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, alignItems: "start" }}>
+
+      {/* ── Room Layout ── */}
+      <div style={{ background: "var(--paper)", borderRadius: 14, padding: "20px 22px", boxShadow: "var(--shadow-card)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+          <I.MapPin size={15} color={C}/>
+          <span style={{ fontSize: 15, fontWeight: 700, color: "var(--ink)" }}>Room Layout</span>
+          <div style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 5, background: C + "18", border: "1px solid " + C + "38", borderRadius: 8, padding: "4px 10px", fontSize: 11.5, fontWeight: 600, color: C }}>
+            <I.MapPin size={11} color={C}/> Your seat: Bench 4
+          </div>
+        </div>
+
+        {/* Seating map — reuses the Virtual Classroom SVG */}
+        <BioVirtualRoomMap course={course}/>
+
+        {/* Legend */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 16, marginTop: 14 }}>
+          {[
+            { fill: "#F0FDF4", stroke: C,         label: "Your seat"         },
+            { fill: "#E2E8F0", stroke: "#94A3B8",  label: "Lab benches"       },
+            { fill: "#334155", stroke: "#334155",  label: "Teacher area"      },
+            { fill: "#ffffff", stroke: "#EF4444",  label: "Safety equipment"  },
+            { fill: "#99F6E4", stroke: "#0D9488",  label: "Sink"              },
+          ].map((item) => (
+            <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--stone)" }}>
+              <div style={{ width: 12, height: 12, borderRadius: 3, flexShrink: 0, background: item.fill, border: "1.5px solid " + item.stroke }}/>
+              {item.label}
+            </div>
+          ))}
+        </div>
+
+        {/* Note */}
+        <div style={{ marginTop: 12, padding: "10px 14px", background: "var(--bone)", borderRadius: 9, fontSize: 12, color: "var(--stone)", lineHeight: 1.55 }}>
+          Familiarize yourself with your classroom — know where everything is before lab days.
+        </div>
+      </div>
+
+      {/* ── Campus Map ── */}
+      <div style={{ background: "var(--paper)", borderRadius: 14, padding: "20px 22px", boxShadow: "var(--shadow-card)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          <I.MapPin size={15} color={C}/>
+          <span style={{ fontSize: 15, fontWeight: 700, color: "var(--ink)" }}>Campus Map</span>
+        </div>
+
+        {/* Search bar */}
+        <div style={{ position: "relative", marginBottom: 10 }}>
+          <I.Search size={13} color="var(--silver)" style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}/>
+          <input
+            value={searchVal}
+            onChange={(e) => setSearchVal(e.target.value)}
+            placeholder="Find a room or space..."
+            style={{
+              width: "100%", boxSizing: "border-box",
+              padding: "8px 12px 8px 32px",
+              background: "var(--bone)", border: "1.5px solid var(--mist)",
+              borderRadius: 9, fontSize: 13, color: "var(--ink)",
+              outline: "none", fontFamily: "inherit",
+            }}
+          />
+        </div>
+
+        {/* Quick-access chips */}
+        <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+          {["Health Office", "Counseling", "Library"].map((chip) => (
+            <button key={chip} onClick={() => setSearchVal(chip)} style={{
+              padding: "5px 13px", borderRadius: 20,
+              background: "var(--bone)", border: "1.5px solid var(--mist)",
+              fontSize: 12, fontWeight: 500, color: "var(--stone)",
+              cursor: "pointer", fontFamily: "inherit",
+            }}>
+              {chip}
+            </button>
+          ))}
+        </div>
+
+        {/* Campus map illustration */}
+        <BioCampusMap course={course}/>
+      </div>
+
     </div>
   );
 }

@@ -124,7 +124,7 @@ function NavTree({ items, segments, onNav, depth = 0, expandedSet, collapsedSet,
           // pure navigate (used when clicking the row itself)
           const newSegs = segments.slice(0, depth);
           newSegs[depth] = item.id;
-          if (hasChildren && depth === 0) {
+          if (hasChildren && depth === 0 && !item.hasLanding) {
             const firstChild = item.children[0];
             if (firstChild) newSegs.push(firstChild.id);
           }

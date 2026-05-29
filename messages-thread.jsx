@@ -92,16 +92,107 @@ function hueOf(name) {
 
 /* ─────────── Composer ─────────── */
 
+const PROMPT_CHIPS = ["Polite question", "Request feedback", "Schedule meeting", "Thank you note", "Submit homework"];
+
+const DRAFTS = {
+  "Polite question": "Hi Ms. Carter, I hope you're doing well! I had a quick question about the Argument Essay — could you clarify what format you'd like the bibliography in? Thank you so much!",
+  "Request feedback": "Hi Ms. Carter, I've finished a draft of my essay and would really appreciate your feedback when you have a moment. I've attached it below. Thank you!",
+  "Schedule meeting": "Hi Ms. Carter, I'd love to schedule a quick meeting to discuss my progress. Would you have any availability during your office hours this week?",
+  "Thank you note": "Hi Ms. Carter, I just wanted to say thank you for all your help and feedback this semester. It's really made a difference!",
+  "Submit homework": "Hi Ms. Carter, please find my completed Argument Essay attached. I've proofread it and addressed all the feedback from my outline. Let me know if you need anything else!",
+};
+
 function Composer({ placeholder = "Type a message…", showAIBar, aiSuggestions, onAIDismiss, withTabs, hasGuidelineDraft }) {
+  const [aiPanelOpen, setAiPanelOpen] = React.useState(false);
+  const [aiDraft, setAiDraft] = React.useState(null);
+  const [schedModalOpen, setSchedModalOpen] = React.useState(false);
+  const [moreOpen, setMoreOpen] = React.useState(false);
+
+  const aiActive = aiPanelOpen || aiDraft !== null;
+
   return (
     <div style={{ borderTop: "1px solid var(--mist)", padding: "12px 18px 14px" }}>
-      {/* Input */}
+
+      {/* 1. AI Draft card */}
+      {aiDraft !== null && (
+        <div style={{
+          background: "linear-gradient(90deg, rgba(139,92,246,0.06), rgba(59,130,246,0.06))",
+          border: "1px dashed rgba(139,92,246,0.25)",
+          borderRadius: 12,
+          padding: "12px 14px",
+          marginBottom: 10,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+            <I.Sparkle size={12} color="var(--student)"/>
+            <span style={{ fontSize: 11, fontWeight: 600, color: "var(--student-deep)", flex: 1 }}>AI-generated — edit before sending</span>
+            <button
+              onClick={() => setAiDraft(null)}
+              style={{ background: "transparent", border: "none", cursor: "pointer", padding: 2, display: "inline-flex", alignItems: "center" }}
+            >
+              <I.X size={13} color="var(--silver)"/>
+            </button>
+          </div>
+          <p style={{ fontSize: 13, color: "var(--slate)", margin: "0 0 10px", lineHeight: 1.55 }}>{aiDraft}</p>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={() => setAiDraft(null)}
+              style={{ fontSize: 11.5 }}
+            >Use this draft</button>
+            {["Regenerate", "Make shorter", "More formal", "Add details"].map((action) => (
+              <button key={action} style={{
+                display: "inline-flex", alignItems: "center",
+                padding: "4px 10px",
+                background: "var(--paper)",
+                border: "1px solid var(--mist)",
+                borderRadius: 6,
+                fontSize: 11.5, color: "var(--slate)",
+                cursor: "pointer", fontFamily: "inherit",
+              }}>{action}</button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 2. AI prompt chip panel */}
+      {aiPanelOpen && aiDraft === null && (
+        <div style={{
+          marginBottom: 10,
+          padding: "10px 12px",
+          background: "var(--bone)",
+          borderRadius: 10,
+          border: "1px solid var(--mist)",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+            <I.Sparkle size={12} color="var(--student)"/>
+            <span style={{ fontSize: 11, fontWeight: 600, color: "var(--student-deep)" }}>AI Compose Helper — pick a starting point</span>
+          </div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {PROMPT_CHIPS.map((chip) => (
+              <button
+                key={chip}
+                onClick={() => { setAiDraft(DRAFTS[chip]); setAiPanelOpen(false); }}
+                style={{
+                  padding: "5px 11px",
+                  background: "var(--paper)",
+                  border: "1px solid var(--mist)",
+                  borderRadius: 999,
+                  fontSize: 12, color: "var(--ink)",
+                  cursor: "pointer", fontFamily: "inherit", fontWeight: 500,
+                }}
+              >{chip}</button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 3. Input row */}
       <div style={{
         display: "flex", alignItems: "center", gap: 10,
         padding: "10px 14px",
         background: "var(--bone)",
         borderRadius: 22,
-        marginBottom: showAIBar || withTabs ? 10 : 0,
+        marginBottom: 10,
       }}>
         <input
           placeholder={placeholder}
@@ -109,16 +200,52 @@ function Composer({ placeholder = "Type a message…", showAIBar, aiSuggestions,
         />
         <button style={iconBtn}><I.Send size={15} color="var(--student)"/></button>
       </div>
-      {/* Toolbar */}
+
+      {/* 4. Toolbar row */}
+      {moreOpen && (
+        <div style={{
+          display: "flex", gap: 6, padding: "6px 8px 4px",
+          background: "var(--bone)", borderRadius: 8, marginBottom: 6,
+        }}>
+          <ToolbarBtn icon="Calendar" label="Schedule" onClick={() => { setSchedModalOpen(true); setMoreOpen(false); }}/>
+          <ToolbarBtn icon="LayoutTemplate" label="Templates"/>
+        </div>
+      )}
       <div style={{ display: "flex", gap: 4, alignItems: "center", padding: "0 6px", flexWrap: "wrap" }}>
-        <ToolbarBtn icon="Plus"/>
         <ToolbarBtn icon="Edit" label="Format"/>
         <ToolbarBtn icon="Smile" label="Emoji"/>
         <ToolbarBtn icon="Paperclip" label="Attach"/>
         <ToolbarBtn icon="Image" label="Image"/>
         <ToolbarBtn icon="Mic" label="Voice"/>
+        <button
+          title="More options"
+          onClick={() => setMoreOpen((v) => !v)}
+          style={{
+            ...iconBtn,
+            background: moreOpen ? "var(--bone)" : "transparent",
+            color: "var(--stone)",
+          }}
+        >
+          <I.MoreH size={14} color={moreOpen ? "var(--slate)" : "var(--stone)"}/>
+        </button>
         <div style={{ flex: 1 }}/>
-        {withTabs && <ToolbarBtn icon="Sparkle" label="AI Assist" highlight/>}
+        {/* AI Assist button — always visible */}
+        <button
+          onClick={() => { setAiPanelOpen((v) => !v); setAiDraft(null); }}
+          style={{
+            height: 30, padding: "0 10px",
+            display: "inline-flex", alignItems: "center", gap: 5,
+            background: aiActive ? "var(--student-soft)" : "transparent",
+            border: aiActive ? "1px solid rgba(139,92,246,0.25)" : "none",
+            borderRadius: 8,
+            fontSize: 11.5, fontWeight: 500,
+            color: "var(--student)",
+            cursor: "pointer", fontFamily: "inherit",
+          }}
+        >
+          <I.Sparkle size={13} color="var(--student)"/>
+          AI Assist
+        </button>
         <button style={{
           height: 32, padding: "0 14px",
           background: "var(--student)", color: "#fff",
@@ -129,7 +256,8 @@ function Composer({ placeholder = "Type a message…", showAIBar, aiSuggestions,
           <I.Send size={13} color="#fff"/> Send
         </button>
       </div>
-      {/* AI suggestion bar */}
+
+      {/* 5. Legacy showAIBar */}
       {showAIBar && (
         <div style={{
           marginTop: 12,
@@ -142,7 +270,7 @@ function Composer({ placeholder = "Type a message…", showAIBar, aiSuggestions,
           <I.Sparkle size={14} color="var(--student)"/>
           <span style={{ fontSize: 12, fontWeight: 600, color: "var(--student-deep)" }}>AI Assistant</span>
           <div style={{ display: "flex", gap: 6, flex: 1, flexWrap: "wrap" }}>
-            {aiSuggestions.map((s, i) => (
+            {aiSuggestions && aiSuggestions.map((s, i) => (
               <button key={i} style={{
                 padding: "5px 10px",
                 background: "var(--paper)",
@@ -158,6 +286,9 @@ function Composer({ placeholder = "Type a message…", showAIBar, aiSuggestions,
           </button>
         </div>
       )}
+
+      {/* Schedule modal */}
+      {schedModalOpen && <ScheduleModal onClose={() => setSchedModalOpen(false)}/>}
     </div>
   );
 }
@@ -168,10 +299,10 @@ const iconBtn = {
   display: "inline-flex", alignItems: "center", justifyContent: "center",
 };
 
-function ToolbarBtn({ icon, label, highlight }) {
+function ToolbarBtn({ icon, label, highlight, onClick }) {
   const Icon = I[icon];
   return (
-    <button title={label} style={{
+    <button title={label} onClick={onClick} style={{
       ...iconBtn,
       width: label ? "auto" : 30,
       padding: label ? "0 10px" : 0,
@@ -195,6 +326,66 @@ function DaySep({ label }) {
       <div style={{ flex: 1, height: 1, background: "var(--mist)" }}/>
       <span style={{ fontSize: 11, color: "var(--silver)", fontWeight: 600, letterSpacing: "0.04em" }}>{label}</span>
       <div style={{ flex: 1, height: 1, background: "var(--mist)" }}/>
+    </div>
+  );
+}
+
+/* ─────────── Schedule Message Modal ─────────── */
+
+function ScheduleModal({ onClose }) {
+  const [date, setDate] = React.useState("");
+  const [time, setTime] = React.useState("08:00");
+  const inputStyle = {
+    padding: "9px 12px", borderRadius: 8,
+    border: "1px solid var(--mist)",
+    background: "var(--bone)", fontSize: 13,
+    fontFamily: "inherit", color: "var(--ink)", outline: "none",
+    width: "100%", boxSizing: "border-box",
+  };
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0,
+        background: "rgba(15,23,42,0.45)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        zIndex: 200,
+      }}
+    >
+      <div onClick={(e) => e.stopPropagation()} style={{
+        width: 360, background: "var(--paper)", borderRadius: 20, padding: 28,
+        boxShadow: "0 20px 60px rgba(15,23,42,0.18)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 22 }}>
+          <div style={{
+            width: 42, height: 42, borderRadius: 12,
+            background: "#E0F2FE",
+            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+          }}>
+            <I.Calendar size={20} color="#0EA5E9"/>
+          </div>
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: "var(--ink)" }}>Schedule Message</h3>
+            <p style={{ fontSize: 12, color: "var(--stone)", margin: 0 }}>Choose when to send this message</p>
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 22 }}>
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, color: "var(--slate)", display: "block", marginBottom: 5 }}>Date</label>
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={inputStyle}/>
+          </div>
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, color: "var(--slate)", display: "block", marginBottom: 5 }}>Time</label>
+            <input type="time" value={time} onChange={(e) => setTime(e.target.value)} style={inputStyle}/>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="btn btn-primary" style={{ flex: 1 }} onClick={onClose}>
+            <I.Calendar size={13} color="#fff"/> Schedule Send
+          </button>
+          <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -285,8 +476,6 @@ function QuickReply({ label, tint }) {
 
 function ClassChannelThread({ id }) {
   const conv = ConvData[id];
-  const tabs = ["Messages", "Files", "Class Info", "Assignments", "People", "Settings"];
-  const [tab, setTab] = React.useState("Messages");
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "var(--paper)", borderRadius: 16, boxShadow: "var(--shadow-card)", overflow: "hidden" }}>
       <ThreadHeader
@@ -301,9 +490,6 @@ function ClassChannelThread({ id }) {
           <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--stone)", marginRight: 6 }}>24</span>
           <button style={iconBtn}><I.Info size={16} color="var(--stone)"/></button>
         </>}
-        tabs={tabs}
-        activeTab={tab}
-        onTab={setTab}
       />
       {/* Announcement banner */}
       <div style={{
@@ -319,7 +505,7 @@ function ClassChannelThread({ id }) {
         </div>
         <div style={{ flex: 1, fontSize: 12.5, color: "#78350F" }}>
           <div style={{ fontWeight: 600, marginBottom: 1 }}>Announcement</div>
-          Next week we'll begin our persuasive writing unit. Be sure to review the resources in the Files tab!
+          Next week we'll begin our persuasive writing unit. Be sure to review the class resources in the panel on the right!
           <div style={{ fontSize: 10.5, color: "#A16207", marginTop: 2 }}>Posted by Ms. Carter · Feb 25</div>
         </div>
         <button style={iconBtn}><I.X size={12} color="#A16207"/></button>

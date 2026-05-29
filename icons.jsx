@@ -142,6 +142,13 @@
     Share: ["Share2", "Share"],
     File: ["File", "FileText"],
     FileText: "FileText",
+    UserCheck:      "UserCheck",
+    Stethoscope:    "Stethoscope",
+    HeartHandshake: "HeartHandshake",
+    Dumbbell:       "Dumbbell",
+    UsersRound:     "UsersRound",
+    LifeBuoy:       ["LifeBuoy", "Lifebuoy"],
+    HeartPulse:     "HeartPulse",
   };
 
   // Pick the first available Lucide icon name from a list of candidates.

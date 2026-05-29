@@ -22,10 +22,22 @@
   --success: var(--parent);
   --warning: var(--services);
   --error: var(--public);
+  --danger: #E04C4C;
+  --info: #3B82F6;
 
   --success-soft: #E8F4EE;
   --warning-soft: #FBEFE2;
   --error-soft: #F7E2DF;
+
+  /* Tint-scale aliases used by calendar and other components */
+  --danger-50:  #FEF3F2;
+  --danger-100: #FECDCA;
+  --danger-300: #F87171;
+  --info-50:    #EFF6FF;
+  --info-100:   #DBEAFE;
+  --info-300:   #93C5FD;
+  --success-50: var(--success-soft);
+  --warning-50: var(--warning-soft);
 
   /* Neutrals — warm-cool slate, never hard greys */
   --ink: #0F172A;

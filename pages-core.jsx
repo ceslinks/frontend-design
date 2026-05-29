@@ -437,15 +437,282 @@ function PortfolioPage({ segments }) {
 }
 
 /* ============================================================
+   MY TIME — landing page  (/my-time)
+   ============================================================ */
+function MyTimePage({ segments }) {
+  const [addOpen, setAddOpen] = React.useState(false);
+
+  // Layer style helper — CAL_LAYERS is loaded after this file; safe at render time
+  const LS = (key) => {
+    const L = window.CAL_LAYERS || {};
+    return L[key] || { color: "#94A3B8", bg: "#F1F5F9", border: "#E2E8F0" };
+  };
+
+  // ── static mock data (mirrors calendar-data.jsx, week May 11–17 2026) ──────
+  const todayEvts = [
+    { start: "8:00 AM",  title: "Chemistry",           layer: "classes",     sub: "Room 203 · Mr. Evans" },
+    { start: "10:00 AM", title: "Biology Lab Report",  layer: "assignments", sub: "Work Session" },
+    { start: "12:00 PM", title: "Lunch",               layer: "school-cal",  sub: "Cafeteria" },
+    { start: "1:00 PM",  title: "English 10",          layer: "classes",     sub: "Room 302 · Mr. Carter" },
+    { start: "3:00 PM",  title: "Club Meeting",        layer: "activities",  sub: "Robotics Club" },
+    { start: "6:00 PM",  title: "Gym / Workout",       layer: "health",      sub: "" },
+  ];
+
+  const deadlines = [
+    { title: "Biology Lab Report", layer: "assignments", day: "Mon 5/11", status: "overdue" },
+    { title: "Math Problem Set",   layer: "assignments", day: "Tue 5/12", status: "overdue" },
+    { title: "History Essay",      layer: "assignments", day: "Thu 5/14", status: "upcoming" },
+  ];
+
+  const highlights = [
+    { title: "Chemistry Quiz",    layer: "exams",      day: "Thu, May 14", time: "10:00–11:00 AM" },
+    { title: "Museum Field Trip", layer: "activities", day: "Thu, May 14", time: "3:30–7:30 PM" },
+    { title: "SAT Exam",          layer: "satact",     day: "Sat, May 16", time: "8:00 AM – 1:00 PM" },
+    { title: "Family Trip",       layer: "personal",   day: "Sat–Sun 5/16–17", time: "All day" },
+  ];
+
+  const focusBlocks = [
+    { day: "Mon", title: "Study Block",    time: "10:00–11:00 AM", hrs: 1   },
+    { day: "Mon", title: "Focus Time",     time: "6:30–8:30 PM",   hrs: 2   },
+    { day: "Tue", title: "Study Group",    time: "4:00–5:30 PM",   hrs: 1.5 },
+    { day: "Tue", title: "Review Notes",   time: "7:00–8:30 PM",   hrs: 1.5 },
+    { day: "Fri", title: "Free / Study",   time: "10:00–11:30 AM", hrs: 1.5 },
+    { day: "Fri", title: "Focus Time",     time: "7:00–8:30 PM",   hrs: 1.5 },
+  ];
+  const totalHrs = focusBlocks.reduce((s, b) => s + b.hrs, 0);
+
+  // Status badge styles (no new tokens)
+  const SS = {
+    overdue:     { bg: "#FEE2E2", fg: "#B91C1C", label: "Overdue" },
+    "due-today": { bg: "#FEF3C7", fg: "#A16207", label: "Due Today" },
+    upcoming:    { bg: "#DCFCE7", fg: "#15803D", label: "Due Soon" },
+  };
+
+  // Sub-section nav card data (icon components resolved eagerly to avoid dynamic JSX names)
+  const navCards = [
+    { href: "#/my-time/my-schedule",   IC: I.Clock,     fg: "#3B82F6", bg: "#EFF6FF", label: "My Schedule",   desc: "Today's classes & day view" },
+    { href: "#/my-time/my-calendar",   IC: I.Calendar,  fg: "#7C3AED", bg: "#F5F3FF", label: "My Calendar",   desc: "Full week, month & year view" },
+    { href: "#/my-time/study-planner", IC: I.Lightbulb, fg: "#16A34A", bg: "#F0FDF4", label: "Study Planner", desc: "AI-personalized study plans" },
+  ];
+
+  return (
+    <Page segments={segments} title="My Time" emoji="⏰" lede="Plan smarter. Stay ahead.">
+
+      {/* ── Sub-section quick-links ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 22 }}>
+        {navCards.map(({ href, IC, fg, bg, label, desc }) => (
+          <a key={href} href={href} style={{ textDecoration: "none" }}>
+            <div className="card" style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer", transition: "transform 120ms" }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}>
+              <div style={{ width: 38, height: 38, borderRadius: 10, background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <IC size={18} color={fg}/>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink)" }}>{label}</div>
+                <div style={{ fontSize: 11.5, color: "var(--stone)", marginTop: 1 }}>{desc}</div>
+              </div>
+              <I.ChevronRight size={14} color="var(--silver)"/>
+            </div>
+          </a>
+        ))}
+      </div>
+
+      {/* ── Two-column layout ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 300px", gap: 18 }}>
+
+        {/* ── LEFT: Today's Schedule + Study Stats ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+
+          {/* TODAY'S SCHEDULE card */}
+          <div className="card" style={{ padding: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <div>
+                <div className="t-eyebrow" style={{ marginBottom: 3 }}>TODAY'S SCHEDULE</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "var(--ink)" }}>Wednesday, May 13</div>
+              </div>
+              <a href="#/my-time/my-schedule" style={{ fontSize: 12, color: "var(--student-deep)", fontWeight: 600, textDecoration: "none" }}>Full schedule →</a>
+            </div>
+
+            {/* Featured next-up event */}
+            <div style={{ background: "#EFF6FF", border: "1.5px solid #BFDBFE", borderRadius: 14, padding: "14px 16px", marginBottom: 16, display: "flex", gap: 12, alignItems: "flex-start" }}>
+              <div style={{ width: 4, alignSelf: "stretch", minHeight: 40, borderRadius: 2, background: "#3B82F6", flexShrink: 0 }}/>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 10.5, fontWeight: 700, color: "#3B82F6", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Next Up</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "var(--ink)" }}>Chemistry</div>
+                <div style={{ fontSize: 12, color: "var(--stone)", marginTop: 2 }}>8:00–9:15 AM · Room 203 · Mr. Evans</div>
+              </div>
+              <div style={{ background: "#DBEAFE", color: "#1D4ED8", borderRadius: 8, padding: "5px 10px", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap", flexShrink: 0 }}>
+                In 25 min
+              </div>
+            </div>
+
+            {/* Remaining events */}
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {todayEvts.slice(1).map((ev, i) => {
+                const L = LS(ev.layer);
+                return (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", borderBottom: i < todayEvts.length - 2 ? "1px solid var(--mist)" : "none" }}>
+                    <div style={{ width: 8, height: 8, borderRadius: 999, background: L.color, flexShrink: 0 }}/>
+                    <div style={{ width: 70, fontSize: 11.5, color: "var(--silver)", fontWeight: 500, flexShrink: 0 }}>{ev.start}</div>
+                    <div style={{ flex: 1, fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{ev.title}</div>
+                    {ev.sub && <div style={{ fontSize: 11.5, color: "var(--stone)" }}>{ev.sub}</div>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* STUDY STATS & FOCUS TIME card */}
+          <div className="card" style={{ padding: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <div>
+                <div className="t-eyebrow" style={{ marginBottom: 3 }}>STUDY STATS &amp; FOCUS TIME</div>
+                <div style={{ fontSize: 13, color: "var(--stone)" }}>This week · May 11–17</div>
+              </div>
+              <a href="#/my-time/study-planner" style={{ fontSize: 12, color: "var(--student-deep)", fontWeight: 600, textDecoration: "none" }}>Study Planner →</a>
+            </div>
+
+            {/* 3 stat pills */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginBottom: 18 }}>
+              {[
+                { value: "6",              label: "Sessions",   bg: "#F0F9FF", fg: "#0EA5E9" },
+                { value: totalHrs + " h",  label: "Focus time", bg: "#F0FDF4", fg: "#16A34A" },
+                { value: "🔥 3",           label: "Day streak", bg: "#FFF7ED", fg: "#EA8C2A" },
+              ].map((s, i) => (
+                <div key={i} style={{ textAlign: "center", padding: "12px 8px", borderRadius: 12, background: s.bg }}>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: s.fg, lineHeight: 1.1 }}>{s.value}</div>
+                  <div style={{ fontSize: 11, color: "var(--stone)", marginTop: 3 }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Focus block list */}
+            <div className="t-eyebrow" style={{ fontSize: 10, marginBottom: 8 }}>SCHEDULED FOCUS BLOCKS</div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {focusBlocks.map((b, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 0", borderBottom: i < focusBlocks.length - 1 ? "1px solid var(--mist)" : "none" }}>
+                  <div style={{ width: 8, height: 8, borderRadius: 999, background: "#0EA5E9", flexShrink: 0 }}/>
+                  <div style={{ width: 30, fontSize: 11, fontWeight: 700, color: "var(--stone)", flexShrink: 0 }}>{b.day}</div>
+                  <div style={{ flex: 1, fontSize: 12.5, fontWeight: 500, color: "var(--ink)" }}>{b.title}</div>
+                  <div style={{ fontSize: 11.5, color: "var(--silver)" }}>{b.time}</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#0EA5E9", minWidth: 30, textAlign: "right" }}>{b.hrs}h</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── RIGHT RAIL ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+          {/* Quick Add CTA */}
+          <button
+            onClick={() => setAddOpen(true)}
+            style={{ width: "100%", padding: "12px 0", borderRadius: 12, border: "none", background: "var(--student)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "inherit", boxShadow: "0 2px 8px rgba(124,58,237,0.28)" }}
+          >
+            <I.Plus size={15} color="#fff"/> + Add Event or Task
+          </button>
+
+          {/* UPCOMING DEADLINES */}
+          <div className="card" style={{ padding: 18 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <div className="t-eyebrow">UPCOMING DEADLINES</div>
+              <a href="#/my-todo" style={{ fontSize: 11, color: "var(--student-deep)", fontWeight: 600, textDecoration: "none" }}>To Do →</a>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {deadlines.map((d, i) => {
+                const L = LS(d.layer);
+                const ss = SS[d.status] || SS.upcoming;
+                return (
+                  <div key={i} style={{ display: "flex", gap: 10, padding: "10px 0", borderBottom: i < deadlines.length - 1 ? "1px solid var(--mist)" : "none", alignItems: "flex-start" }}>
+                    <div style={{ width: 3, alignSelf: "stretch", minHeight: 34, borderRadius: 2, background: L.color, flexShrink: 0 }}/>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", marginBottom: 4 }}>{d.title}</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontSize: 11, color: "var(--silver)" }}>{d.day}</span>
+                        <span style={{ padding: "1px 7px", borderRadius: 999, fontSize: 10, fontWeight: 700, background: ss.bg, color: ss.fg }}>{ss.label}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* CALENDAR HIGHLIGHTS */}
+          <div className="card" style={{ padding: 18 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <div className="t-eyebrow">THIS WEEK'S HIGHLIGHTS</div>
+              <a href="#/my-time/my-calendar" style={{ fontSize: 11, color: "var(--student-deep)", fontWeight: 600, textDecoration: "none" }}>Calendar →</a>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {highlights.map((h, i) => {
+                const L = LS(h.layer);
+                return (
+                  <div key={i} style={{ display: "flex", gap: 10, padding: "10px 0", borderBottom: i < highlights.length - 1 ? "1px solid var(--mist)" : "none", alignItems: "flex-start" }}>
+                    <div style={{ width: 10, height: 10, borderRadius: 3, background: L.color, flexShrink: 0, marginTop: 3 }}/>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", marginBottom: 2 }}>{h.title}</div>
+                      <div style={{ fontSize: 11.5, color: "var(--stone)" }}>{h.day}</div>
+                      {h.time && <div style={{ fontSize: 11, color: "var(--silver)", marginTop: 1 }}>{h.time}</div>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* AI TIP */}
+          <div className="card" style={{ padding: 16, background: "linear-gradient(135deg, var(--student-soft) 0%, #FAF5FF 100%)", border: "none" }}>
+            <div style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 10, background: "var(--student)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <I.Sparkle size={15} color="#fff"/>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)", marginBottom: 4 }}>LINKS AI Tip</div>
+                <div style={{ fontSize: 11.5, color: "var(--stone)", lineHeight: 1.55 }}>Chemistry Quiz on Thursday. Review electrochemistry — your weakest unit last week. Block 45 min tonight for maximum impact.</div>
+              </div>
+            </div>
+            <a href="#/my-time/study-planner" style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600, color: "var(--student-deep)", textDecoration: "none" }}>
+              Open Study Planner <I.ArrowRight size={11} color="var(--student)"/>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Add Modal — CAL_AddModal is registered by calendar-views.jsx (loaded after this file) */}
+      {addOpen && (() => { const M = window.CAL_AddModal; return M ? <M onClose={() => setAddOpen(false)}/> : null; })()}
+    </Page>
+  );
+}
+
+/* ============================================================
    Route handlers — wired into app.jsx via window["renderRoute_<l1>"]
    ============================================================ */
 window.renderRoute_my_todo = ({ segments, navigate }) => <TodoPage segments={segments} navigate={navigate}/>;
 window["renderRoute_my-todo"] = ({ segments, navigate }) => <TodoPage segments={segments} navigate={navigate}/>;
 window["renderRoute_my-time"] = ({ segments, navigate }) => {
-  if (segments[1] === "my-calendar") return <CalendarPage segments={segments} navigate={navigate}/>;
-  if (segments[1] === "my-schedule") return <MySchedulePage segments={segments}/>;
-  if (segments[1] === "study-planner") return <StudyPlannerPage segments={segments} navigate={navigate}/>;
-  return <StubRoute segments={segments}/>;
+  if (segments[1] === "my-calendar") {
+    const Cal = window.CalendarPage;
+    return <Cal segments={segments} navigate={navigate}/>;
+  }
+  if (segments[1] === "my-schedule") {
+    if (segments[2] === "projects") {
+      const ProjMgr = window.ProjectManagerPage;
+      return ProjMgr ? <ProjMgr segments={segments} navigate={navigate}/> : <StubRoute segments={segments}/>;
+    }
+    return <MySchedulePage segments={segments}/>;
+  }
+  if (segments[1] === "study-planner") {
+    if (segments[2] === "generate") {
+      const Gen = window.StudyPlannerGeneratePage;
+      return Gen ? <Gen segments={segments} navigate={navigate}/> : <StudyPlannerPage segments={segments} navigate={navigate}/>;
+    }
+    return <StudyPlannerPage segments={segments} navigate={navigate}/>;
+  }
+  // Landing page — no sub-route
+  return <MyTimePage segments={segments} navigate={navigate}/>;
 };
 window["renderRoute_my-tools"] = ({ segments, navigate }) => {
   // Sub-routes: my-tools/<tool-id> opens that tool's surface

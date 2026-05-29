@@ -10,6 +10,7 @@ const ClassesData = {
     topic: "Quadratic Functions",
     sessionLine: "9:00 AM–9:50 AM · Virtual",
     ctaLabel: "Join Virtual Class",
+    assignmentCount: 3,
   },
   biology: {
     id: "biology", name: "Biology", teacher: "Mr. Evans", period: "Period 3",
@@ -21,6 +22,7 @@ const ClassesData = {
     sessionLine: "Starts in 15 min · Room 302",
     sessionIcon: true,
     ctaLabel: "Join Class",
+    assignmentCount: 2,
   },
   english10: {
     id: "english10", name: "English 10", teacher: "Mrs. Lee", period: "Period 4",
@@ -30,6 +32,7 @@ const ClassesData = {
     topic: "Unit 2 · Argument & Persuasion",
     sessionLine: "11:15 AM–12:00 PM · Room 210",
     ctaLabel: "View Class",
+    assignmentCount: 4,
   },
   ushistory: {
     id: "ushistory", name: "US History", teacher: "Mr. Rodriguez", period: "Period 5",
@@ -40,6 +43,7 @@ const ClassesData = {
     sessionLine: "1:10 PM–1:55 PM · Room 105",
     ctaLabel: "View Details",
     ctaStyle: "outlined",
+    assignmentCount: 1,
   },
   spanish: {
     id: "spanish", name: "Spanish II", teacher: "Sra. Martinez", teacherShort: "Sra. Martinez",
@@ -50,6 +54,7 @@ const ClassesData = {
     topic: "Unidad 3 · La Vida Cotidiana",
     sessionLine: "Next check-in: Thu · 2:00 PM",
     ctaLabel: "Open Study Plan",
+    assignmentCount: 2,
   },
 };
 window.ClassesData = ClassesData;
@@ -74,7 +79,8 @@ function ClassesOverview() {
   const [helpClass, setHelpClass] = React.useState(null);
   const [customizeOpen, setCustomizeOpen] = React.useState(false);
   const [activityTab, setActivityTab] = React.useState(0); // 0=Alerts, 1=Activity
-  const [sections, setSections] = React.useState({ activity: true, assignments: true, today: true, glance: true });
+  const [sections, setSections] = React.useState({ activity: true, assignments: true, today: true, glance: true, messages: true });
+  const [demoState, setDemoState] = React.useState("loaded"); // "loaded" | "empty" | "loading"
   const toggleSection = (key) => setSections((s) => ({ ...s, [key]: !s[key] }));
   const custRef = React.useRef(null);
   React.useEffect(() => {
@@ -83,8 +89,16 @@ function ClassesOverview() {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [customizeOpen]);
-  const visibleColCount = [sections.activity, sections.assignments, sections.today].filter(Boolean).length;
-  const colTemplate = visibleColCount === 3 ? "1.05fr 1fr 1fr" : visibleColCount === 2 ? "1fr 1fr" : "1fr";
+  // Inject skeleton-pulse keyframe CSS once
+  React.useEffect(() => {
+    if (document.getElementById("sk-styles")) return;
+    const s = document.createElement("style");
+    s.id = "sk-styles";
+    s.textContent = `@keyframes sk-shimmer{0%{opacity:1}50%{opacity:.38}100%{opacity:1}}.skeleton-pulse{background:var(--bone);animation:sk-shimmer 1.6s ease-in-out infinite;}`;
+    document.head.appendChild(s);
+  }, []);
+  const anyLeft  = sections.activity || sections.assignments || sections.today;
+  const showBottom = (anyLeft || sections.messages) && demoState !== "empty";
   return (
     <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 18 }}>
       {helpClass && <ExtraHelpModal classId={helpClass} onClose={() => setHelpClass(null)}/>}
@@ -100,6 +114,20 @@ function ClassesOverview() {
           </button>
           {customizeOpen && <CustomizePanel sections={sections} onToggle={toggleSection}/>}
         </div>
+        {/* Demo state picker */}
+        <div style={{ display: "flex", gap: 2, padding: 3, background: "var(--bone)", borderRadius: 8 }}>
+          {[["loaded","Loaded"],["empty","Empty"],["loading","Loading"]].map(([val, label]) => (
+            <button key={val} onClick={() => setDemoState(val)} style={{
+              padding: "4px 8px",
+              background: demoState === val ? "var(--paper)" : "transparent",
+              border: "none", borderRadius: 6, cursor: "pointer",
+              fontSize: 11, fontWeight: demoState === val ? 600 : 400,
+              color: demoState === val ? "var(--student)" : "var(--stone)",
+              boxShadow: demoState === val ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
+              transition: "all 100ms",
+            }}>{label}</button>
+          ))}
+        </div>
         <div style={{ display: "flex", gap: 2, padding: 3, background: "var(--bone)", borderRadius: 8 }}>
           <button onClick={() => setListView(false)} style={{ padding: 6, background: !listView ? "var(--paper)" : "transparent", border: "none", borderRadius: 6, cursor: "pointer", boxShadow: !listView ? "0 1px 2px rgba(0,0,0,0.06)" : "none" }}><I.GridView size={14} color={!listView ? "var(--student)" : "var(--stone)"}/></button>
           <button onClick={() => setListView(true)}  style={{ padding: 6, background: listView  ? "var(--paper)" : "transparent", border: "none", borderRadius: 6, cursor: "pointer", boxShadow: listView  ? "0 1px 2px rgba(0,0,0,0.06)" : "none" }}><I.ListView size={14} color={listView  ? "var(--student)" : "var(--stone)"}/></button>
@@ -110,15 +138,21 @@ function ClassesOverview() {
       <div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
           <h2 className="t-h2" style={{ fontSize: 16, margin: 0 }}>Your Classes</h2>
-          {!listView && (
+          {!listView && demoState === "loaded" && (
             <a href="#" onClick={(e) => { e.preventDefault(); setShowAllClasses((v) => !v); }} style={{ fontSize: 12.5, color: "var(--student)", textDecoration: "none", fontWeight: 600 }}>
               {showAllClasses ? "Show less" : "See all classes"}
             </a>
           )}
         </div>
-        {listView ? (
+        {demoState === "loading" ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12 }}>
+            {[...Array(5)].map((_, i) => <SkeletonClassCard key={i}/>)}
+          </div>
+        ) : demoState === "empty" ? (
+          <ClassesEmptyState/>
+        ) : listView ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {Object.values(ClassesData).map((c) => <ClassRow key={c.id} c={c} onRequestHelp={setHelpClass}/>)}
+            {Object.values(ClassesData).map((c) => <ClassListRow key={c.id} c={c} onRequestHelp={setHelpClass}/>)}
           </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: showAllClasses ? "repeat(auto-fill, minmax(280px, 1fr))" : "repeat(5, 1fr)", gap: 12 }}>
@@ -128,7 +162,7 @@ function ClassesOverview() {
       </div>
 
       {/* At a glance */}
-      {sections.glance && (
+      {sections.glance && demoState !== "empty" && (
         <Card>
           <CardHeader title="At a Glance"/>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
@@ -140,40 +174,12 @@ function ClassesOverview() {
         </Card>
       )}
 
-      {/* Three-column body */}
-      {visibleColCount > 0 && (
-        <div style={{ display: "grid", gridTemplateColumns: colTemplate, gap: 14 }}>
-          {/* Recent activity */}
-          {sections.activity && (
-            <Card>
-              <CardHeader title="Recent Activity"/>
-              <Tabs items={["Alerts", "Activity"]} active={activityTab} onChange={setActivityTab}/>
-              {activityTab === 0 && (
-                <>
-                  <AlertRow border="#EF4444" icon="Bell" iconColor="#EF4444" title="Quadratic Functions Worksheet · Algebra II" sub="Was due today at 11:59 PM" time="Just now"/>
-                  <AlertRow border="#EF4444" icon="Bell" iconColor="#EF4444" title="Cell Structure Quiz · Biology" sub="Due tonight at 11:59 PM" time="In 4 hours"/>
-                  <AlertRow border="#F59E0B" icon="Bell" iconColor="#F59E0B" title="Lab reports + safety goggles · Biology" sub="Bring tomorrow" time="From Mr. Evans"/>
-                  <AlertRow border="#0EA5E9" icon="Calendar" iconColor="#0EA5E9" title="Industrial Revolution DBQ · US History" sub="Due in 3 days" time="Oct 18"/>
-                </>
-              )}
-              {activityTab === 1 && (
-                <>
-                  <ActivityRow color="#8B5CF6" icon="Document" who="Mr. Carter" what="posted a new assignment in" target="Algebra II" detail="Quadratic Functions Worksheet" time="15 min ago"/>
-                  <ActivityRow color="#10B981" icon="Bell" who="Mr. Evans" what="posted an announcement in" target="Biology" detail="Lab tomorrow — bring your lab reports" time="1 hour ago"/>
-                  <ActivityRow color="#0EA5E9" icon="MessageCircle" who="Mrs. Lee" what="replied to your comment in" target="English 10" detail={'"Great insight on the theme!"'} time="2 hours ago"/>
-                  <ActivityRow color="#F59E0B" icon="Document" who="" what="New assignment in" target="US History" detail="The Industrial Revolution DBQ" time="3 hours ago"/>
-                  <ActivityRow color="#EF4444" icon="MessageCircle" who="Sra. Martinez" what="sent a message in" target="Spanish II" detail="Don't forget the speaking activity!" time="Yesterday"/>
-                  <a href="#" style={{ display: "block", padding: "8px 0 0", fontSize: 12.5, color: "var(--student)", textAlign: "center", textDecoration: "none", fontWeight: 600 }}>View all activity →</a>
-                </>
-              )}
-            </Card>
-          )}
+      {/* 2×2 grid: Today | Messages  /  Assignments | Recent Activity */}
+      {showBottom && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, alignItems: "stretch" }}>
 
-          {/* Assignments */}
-          {sections.assignments && <AssignmentsPanel/>}
-
-          {/* Today */}
-          {sections.today && (
+          {/* ── Row 1 left: Today ── */}
+          {sections.today ? (
             <Card>
               <CardHeader title="Today" right={<a href="#" style={{ fontSize: 12, color: "var(--student)", textDecoration: "none", fontWeight: 600 }}>View Calendar</a>}/>
               <ScheduleRow time="9:00 AM" color="#8B5CF6" name="Algebra II (LIVE)" sub="Ms. Carter" tag="LIVE NOW" tagColor="#EF4444" cta="Join"/>
@@ -203,7 +209,39 @@ function ClassesOverview() {
                 </div>
               </div>
             </Card>
-          )}
+          ) : <div/>}
+
+          {/* ── Row 1 right: Messages ── */}
+          {sections.messages ? <MessagesBoardPanel/> : <div/>}
+
+          {/* ── Row 2 left: Assignments ── */}
+          {sections.assignments ? <AssignmentsPanel/> : <div/>}
+
+          {/* ── Row 2 right: Recent Activity ── */}
+          {sections.activity ? (
+            <Card>
+              <CardHeader title="Recent Activity"/>
+              <Tabs items={["Alerts", "Activity"]} active={activityTab} onChange={setActivityTab}/>
+              {activityTab === 0 && (
+                <>
+                  <AlertRow border="#EF4444" icon="Bell" iconColor="#EF4444" title="Quadratic Functions Worksheet · Algebra II" sub="Was due today at 11:59 PM" time="Just now"/>
+                  <AlertRow border="#EF4444" icon="Bell" iconColor="#EF4444" title="Cell Structure Quiz · Biology" sub="Due tonight at 11:59 PM" time="In 4 hours"/>
+                  <AlertRow border="#F59E0B" icon="Bell" iconColor="#F59E0B" title="Lab reports + safety goggles · Biology" sub="Bring tomorrow" time="From Mr. Evans"/>
+                  <AlertRow border="#0EA5E9" icon="Calendar" iconColor="#0EA5E9" title="Industrial Revolution DBQ · US History" sub="Due in 3 days" time="Oct 18"/>
+                </>
+              )}
+              {activityTab === 1 && (
+                <>
+                  <ActivityRow color="#8B5CF6" icon="Document" who="Mr. Carter" what="posted a new assignment in" target="Algebra II" detail="Quadratic Functions Worksheet" time="15 min ago"/>
+                  <ActivityRow color="#10B981" icon="Bell" who="Mr. Evans" what="posted an announcement in" target="Biology" detail="Lab tomorrow — bring your lab reports" time="1 hour ago"/>
+                  <ActivityRow color="#0EA5E9" icon="MessageCircle" who="Mrs. Lee" what="replied to your comment in" target="English 10" detail={'"Great insight on the theme!"'} time="2 hours ago"/>
+                  <ActivityRow color="#F59E0B" icon="Document" who="" what="New assignment in" target="US History" detail="The Industrial Revolution DBQ" time="3 hours ago"/>
+                  <ActivityRow color="#EF4444" icon="MessageCircle" who="Sra. Martinez" what="sent a message in" target="Spanish II" detail="Don't forget the speaking activity!" time="Yesterday"/>
+                  <a href="#" style={{ display: "block", padding: "8px 0 0", fontSize: 12.5, color: "var(--student)", textAlign: "center", textDecoration: "none", fontWeight: 600 }}>View all activity →</a>
+                </>
+              )}
+            </Card>
+          ) : <div/>}
         </div>
       )}
 
@@ -224,6 +262,7 @@ function CustomizePanel({ sections, onToggle }) {
     { key: "activity",    label: "Recent Activity" },
     { key: "assignments", label: "Assignments" },
     { key: "today",       label: "Today" },
+    { key: "messages",    label: "Messages" },
     { key: "glance",      label: "At a Glance" },
   ];
   return (
@@ -356,7 +395,7 @@ function ExtraHelpModal({ classId, onClose }) {
 }
 
 /* ─────────── Class row (list view) ─────────── */
-function ClassRow({ c, onRequestHelp }) {
+function ClassListRow({ c, onRequestHelp }) {
   const live = c.status === "LIVE NOW" || c.status === "LIVE";
   const sessionLine = c.startsIn || c.schedule || (live ? "Live now" : c.subtitle) || "";
   return (
@@ -411,7 +450,20 @@ function ClassCard({ c, onRequestHelp }) {
       boxShadow: "var(--shadow-card)",
       border: live ? `1.5px solid ${c.color}40` : "1px solid var(--mist)",
       cursor: "pointer",
+      position: "relative",
     }}>
+      {/* Assignment count badge */}
+      {c.assignmentCount > 0 && (
+        <span style={{
+          position: "absolute", top: 9, right: 9,
+          background: "rgba(139,92,246,0.12)", color: "#8B5CF6",
+          fontSize: 9.5, fontWeight: 700,
+          padding: "2px 7px", borderRadius: 999,
+          lineHeight: "15px",
+          border: "1px solid rgba(139,92,246,0.2)",
+          pointerEvents: "none",
+        }}>{c.assignmentCount}</span>
+      )}
       {/* Row 1: avatar + name/teacher + status badge */}
       <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
         <div style={{ width: 30, height: 30, borderRadius: 8, background: `${c.color}1F`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -472,6 +524,83 @@ function ClassCard({ c, onRequestHelp }) {
         }}
       >Request Help</button>
     </a>
+  );
+}
+
+/* ─────────── Skeleton class card ─────────── */
+function SkeletonClassCard() {
+  const S = ({ w = "100%", h = 12, r = 4, mb = 0, mt = 0 }) => (
+    <div className="skeleton-pulse" style={{ width: w, height: h, borderRadius: r, marginBottom: mb, marginTop: mt }}/>
+  );
+  return (
+    <div style={{
+      display: "flex", flexDirection: "column",
+      background: "var(--paper)", borderRadius: 14,
+      padding: "14px 14px 12px",
+      boxShadow: "var(--shadow-card)",
+      border: "1px solid var(--mist)",
+      gap: 0,
+    }}>
+      {/* Row 1: avatar + name/teacher placeholder */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 10 }}>
+        <div className="skeleton-pulse" style={{ width: 30, height: 30, borderRadius: 8, flexShrink: 0 }}/>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 5 }}>
+          <S w="72%" h={12}/>
+          <S w="50%" h={10}/>
+        </div>
+      </div>
+      {/* Row 2: topic */}
+      <S w="88%" h={12} mb={6}/>
+      {/* Row 3: session line */}
+      <S w="60%" h={11} mb={10}/>
+      {/* Row 4: CTA button */}
+      <div className="skeleton-pulse" style={{ width: "100%", height: 30, borderRadius: 8, marginBottom: 10 }}/>
+      {/* Row 5: progress label + bar */}
+      <S w="40%" h={9} mb={5}/>
+      <div className="skeleton-pulse" style={{ width: "100%", height: 4, borderRadius: 2, marginBottom: 12 }}/>
+      {/* Row 6: Request Help link */}
+      <S w="45%" h={10} mt={2} r={4}/>
+    </div>
+  );
+}
+
+/* ─────────── Empty state (no enrolled classes) ─────────── */
+function ClassesEmptyState() {
+  return (
+    <div style={{
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      padding: "52px 24px 60px", textAlign: "center",
+    }}>
+      {/* Illustration placeholder */}
+      <div style={{
+        width: 88, height: 88, borderRadius: 22,
+        background: "linear-gradient(135deg, rgba(139,92,246,0.10), rgba(59,130,246,0.06))",
+        border: "1.5px dashed rgba(139,92,246,0.25)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        marginBottom: 22,
+      }}>
+        <I.Book size={38} color="rgba(139,92,246,0.5)"/>
+      </div>
+      {/* Headline */}
+      <div style={{
+        fontSize: 15.5, fontWeight: 700, color: "var(--ink)",
+        marginBottom: 8, fontFamily: "Poppins, sans-serif",
+        maxWidth: 360,
+      }}>
+        No classes yet — your enrollment is being processed
+      </div>
+      {/* Subline */}
+      <div style={{
+        fontSize: 13, color: "var(--stone)", maxWidth: 340,
+        lineHeight: 1.65, marginBottom: 20,
+      }}>
+        Check back soon or contact your counselor if you have questions.
+      </div>
+      {/* CTA link */}
+      <a href="#/my-counselors" style={{
+        fontSize: 13, color: "var(--student)", fontWeight: 600, textDecoration: "none",
+      }}>Message your counselor →</a>
+    </div>
   );
 }
 
@@ -642,6 +771,194 @@ function Glance({ icon, color, value, label, sub, wide, streak }) {
         {label && <div style={{ fontSize: 11.5, color: "var(--stone)", fontWeight: 500 }}>{label}</div>}
         {sub && <div style={{ fontSize: 11, color: "var(--silver)" }}>{sub}</div>}
         {streak && <div style={{ fontSize: 12, marginTop: 1 }}>3 badges earned · <a href="#" style={{ color: "var(--student)", fontWeight: 600, textDecoration: "none" }}>View all →</a></div>}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────── Messages board panel (sidebar) ─────────── */
+function MessagesBoardPanel() {
+  const [replyVal, setReplyVal] = React.useState("");
+
+  const threads = [
+    {
+      id: "evans-bio",
+      initials: "ME",
+      color: "#10B981",
+      name: "Mr. Evans",
+      context: "Biology",
+      preview: "Don't forget to bring your lab report tomorrow!",
+      time: "10 min ago",
+      unread: true,
+    },
+    {
+      id: "maya-bio",
+      initials: "MP",
+      color: "#8B5CF6",
+      name: "Maya P.",
+      context: "Biology · #lab-bench-4",
+      preview: "Are you working on the cell structure diagram yet?",
+      time: "1 hr ago",
+      unread: true,
+    },
+    {
+      id: "wilson-alg",
+      initials: "MW",
+      color: "#8B5CF6",
+      name: "Mr. Wilson",
+      context: "Algebra II",
+      preview: "Great work on yesterday's quiz! Let me know if you need any help.",
+      time: "Yesterday",
+      unread: true,
+    },
+  ];
+
+  return (
+    <div style={{
+      background: "var(--paper)",
+      borderRadius: 14,
+      boxShadow: "var(--shadow-card)",
+      display: "flex",
+      flexDirection: "column",
+      height: "100%",
+      overflow: "hidden",
+      boxSizing: "border-box",
+    }}>
+      {/* ── Header ── */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "14px 16px 12px",
+        borderBottom: "1px solid var(--mist)",
+        flexShrink: 0,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)", fontFamily: "Poppins, sans-serif" }}>Messages</span>
+          <span style={{
+            fontSize: 10, fontWeight: 700, padding: "1px 7px",
+            background: "var(--student)", color: "#fff",
+            borderRadius: 10, lineHeight: "17px",
+          }}>3</span>
+        </div>
+        <I.MessageSquare size={14} color="var(--stone)"/>
+      </div>
+
+      {/* ── Search ── */}
+      <div style={{
+        padding: "8px 12px",
+        borderBottom: "1px solid var(--mist)",
+        flexShrink: 0,
+      }}>
+        <div style={{
+          display: "flex", alignItems: "center", gap: 8,
+          background: "var(--bone)", borderRadius: 8, padding: "8px 10px",
+        }}>
+          <I.Search size={13} color="var(--silver)"/>
+          <input
+            placeholder="Search messages..."
+            style={{ flex: 1, border: "none", background: "transparent", outline: "none", fontSize: 12.5, color: "var(--ink)", fontFamily: "inherit" }}
+          />
+        </div>
+      </div>
+
+      {/* ── Thread list (scrollable) ── */}
+      <div style={{ flex: 1, overflowY: "auto" }}>
+        {threads.map((t, i) => (
+          <a
+            key={t.id}
+            href="#/messages"
+            style={{
+              display: "flex", gap: 10,
+              padding: "11px 16px",
+              borderBottom: i < threads.length - 1 ? "1px solid var(--mist)" : "none",
+              textDecoration: "none",
+              alignItems: "flex-start",
+              background: "transparent",
+              transition: "background 100ms",
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = "var(--bone)"}
+            onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+          >
+            {/* Avatar */}
+            <div style={{
+              width: 34, height: 34, borderRadius: 10,
+              background: `${t.color}20`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: t.color }}>{t.initials}</span>
+            </div>
+
+            {/* Text */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 4 }}>
+                <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--ink)" }}>{t.name}</span>
+                <span style={{ fontSize: 10.5, color: "var(--silver)", flexShrink: 0 }}>{t.time}</span>
+              </div>
+              <div style={{ fontSize: 11, color: "var(--student)", fontWeight: 600, marginTop: 1 }}>{t.context}</div>
+              <div style={{
+                fontSize: 12, color: "var(--stone)", marginTop: 3,
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              }}>{t.preview}</div>
+            </div>
+
+            {/* Unread dot */}
+            {t.unread && (
+              <div style={{
+                width: 7, height: 7, borderRadius: "50%",
+                background: "var(--student)", flexShrink: 0, marginTop: 5,
+              }}/>
+            )}
+          </a>
+        ))}
+      </div>
+
+      {/* ── View all link ── */}
+      <div style={{
+        padding: "8px 16px",
+        borderTop: "1px solid var(--mist)",
+        flexShrink: 0,
+      }}>
+        <a href="#/messages" style={{
+          fontSize: 12.5, color: "var(--student)",
+          textDecoration: "none", fontWeight: 600,
+        }}>View all messages →</a>
+      </div>
+
+      {/* ── Reply input ── */}
+      <div style={{
+        padding: "10px 14px 14px",
+        display: "flex", gap: 8, alignItems: "center",
+        flexShrink: 0,
+      }}>
+        <input
+          type="text"
+          value={replyVal}
+          onChange={(e) => setReplyVal(e.target.value)}
+          placeholder="Reply to a message…"
+          style={{
+            flex: 1, height: 34, borderRadius: 10,
+            border: "1px solid var(--mist)",
+            background: "var(--bone)",
+            padding: "0 12px",
+            fontSize: 12.5, color: "var(--ink)",
+            fontFamily: "inherit", outline: "none",
+          }}
+          onFocus={(e) => e.target.style.borderColor = "var(--student)"}
+          onBlur={(e) => e.target.style.borderColor = "var(--mist)"}
+        />
+        <button
+          onClick={() => setReplyVal("")}
+          style={{
+            width: 34, height: 34, borderRadius: 10,
+            background: replyVal.trim() ? "var(--student)" : "var(--mist)",
+            border: "none",
+            cursor: replyVal.trim() ? "pointer" : "default",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            flexShrink: 0, transition: "background 150ms",
+          }}
+        >
+          <I.ArrowRight size={14} color={replyVal.trim() ? "#fff" : "var(--stone)"}/>
+        </button>
       </div>
     </div>
   );

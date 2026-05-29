@@ -9,9 +9,20 @@ const Portrait = window.MessagesPortrait;
 const GroupTile = window.MessagesGroupTile;
 const CONVS = window.MessagesData;
 
+// Safety demo trigger config — staged scenarios on specific conversations
+const SAFETY_DEMO_IDS = {
+  "carter": [
+    { label: "Soft Flag", kind: "soft" },
+    { label: "Crisis",    kind: "crisis" },
+  ],
+  "jordan": [
+    { label: "Hard Block", kind: "hard" },
+  ],
+};
+
 /* ─────────── Left rail: conversation list ─────────── */
 
-function ConversationListItem({ id, conv, active, onClick, sectioned }) {
+function ConversationListItem({ id, conv, active, onClick, sectioned, onSafetyDemo }) {
   const accent = "#8B5CF6";
   const showPin = conv.pinned;
   const isActive = active === id;
@@ -19,8 +30,8 @@ function ConversationListItem({ id, conv, active, onClick, sectioned }) {
     <button
       onClick={() => onClick(id)}
       style={{
-        width: "100%", display: "flex", gap: 10,
-        padding: "10px 12px",
+        width: "100%", display: "flex", gap: 8,
+        padding: "8px 12px",
         border: "none",
         background: isActive ? "var(--student-soft)" : "transparent",
         borderRadius: 12,
@@ -43,15 +54,30 @@ function ConversationListItem({ id, conv, active, onClick, sectioned }) {
             color: "var(--ink)",
             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
           }}>{conv.who}</span>
-          <span style={{ fontSize: 11, color: "var(--silver)", flexShrink: 0 }}>{conv.time}</span>
+          <span style={{ fontSize: 10.5, color: "var(--silver)", flexShrink: 0 }}>{conv.time}</span>
         </div>
         <div style={{
-          fontSize: 12, color: "var(--stone)", marginTop: 2,
+          fontSize: 11.5, color: "var(--stone)", marginTop: 1,
           display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical",
           overflow: "hidden", textOverflow: "ellipsis",
         }}>{conv.last}</div>
         {conv.dueLine && (
           <div style={{ fontSize: 10.5, color: accent, marginTop: 2, fontWeight: 500 }}>{conv.dueLine}</div>
+        )}
+        {onSafetyDemo && SAFETY_DEMO_IDS[id] && (
+          <div style={{ display: "flex", gap: 4, marginTop: 5, alignItems: "center" }} onClick={(e) => e.stopPropagation()}>
+            <span style={{ fontSize: 9, color: "var(--silver)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>demo:</span>
+            {SAFETY_DEMO_IDS[id].map((t) => (
+              <button key={t.kind} onClick={() => onSafetyDemo(t.kind)} style={{
+                padding: "2px 7px",
+                background: "var(--bone)",
+                border: "1px solid var(--mist)",
+                borderRadius: 999,
+                fontSize: 10, color: "var(--stone)",
+                cursor: "pointer", fontFamily: "inherit",
+              }}>{t.label}</button>
+            ))}
+          </div>
         )}
       </div>
       {conv.unread > 0 && (
@@ -71,14 +97,23 @@ function ConversationListItem({ id, conv, active, onClick, sectioned }) {
   );
 }
 
-function ConvList({ active, onSelect, filter, setFilter }) {
-  const tabs = ["All", "Direct", "Groups", "Classes", "Unread"];
+function ConvList({ active, onSelect, filter, onSafetyDemo }) {
 
   // Group conversations into sections
   const pinned = ["english10", "argument-essay", "biology-lab"];
   const direct = ["jordan", "carter", "taylor", "marcus", "avery"];
   const classes = ["alg2", "biology101", "ushistory", "spanish3"];
   const groups = ["study-group-chem", "robotics", "wyn-soccer", "history-team", "study-buddies"];
+
+  // Context-aware middle tab state — resets when top-level filter changes
+  const [middleTab, setMiddleTab] = React.useState("All");
+  React.useEffect(() => { setMiddleTab("All"); }, [filter]);
+
+  // Middle tab definitions per top-level filter
+  const MIDDLE_TAB_OPTIONS = {
+    "Direct":  ["All", "Direct (1:1)", "Groups"],
+  };
+  const middleTabOptions = MIDDLE_TAB_OPTIONS[filter] || null;
 
   const tabFilter = (id) => {
     if (filter === "All") return true;
@@ -90,22 +125,26 @@ function ConvList({ active, onSelect, filter, setFilter }) {
   };
 
   const filteredPinned = pinned.filter(tabFilter).filter(id => CONVS[id]);
-  const filteredDirect = direct.filter(tabFilter).filter(id => CONVS[id]);
+  const filteredDirect = direct.filter(id => CONVS[id] && (CONVS[id].kind === "dm" || CONVS[id].kind === "dm-teacher"));
   const filteredClasses = classes.filter(tabFilter).filter(id => CONVS[id]);
-  const filteredGroups = groups.filter(tabFilter).filter(id => CONVS[id]);
+  const filteredGroups = groups.filter(id => CONVS[id]);
+  const filteredClassChannels = filteredClasses.filter(id => CONVS[id].kind === "class-channel");
+  const filteredAssignments   = [...pinned, ...classes].filter(id => CONVS[id] && CONVS[id].kind === "assignment");
 
   const Section = ({ title, ids }) => ids.length === 0 ? null : (
-    <div style={{ marginBottom: 8 }}>
-      <div className="t-eyebrow" style={{
-        fontSize: 10, padding: "6px 12px 6px", color: "var(--silver)",
-        display: "flex", alignItems: "center", gap: 6,
-      }}>
-        {title === "Pinned" && <I.Pin size={10} color="var(--silver)"/>}
-        {title}
-      </div>
+    <div style={{ marginBottom: 6 }}>
+      {title && (
+        <div className="t-eyebrow" style={{
+          fontSize: 10, padding: "5px 12px 4px", color: "var(--silver)",
+          display: "flex", alignItems: "center", gap: 6,
+        }}>
+          {title === "Pinned" && <I.Pin size={10} color="var(--silver)"/>}
+          {title}
+        </div>
+      )}
       <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
         {ids.map((id) => (
-          <ConversationListItem key={id} id={id} conv={CONVS[id]} active={active} onClick={onSelect}/>
+          <ConversationListItem key={id} id={id} conv={CONVS[id]} active={active} onClick={onSelect} onSafetyDemo={onSafetyDemo}/>
         ))}
       </div>
     </div>
@@ -138,26 +177,6 @@ function ConvList({ active, onSelect, filter, setFilter }) {
             <I.Compose size={16} color="#fff"/>
           </button>
         </div>
-        {/* Tabs */}
-        <div style={{ display: "flex", gap: 4, borderBottom: "1px solid var(--mist)", marginBottom: 10 }}>
-          {tabs.map((t) => (
-            <button
-              key={t}
-              onClick={() => setFilter(t)}
-              style={{
-                padding: "8px 8px",
-                border: "none",
-                background: "transparent",
-                color: filter === t ? "var(--student)" : "var(--stone)",
-                fontSize: 12.5,
-                fontWeight: filter === t ? 600 : 500,
-                cursor: "pointer",
-                borderBottom: filter === t ? "2px solid var(--student)" : "2px solid transparent",
-                marginBottom: -1,
-              }}
-            >{t}</button>
-          ))}
-        </div>
         {/* Search + filter */}
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
           <div style={{
@@ -180,22 +199,61 @@ function ConvList({ active, onSelect, filter, setFilter }) {
         </div>
       </div>
 
+      {/* Context-aware middle tabs — appear only when relevant */}
+      {middleTabOptions && (
+        <div style={{
+          display: "flex", gap: 0,
+          borderBottom: "1px solid var(--mist)",
+          padding: "0 12px",
+          flexShrink: 0,
+        }}>
+          {middleTabOptions.map((t) => {
+            const on = middleTab === t;
+            return (
+              <button key={t} onClick={() => setMiddleTab(t)} style={{
+                padding: "8px 10px", border: "none", background: "transparent",
+                color: on ? "var(--student)" : "var(--stone)",
+                fontSize: 12, fontWeight: on ? 600 : 500,
+                cursor: "pointer",
+                borderBottom: on ? "2px solid var(--student)" : "2px solid transparent",
+                marginBottom: -1, whiteSpace: "nowrap",
+                fontFamily: "inherit",
+              }}>{t}</button>
+            );
+          })}
+        </div>
+      )}
+
       {/* List */}
       <div style={{ flex: 1, overflowY: "auto", padding: "4px 8px 8px" }}>
-        <Section title="Pinned" ids={filteredPinned}/>
-        <Section title={filter === "Direct" ? "Direct Messages" : "My Classes"} ids={filter === "Direct" ? filteredDirect : filteredClasses}/>
-        {filter !== "Direct" && <Section title="Direct Messages" ids={filteredDirect}/>}
-        <Section title="Groups" ids={filteredGroups}/>
+        {filter === "Direct" ? (
+          <>
+            {(middleTab === "All" || middleTab === "Direct (1:1)") && (
+              <>
+                <Section title="Pinned" ids={pinned.filter(id => CONVS[id] && (CONVS[id].kind === "dm" || CONVS[id].kind === "dm-teacher"))}/>
+                <Section title="Direct Messages" ids={filteredDirect}/>
+              </>
+            )}
+            {(middleTab === "All" || middleTab === "Groups") && (
+              <Section title="Group Chats" ids={filteredGroups}/>
+            )}
+          </>
+        ) : filter === "Classes" ? (
+          <>
+            <Section title="Pinned" ids={filteredPinned.filter(id => CONVS[id].kind === "class-channel")}/>
+            <Section title="Class Channels" ids={filteredClassChannels}/>
+            <Section title="Assignment Threads" ids={filteredAssignments}/>
+          </>
+        ) : (
+          <>
+            <Section title="Pinned" ids={filteredPinned}/>
+            <Section title="Direct Messages" ids={direct.filter(id => CONVS[id] && tabFilter(id))}/>
+            <Section title="Groups" ids={filter === "All" ? filteredGroups : []}/>
+          </>
+        )}
       </div>
 
-      {/* Footer */}
-      <div style={{
-        padding: "10px 16px", borderTop: "1px solid var(--mist)",
-        fontSize: 12, color: "var(--stone)", display: "flex", alignItems: "center", gap: 8,
-      }}>
-        <I.Archive size={13} color="var(--stone)"/>
-        <span>View Archived</span>
-      </div>
+      {/* Footer removed — archive accessible via ··· menu */}
     </div>
   );
 }

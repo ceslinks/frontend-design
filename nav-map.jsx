@@ -20,9 +20,14 @@ const NAV_MAP = [
   { id: "home", label: "Home", icon: "Home" },
 
   {
-    id: "my-time", label: "My Time", icon: "Time",
+    id: "my-time", label: "My Time", icon: "Time", hasLanding: true,
     children: [
-      { id: "my-schedule",   label: "My Schedule",   icon: "Clock" },
+      { id: "my-schedule",   label: "My Schedule",   icon: "Clock",
+        children: [
+          { id: "schedule", label: "Schedule", icon: "Calendar"   },
+          { id: "projects", label: "Projects", icon: "ListChecks" },
+        ],
+      },
       { id: "my-calendar",   label: "My Calendar",   icon: "Calendar" },
       { id: "study-planner", label: "Study Planner", icon: "Lightbulb", badge: "AI" },
     ],
@@ -87,11 +92,15 @@ const NAV_MAP = [
   {
     id: "my-team", label: "My Team", icon: "Team",
     children: [
-      { id: "overview",      label: "Overview",      icon: "Home" },
+      { id: "overview",      label: "Overview",      icon: "Home"   },
       { id: "teachers",      label: "Teachers",      icon: "School" },
-      { id: "advisors",      label: "Advisors",      icon: "User" },
+      { id: "advisors",      label: "Advisors",      icon: "User"   },
       { id: "coaches",       label: "Coaches",       icon: "Soccer" },
-      { id: "support",       label: "Support Staff", icon: "Heart" },
+      { id: "support",       label: "Support Staff", icon: "Heart"  },
+      { id: "doctors",       label: "Doctors",    icon: "Heart"  },
+      { id: "counselors",    label: "Counselors", icon: "User"   },
+      { id: "home-team",     label: "Home Team",            icon: "Home"   },
+      { id: "resources",     label: "Resources & Support",  icon: "LifeBuoy" },
     ],
   },
 

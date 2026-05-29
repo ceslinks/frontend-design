@@ -37,9 +37,8 @@ function App() {
     if (l1 === "my-profile") return <MyProfile/>;
     if (l1 === "ai-system") return <AISystemOverview/>;
     if (l1 === "messages") {
-      // legacy messages router — map subroutes
-      const sub = (l2 === "email" ? "email" : l2 === "email-compose" ? "email-compose" : "thread");
-      return <MessagesPage subRoute={sub}/>;
+      const sub = l2 || "thread";
+      return <MessagesPage subRoute={sub} segments={segments}/>;
     }
     if (l1 === "my-classes") {
       // overview vs. detail vs. lesson/live/quiz — handled inside legacy MyClassesPage
